@@ -39,6 +39,12 @@
       <hr>
     {% endfor %}
   </ul>
+
+  <form action="{% url 'vaciar_carrito' %}" method="post">
+    {% csrf_token %}
+    <button type="submit" style="background-color: red; color: white;">Vaciar carrito 🗑️</button>
+  </form>
+
   <p><strong>Total: {{ total }} €</strong></p>
   <a href="#">Finalizar pedido (Stripe)</a>
 {% else %}

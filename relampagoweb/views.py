@@ -112,3 +112,9 @@ def editar_item_carrito_view(request, item_index):
         pass
 
     return redirect('carrito')
+
+@require_POST
+@login_required
+def vaciar_carrito_view(request):
+    request.session['carrito'] = []
+    return redirect('carrito')

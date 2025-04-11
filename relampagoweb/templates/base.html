@@ -1,11 +1,19 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Relámpago Pricense FC</title>
+  <link rel="icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
 </head>
 <body>
-  <nav>
+
+  <header style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+    <img src="{% static 'img/escudo.png' %}" alt="Escudo" width="40">
+    <h1 style="margin: 0;">Relámpago Pricense FC</h1>
+  </header>
+
+  <nav style="margin-bottom: 20px;">
     {% if user.is_authenticated %}
       Bienvenido, {{ user.name }} |
       <a href="{% url 'tienda' %}">Tienda</a> |
@@ -16,8 +24,10 @@
       <a href="{% url 'registro' %}">Registrarse</a>
     {% endif %}
   </nav>
+
   <hr>
 
   {% block content %}{% endblock %}
+
 </body>
 </html>
