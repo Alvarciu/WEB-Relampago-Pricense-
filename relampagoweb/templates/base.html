@@ -9,6 +9,7 @@
     {% if user.is_authenticated %}
       Bienvenido, {{ user.name }} |
       <a href="{% url 'tienda' %}">Tienda</a> |
+      <a href="{% url 'carrito' %}">Carrito</a> |
       <a href="{% url 'logout' %}">Cerrar sesión</a>
     {% else %}
       <a href="{% url 'login' %}">Iniciar sesión</a> |

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Tu carrito</h2>
+
+{% if carrito %}
+  <ul>
+    {% for item in carrito %}
+      <li>
+        <img src="{{ item.imagen_url }}" width="100"><br>
+        <strong>{{ item.nombre }}</strong> - Talla: {{ item.talla }} - {{ item.precio }} €
+        {% if item.nombre_dorsal %}
+          <br>Dorsal: {{ item.nombre_dorsal }} {{ item.numero_dorsal }}
+        {% endif %}
+      </li>
+      <hr>
+    {% endfor %}
+  </ul>
+  <p><strong>Total: {{ total }} €</strong></p>
+  <a href="#">Finalizar pedido (Stripe)</a>
+{% else %}
+  <p>Tu carrito está vacío.</p>
+{% endif %}
+
+<a href="{% url 'tienda' %}">← Volver a la tienda</a>
+{% endblock %}

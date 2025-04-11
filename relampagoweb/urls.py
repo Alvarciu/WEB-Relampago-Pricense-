@@ -8,7 +8,8 @@ from .views import (
     logout_view,
     tienda_view,
     detalle_producto_view,
-    añadir_al_carrito_view
+    añadir_al_carrito_view,
+    carrito_view
 )
 
 urlpatterns = [
@@ -19,4 +20,6 @@ urlpatterns = [
     path('tienda/', tienda_view, name='tienda'),
     path('producto/<int:producto_id>/', detalle_producto_view, name='detalle_producto'),
     path('añadir-al-carrito/<int:producto_id>/', añadir_al_carrito_view, name='añadir_al_carrito'),
+     path('carrito/', carrito_view, name='carrito'),
+     
 ]

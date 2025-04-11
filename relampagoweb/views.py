@@ -6,6 +6,7 @@ from .models import Producto
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect, get_object_or_404
 from .models import Producto
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
@@ -67,3 +68,17 @@ def añadir_al_carrito_view(request, producto_id):
         request.session['carrito'] = carrito
 
         return redirect('tienda')  # O a 'carrito' si ya lo tuvieras
+
+@login_required
+def carrito_view(request):
+    raw_carrito = request.session.get('carrito', [])
+    carrito = []
+
+    total = 0
+    for item in raw_carrito:
+        producto = Producto.objects.get(id=item['producto_id'])
+        item['imagen_url'] = producto.imagen.url
+        carrito.append(item)
+        total += item['precio']
+
+    return render(request, 'carrito.html', {'carrito': carrito, 'total': total})
