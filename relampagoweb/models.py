@@ -1,8 +1,9 @@
+### MODELOS DE USUARIO, PRODUCTO Y PEDIDO ###
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
 
-# ---------- GESTOR DE USUARIO PERSONALIZADO ----------
 class UsuarioManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -19,7 +20,6 @@ class UsuarioManager(BaseUserManager):
         extra_fields.setdefault('is_active', True)
         return self.create_user(email, password, **extra_fields)
 
-# ---------- MODELO DE USUARIO PERSONALIZADO ----------
 class Usuario(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=100)
     apellidos = models.CharField(max_length=100)
@@ -46,8 +46,6 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     def es_gestor(self):
         return self.groups.filter(name="Gestores").exists()
 
-
-# ---------- PRODUCTO ----------
 class Producto(models.Model):
     TIPO_PRODUCTO = (
         ('equipacion', 'Equipación'),
@@ -62,8 +60,6 @@ class Producto(models.Model):
     def __str__(self):
         return self.nombre
 
-
-# ---------- PEDIDO ----------
 class Pedido(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pedidos')
     fecha = models.DateTimeField(auto_now_add=True)
@@ -72,8 +68,6 @@ class Pedido(models.Model):
     def __str__(self):
         return f"Pedido {self.id} de {self.usuario.email}"
 
-
-# ---------- LÍNEA DE PEDIDO ----------
 class LineaPedido(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='lineas')
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)

@@ -4,9 +4,11 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 from .models import Usuario
+from django.contrib import admin
+from .models import Producto
 
 # Register your models here.
-# admin.site.register(models.Producto)
+admin.site.register(Producto)
 
 class UsuarioAdmin(BaseUserAdmin):
     model = Usuario
@@ -40,3 +42,4 @@ class UsuarioAdmin(BaseUserAdmin):
     mostrar_es_gestor.short_description = "Es gestor"
 
 admin.site.register(Usuario, UsuarioAdmin)
+

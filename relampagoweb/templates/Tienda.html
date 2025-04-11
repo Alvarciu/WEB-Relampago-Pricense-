@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Catálogo</h2>
+<div class="productos">
+  {% for producto in productos %}
+    <div class="producto">
+      <img src="{{ producto.imagen.url }}" width="200">
+      <h3>{{ producto.nombre }}</h3>
+      <p>{{ producto.descripcion }}</p>
+      <p>{{ producto.precio }} €</p>
+      <a href="{% url 'detalle_producto' producto.id %}">Ver</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}
