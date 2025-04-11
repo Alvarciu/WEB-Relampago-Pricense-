@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Detalles del pedido #{{ pedido.id }}</h2>
+
+<p><strong>Usuario:</strong> {{ pedido.usuario.name }} ({{ pedido.usuario.email }})</p>
+<p><strong>Fecha:</strong> {{ pedido.fecha|date:"d/m/Y H:i" }}</p>
+<p><strong>Total:</strong> {{ pedido.total }} €</p>
+
+<h3>Productos</h3>
+<ul>
+  {% for linea in pedido.lineas.all %}
+    <li style="margin-bottom: 20px;">
+      <img src="{{ linea.producto.imagen.url }}" width="100" style="vertical-align: middle;"><br>
+      <strong>{{ linea.producto.nombre }}</strong> - Talla: {{ linea.talla }}
+      {% if linea.nombre_dorsal %}
+        | Dorsal: {{ linea.nombre_dorsal }} {{ linea.numero_dorsal }}
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'lista_pedidos' %}">← Volver al listado</a>
+{% endblock %}

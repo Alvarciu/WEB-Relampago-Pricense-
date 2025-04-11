@@ -7,16 +7,52 @@
     {% for item in carrito %}
       <li>
         <img src="{{ item.imagen_url }}" width="100"><br>
-        <strong>{{ item.nombre }}</strong> - Talla: {{ item.talla }} - {{ item.precio }} €
-        {% if item.nombre_dorsal %}
-          <br>Dorsal: {{ item.nombre_dorsal }} {{ item.numero_dorsal }}
-        {% endif %}
+
+        <form action="{% url 'editar_item_carrito' forloop.counter0 %}" method="post">
+          {% csrf_token %}
+          <strong>{{ item.nombre }}</strong><br>
+
+          <label>Talla:</label>
+          <select name="talla">
+            <option value="S" {% if item.talla == 'S' %}selected{% endif %}>S</option>
+            <option value="M" {% if item.talla == 'M' %}selected{% endif %}>M</option>
+            <option value="L" {% if item.talla == 'L' %}selected{% endif %}>L</option>
+            <option value="XL" {% if item.talla == 'XL' %}selected{% endif %}>XL</option>
+          </select><br>
+
+          {% if item.nombre_dorsal is not None %}
+            <label>Nombre dorsal:</label>
+            <input type="text" name="nombre_dorsal" value="{{ item.nombre_dorsal }}"><br>
+
+            <label>Número dorsal:</label>
+            <input type="number" name="numero_dorsal" value="{{ item.numero_dorsal }}"><br>
+          {% endif %}
+
+          <button type="submit">Guardar cambios</button>
+        </form>
+
+        <form action="{% url 'eliminar_del_carrito' forloop.counter0 %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit">❌ Quitar</button>
+        </form>
       </li>
       <hr>
     {% endfor %}
   </ul>
+
+  <form action="{% url 'vaciar_carrito' %}" method="post">
+    {% csrf_token %}
+    <button type="submit" style="background-color: red; color: white;">Vaciar carrito 🗑️</button>
+  </form>
+
   <p><strong>Total: {{ total }} €</strong></p>
-  <a href="#">Finalizar pedido (Stripe)</a>
+
+  {% if pedidos_abiertos %}
+    <a href="#">Finalizar pedido (Stripe)</a>
+  {% else %}
+    <p style="color: red;"><strong>❌ Los pedidos están cerrados por ahora. Vuelve más adelante.</strong></p>
+  {% endif %}
+
 {% else %}
   <p>Tu carrito está vacío.</p>
 {% endif %}

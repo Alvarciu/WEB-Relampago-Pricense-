@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Pedidos registrados</h2>
+
+<p>
+  {% if config.pedidos_abiertos %}
+    ✅ Pedidos abiertos |
+    <a href="{% url 'alternar_pedidos' %}">🔒 Cerrar pedidos</a>
+  {% else %}
+    ❌ Pedidos cerrados |
+    <a href="{% url 'alternar_pedidos' %}">🔓 Abrir pedidos</a>
+  {% endif %}
+</p>
+
+<table border="1" cellpadding="5" cellspacing="0">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Usuario</th>
+      <th>Email</th>
+      <th>Fecha</th>
+      <th>Total</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for pedido in pedidos %}
+    <tr>
+      <td>{{ pedido.id }}</td>
+      <td>{{ pedido.usuario.name }}</td>
+      <td>{{ pedido.usuario.email }}</td>
+      <td>{{ pedido.fecha|date:"d/m/Y H:i" }}</td>
+      <td>{{ pedido.total }} €</td>
+      <td><a href="{% url 'detalle_pedido_admin' pedido.id %}">🔍 Ver detalles</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

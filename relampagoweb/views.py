@@ -7,11 +7,25 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect, get_object_or_404
 from .models import Producto
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+import pandas as pd
+from django.http import HttpResponse
+from django.contrib.admin.views.decorators import staff_member_required
+from .models import Pedido
+from django.conf import settings
+from .models import Configuracion
+from .models import get_configuracion
+
+
 
 
 # Create your views here.
 def index(request):
     return HttpResponse('Hello, world')
+
+def inicio_view(request):
+    return render(request, 'inicio.html')
+
 
 def registro_view(request):
     if request.method == 'POST':
@@ -81,4 +95,99 @@ def carrito_view(request):
         carrito.append(item)
         total += item['precio']
 
-    return render(request, 'carrito.html', {'carrito': carrito, 'total': total})
+    config = get_configuracion()
+
+    return render(request, 'carrito.html', {
+        'carrito': carrito,
+        'total': total,
+        'pedidos_abiertos': config.pedidos_abiertos,
+    })
+
+
+@require_POST
+@login_required
+def eliminar_del_carrito_view(request, item_index):
+    carrito = request.session.get('carrito', [])
+    try:
+        carrito.pop(item_index)
+        request.session['carrito'] = carrito
+    except IndexError:
+        pass
+    return redirect('carrito')
+
+@require_POST
+@login_required
+def editar_item_carrito_view(request, item_index):
+    carrito = request.session.get('carrito', [])
+
+    try:
+        item = carrito[item_index]
+        item['talla'] = request.POST.get('talla')
+        if item.get('nombre_dorsal') is not None:
+            item['nombre_dorsal'] = request.POST.get('nombre_dorsal')
+            item['numero_dorsal'] = request.POST.get('numero_dorsal')
+        carrito[item_index] = item
+        request.session['carrito'] = carrito
+    except IndexError:
+        pass
+
+    return redirect('carrito')
+
+@require_POST
+@login_required
+def vaciar_carrito_view(request):
+    request.session['carrito'] = []
+    return redirect('carrito')
+
+
+@staff_member_required
+def exportar_pedidos_excel(request):
+    pedidos = Pedido.objects.prefetch_related('lineas__producto').all()
+
+    datos = []
+    for pedido in pedidos:
+        for linea in pedido.lineas.all():
+            datos.append({
+                'Nº Pedido': pedido.id,
+                'Nombre': pedido.usuario.name,
+                'Email': pedido.usuario.email,
+                'Producto': linea.producto.nombre,
+                'Talla': linea.talla,
+                'Nombre dorsal': linea.nombre_dorsal or '',
+                'Dorsal': linea.numero_dorsal or '',
+            })
+
+    df = pd.DataFrame(datos)
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=pedidos.xlsx'
+    df.to_excel(response, index=False)
+
+    return response
+
+
+@staff_member_required
+def lista_pedidos_view(request):
+    pedidos = Pedido.objects.all().order_by('-fecha')
+    config = get_configuracion()
+    return render(request, 'admin/lista_pedidos.html', {
+        'pedidos': pedidos,
+        'config': config  # 👈 aquí estás pasándola al HTML
+    })
+
+@staff_member_required
+def detalle_pedido_admin_view(request, pedido_id):
+    pedido = Pedido.objects.get(id=pedido_id)
+    return render(request, 'admin/detalle_pedido.html', {'pedido': pedido})
+
+
+def get_configuracion():
+    config, created = Configuracion.objects.get_or_create(id=1)
+    return config
+
+@staff_member_required
+def alternar_pedidos_view(request):
+    config = get_configuracion()
+    config.pedidos_abiertos = not config.pedidos_abiertos
+    config.save()
+    return redirect('lista_pedidos')
