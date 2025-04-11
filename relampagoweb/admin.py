@@ -36,6 +36,8 @@ class UsuarioAdmin(BaseUserAdmin):
         super().delete_model(request, obj)
 
 
+
+    # Funcion totalmente irrelevante:
     def mostrar_es_gestor(self, obj):
         return obj.es_gestor
     mostrar_es_gestor.boolean = True  # ✅ Muestra check verde o cruz

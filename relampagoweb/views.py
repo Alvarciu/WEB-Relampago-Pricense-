@@ -3,9 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from .forms import RegistroForm, LoginForm
 from .models import Producto
-from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect, get_object_or_404
-from .models import Producto
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 import pandas as pd
@@ -143,7 +141,6 @@ def vaciar_carrito_view(request):
 @staff_member_required
 def exportar_pedidos_excel(request):
     pedidos = Pedido.objects.prefetch_related('lineas__producto').all()
-
     datos = []
     for pedido in pedidos:
         for linea in pedido.lineas.all():
