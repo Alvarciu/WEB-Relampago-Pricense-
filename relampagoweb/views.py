@@ -3,9 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from .forms import RegistroForm, LoginForm
 from .models import Producto
-from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect, get_object_or_404
-from .models import Producto
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 import pandas as pd
