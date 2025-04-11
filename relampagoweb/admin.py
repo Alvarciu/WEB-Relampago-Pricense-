@@ -10,7 +10,7 @@ from .models import Usuario
 
 class UsuarioAdmin(BaseUserAdmin):
     model = Usuario
-    list_display = ('email', 'name', 'apellidos', 'telefono', 'is_staff', 'is_superuser', 'mostrar_es_gestor')
+    list_display = ('email', 'name', 'apellidos', 'telefono', 'password', 'is_staff', 'is_superuser', 'mostrar_es_gestor')
     list_filter = ('is_staff', 'is_superuser')
     search_fields = ('email', 'name', 'apellidos')
     ordering = ('email',)
