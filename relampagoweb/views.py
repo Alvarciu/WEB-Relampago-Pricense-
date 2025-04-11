@@ -8,11 +8,20 @@ from django.shortcuts import redirect, get_object_or_404
 from .models import Producto
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+import pandas as pd
+from django.http import HttpResponse
+from django.contrib.admin.views.decorators import staff_member_required
+from .models import Pedido
+from django.shortcuts import render
 
 
 # Create your views here.
 def index(request):
     return HttpResponse('Hello, world')
+
+def inicio_view(request):
+    return render(request, 'inicio.html')
+
 
 def registro_view(request):
     if request.method == 'POST':
@@ -118,3 +127,39 @@ def editar_item_carrito_view(request, item_index):
 def vaciar_carrito_view(request):
     request.session['carrito'] = []
     return redirect('carrito')
+
+
+@staff_member_required
+def exportar_pedidos_excel(request):
+    pedidos = Pedido.objects.prefetch_related('lineas__producto').all()
+
+    datos = []
+    for pedido in pedidos:
+        for linea in pedido.lineas.all():
+            datos.append({
+                'Nº Pedido': pedido.id,
+                'Nombre': pedido.usuario.name,
+                'Email': pedido.usuario.email,
+                'Producto': linea.producto.nombre,
+                'Talla': linea.talla,
+                'Nombre dorsal': linea.nombre_dorsal or '',
+                'Dorsal': linea.numero_dorsal or '',
+            })
+
+    df = pd.DataFrame(datos)
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=pedidos.xlsx'
+    df.to_excel(response, index=False)
+
+    return response
+
+@staff_member_required
+def lista_pedidos_view(request):
+    pedidos = Pedido.objects.all().order_by('-fecha')
+    return render(request, 'admin/lista_pedidos.html', {'pedidos': pedidos})
+
+@staff_member_required
+def detalle_pedido_admin_view(request, pedido_id):
+    pedido = Pedido.objects.get(id=pedido_id)
+    return render(request, 'admin/detalle_pedido.html', {'pedido': pedido})

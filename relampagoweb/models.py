@@ -65,6 +65,10 @@ class Pedido(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     pagado = models.BooleanField(default=False)
 
+    @property
+    def total(self):
+        return sum(linea.producto.precio for linea in self.lineas.all())
+
     def __str__(self):
         return f"Pedido {self.id} de {self.usuario.email}"
 
