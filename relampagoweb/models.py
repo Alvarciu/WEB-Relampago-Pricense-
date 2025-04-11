@@ -1,8 +1,8 @@
 ### MODELOS DE USUARIO, PRODUCTO Y PEDIDO ###
-
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
+
 
 class UsuarioManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -81,3 +81,20 @@ class LineaPedido(models.Model):
 
     def __str__(self):
         return f"{self.producto.nombre} x1"
+
+
+class Configuracion(models.Model):
+    pedidos_abiertos = models.BooleanField(default=True)
+
+    def __str__(self):
+        return "Configuración general"
+    
+    class Meta:
+        verbose_name = "Configuración"
+        verbose_name_plural = "Configuración"
+
+# ✅ Función para obtener (o crear) la única configuración global
+def get_configuracion():
+    config, created = Configuracion.objects.get_or_create(id=1)
+    return config
+

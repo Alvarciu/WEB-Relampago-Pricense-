@@ -46,7 +46,13 @@
   </form>
 
   <p><strong>Total: {{ total }} €</strong></p>
-  <a href="#">Finalizar pedido (Stripe)</a>
+
+  {% if pedidos_abiertos %}
+    <a href="#">Finalizar pedido (Stripe)</a>
+  {% else %}
+    <p style="color: red;"><strong>❌ Los pedidos están cerrados por ahora. Vuelve más adelante.</strong></p>
+  {% endif %}
+
 {% else %}
   <p>Tu carrito está vacío.</p>
 {% endif %}

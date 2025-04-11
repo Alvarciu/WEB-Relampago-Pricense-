@@ -16,7 +16,8 @@ from .views import (
     vaciar_carrito_view,
     exportar_pedidos_excel,
     lista_pedidos_view,
-    detalle_pedido_admin_view
+    detalle_pedido_admin_view,
+    alternar_pedidos_view
 )
 
 urlpatterns = [
@@ -35,6 +36,8 @@ urlpatterns = [
     path('admin/exportar-pedidos/', exportar_pedidos_excel, name='exportar_pedidos_excel'),
     path('panel/pedidos/', lista_pedidos_view, name='lista_pedidos'),
     path('panel/pedidos/<int:pedido_id>/', detalle_pedido_admin_view, name='detalle_pedido_admin'),
+    path('panel/pedidos/toggle/', alternar_pedidos_view, name='alternar_pedidos'),
+
 
 
 ]

@@ -2,6 +2,16 @@
 {% block content %}
 <h2>Pedidos registrados</h2>
 
+<p>
+  {% if config.pedidos_abiertos %}
+    ✅ Pedidos abiertos |
+    <a href="{% url 'alternar_pedidos' %}">🔒 Cerrar pedidos</a>
+  {% else %}
+    ❌ Pedidos cerrados |
+    <a href="{% url 'alternar_pedidos' %}">🔓 Abrir pedidos</a>
+  {% endif %}
+</p>
+
 <table border="1" cellpadding="5" cellspacing="0">
   <thead>
     <tr>

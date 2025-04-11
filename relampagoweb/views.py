@@ -12,7 +12,11 @@ import pandas as pd
 from django.http import HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
 from .models import Pedido
-from django.shortcuts import render
+from django.conf import settings
+from .models import Configuracion
+from .models import get_configuracion
+
+
 
 
 # Create your views here.
@@ -91,7 +95,14 @@ def carrito_view(request):
         carrito.append(item)
         total += item['precio']
 
-    return render(request, 'carrito.html', {'carrito': carrito, 'total': total})
+    config = get_configuracion()
+
+    return render(request, 'carrito.html', {
+        'carrito': carrito,
+        'total': total,
+        'pedidos_abiertos': config.pedidos_abiertos,
+    })
+
 
 @require_POST
 @login_required
@@ -154,12 +165,29 @@ def exportar_pedidos_excel(request):
 
     return response
 
+
 @staff_member_required
 def lista_pedidos_view(request):
     pedidos = Pedido.objects.all().order_by('-fecha')
-    return render(request, 'admin/lista_pedidos.html', {'pedidos': pedidos})
+    config = get_configuracion()
+    return render(request, 'admin/lista_pedidos.html', {
+        'pedidos': pedidos,
+        'config': config  # 👈 aquí estás pasándola al HTML
+    })
 
 @staff_member_required
 def detalle_pedido_admin_view(request, pedido_id):
     pedido = Pedido.objects.get(id=pedido_id)
     return render(request, 'admin/detalle_pedido.html', {'pedido': pedido})
+
+
+def get_configuracion():
+    config, created = Configuracion.objects.get_or_create(id=1)
+    return config
+
+@staff_member_required
+def alternar_pedidos_view(request):
+    config = get_configuracion()
+    config.pedidos_abiertos = not config.pedidos_abiertos
+    config.save()
+    return redirect('lista_pedidos')
