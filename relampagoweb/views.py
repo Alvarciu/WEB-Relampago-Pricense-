@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect, get_object_or_404
 from .models import Producto
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 
 
 # Create your views here.
@@ -82,3 +83,14 @@ def carrito_view(request):
         total += item['precio']
 
     return render(request, 'carrito.html', {'carrito': carrito, 'total': total})
+
+@require_POST
+@login_required
+def eliminar_del_carrito_view(request, item_index):
+    carrito = request.session.get('carrito', [])
+    try:
+        carrito.pop(item_index)
+        request.session['carrito'] = carrito
+    except IndexError:
+        pass
+    return redirect('carrito')

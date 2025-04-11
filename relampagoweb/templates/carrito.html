@@ -11,6 +11,11 @@
         {% if item.nombre_dorsal %}
           <br>Dorsal: {{ item.nombre_dorsal }} {{ item.numero_dorsal }}
         {% endif %}
+
+        <form action="{% url 'eliminar_del_carrito' forloop.counter0 %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit">❌ Quitar</button>
+        </form>
       </li>
       <hr>
     {% endfor %}
