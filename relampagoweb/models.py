@@ -44,7 +44,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     @property
     def es_gestor(self):
-        return self.groups.filter(name="Gestores").exists()
+        return self.groups.filter(name="Gestores").exists() ## esto hay que quitarlo, ya que no se usa en el admin
 
 class Producto(models.Model):
     TIPO_PRODUCTO = (

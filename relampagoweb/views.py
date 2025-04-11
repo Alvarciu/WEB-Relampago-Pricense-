@@ -143,7 +143,6 @@ def vaciar_carrito_view(request):
 @staff_member_required
 def exportar_pedidos_excel(request):
     pedidos = Pedido.objects.prefetch_related('lineas__producto').all()
-
     datos = []
     for pedido in pedidos:
         for linea in pedido.lineas.all():
