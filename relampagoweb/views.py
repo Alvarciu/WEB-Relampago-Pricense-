@@ -94,3 +94,21 @@ def eliminar_del_carrito_view(request, item_index):
     except IndexError:
         pass
     return redirect('carrito')
+
+@require_POST
+@login_required
+def editar_item_carrito_view(request, item_index):
+    carrito = request.session.get('carrito', [])
+
+    try:
+        item = carrito[item_index]
+        item['talla'] = request.POST.get('talla')
+        if item.get('nombre_dorsal') is not None:
+            item['nombre_dorsal'] = request.POST.get('nombre_dorsal')
+            item['numero_dorsal'] = request.POST.get('numero_dorsal')
+        carrito[item_index] = item
+        request.session['carrito'] = carrito
+    except IndexError:
+        pass
+
+    return redirect('carrito')

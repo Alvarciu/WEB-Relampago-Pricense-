@@ -10,7 +10,8 @@ from .views import (
     detalle_producto_view,
     añadir_al_carrito_view,
     carrito_view,
-    eliminar_del_carrito_view
+    eliminar_del_carrito_view,
+    editar_item_carrito_view
 )
 
 urlpatterns = [
@@ -23,5 +24,7 @@ urlpatterns = [
     path('añadir-al-carrito/<int:producto_id>/', añadir_al_carrito_view, name='añadir_al_carrito'),
     path('carrito/', carrito_view, name='carrito'),
     path('carrito/eliminar/<int:item_index>/', eliminar_del_carrito_view, name='eliminar_del_carrito'),
+    path('carrito/editar/<int:item_index>/', editar_item_carrito_view, name='editar_item_carrito'),
 
 ]
+
