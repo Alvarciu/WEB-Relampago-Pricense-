@@ -22,7 +22,8 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from .models import Pedido, LineaPedido, Producto
-
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 
 
 # Create your views here.
@@ -66,6 +67,7 @@ def detalle_producto_view(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
     return render(request, 'detalle_producto.html', {'producto': producto})
 
+
 def añadir_al_carrito_view(request, producto_id):
     if request.method == 'POST':
         producto = get_object_or_404(Producto, id=producto_id)
@@ -87,7 +89,9 @@ def añadir_al_carrito_view(request, producto_id):
         carrito.append(item)
         request.session['carrito'] = carrito
 
-        return redirect('tienda')  # O a 'carrito' si ya lo tuvieras
+        # Redirige al detalle del producto con alerta de confirmación
+        return redirect(reverse('detalle_producto', args=[producto.id]) + '?añadido=ok')
+
 
 @login_required
 def carrito_view(request):
