@@ -20,7 +20,7 @@
       <a href="{% url 'carrito' %}">Carrito</a> |
       <a href="{% url 'logout' %}">Cerrar sesión</a>
       {% if user.is_staff %}
-        | <a href="{% url 'exportar_pedidos_excel' %}">📦 Exportar pedidos a Excel</a>
+        | <a href="{% url 'panel_pedidos' %}">📋 Panel de pedidos</a>
       {% endif %}
     {% else %}
       <a href="{% url 'login' %}">Iniciar sesión</a> |

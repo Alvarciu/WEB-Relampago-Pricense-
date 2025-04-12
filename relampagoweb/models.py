@@ -1,8 +1,9 @@
-### MODELOS DE USUARIO, PRODUCTO Y PEDIDO ###
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
 
+
+### --- MODELO DE USUARIO --- ###
 
 class UsuarioManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -42,9 +43,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         self.mensajes.all().delete()
         super().delete(*args, **kwargs)
 
-    @property
-    def es_gestor(self):
-        return self.groups.filter(name="Gestores").exists() ## esto hay que quitarlo, ya que no se usa en el admin
+
+### --- MODELO DE PRODUCTO --- ###
 
 class Producto(models.Model):
     TIPO_PRODUCTO = (
@@ -60,6 +60,9 @@ class Producto(models.Model):
     def __str__(self):
         return self.nombre
 
+
+### --- MODELO DE PEDIDO --- ###
+
 class Pedido(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pedidos')
     fecha = models.DateTimeField(auto_now_add=True)
@@ -72,6 +75,7 @@ class Pedido(models.Model):
     def __str__(self):
         return f"Pedido {self.id} de {self.usuario.email}"
 
+
 class LineaPedido(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='lineas')
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
@@ -83,18 +87,19 @@ class LineaPedido(models.Model):
         return f"{self.producto.nombre} x1"
 
 
+### --- CONFIGURACIÓN GLOBAL --- ###
+
 class Configuracion(models.Model):
     pedidos_abiertos = models.BooleanField(default=True)
 
     def __str__(self):
         return "Configuración general"
-    
+
     class Meta:
         verbose_name = "Configuración"
         verbose_name_plural = "Configuración"
 
-# ✅ Función para obtener (o crear) la única configuración global
+
 def get_configuracion():
     config, created = Configuracion.objects.get_or_create(id=1)
     return config
-

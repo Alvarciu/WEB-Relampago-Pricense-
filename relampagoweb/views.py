@@ -13,6 +13,12 @@ from .models import Pedido
 from django.conf import settings
 from .models import Configuracion
 from .models import get_configuracion
+from django.views.decorators.http import require_POST
+from .models import Producto, Pedido, LineaPedido
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from relampagoweb.models import Producto
+
 
 
 
@@ -188,3 +194,88 @@ def alternar_pedidos_view(request):
     config.pedidos_abiertos = not config.pedidos_abiertos
     config.save()
     return redirect('lista_pedidos')
+
+@staff_member_required
+def panel_pedidos_view(request):
+    pedidos = Pedido.objects.all().order_by('-fecha')
+    pedidos_abiertos = get_configuracion().pedidos_abiertos
+    return render(request, 'panel_pedidos.html', {
+        'pedidos': pedidos,
+        'pedidos_abiertos': pedidos_abiertos,
+    })
+
+
+@login_required
+def resumen_pedido_view(request):
+    raw_carrito = request.session.get('carrito', [])
+    resumen = []
+
+    total = 0
+    for item in raw_carrito:
+        try:
+            producto = Producto.objects.get(id=item['producto_id'])
+            item['imagen_url'] = producto.imagen.url
+            resumen.append(item)
+            total += item['precio']
+        except Producto.DoesNotExist:
+            continue
+
+    return render(request, 'resumen_pedido.html', {
+        'resumen': resumen,
+        'total': total
+    })
+
+
+
+@login_required
+def confirmar_pedido_view(request):
+    """
+    Guarda el resumen del pedido en la sesión, pero NO en la base de datos.
+    """
+    carrito = request.session.get('carrito', [])
+    if not carrito:
+        return redirect('carrito')
+
+    # Guardamos el resumen en la sesión para paso siguiente
+    request.session['resumen_pedido'] = carrito
+    return render(request, 'resumen_pedido.html', {
+        'carrito': carrito,
+        'total': sum(item['precio'] for item in carrito)
+    })
+
+
+@login_required
+def pago_simulado_view(request):
+    """
+    Este es el paso final. Se considera que el usuario ha pagado y ahora sí
+    se guarda el pedido en la base de datos.
+    """
+    from .models import Pedido, LineaPedido, Producto
+
+    resumen = request.session.get('resumen_pedido')
+    if not resumen:
+        return redirect('carrito')
+
+    # Creamos el pedido
+    pedido = Pedido.objects.create(usuario=request.user, pagado=True)
+
+    # Creamos las líneas del pedido
+    for item in resumen:
+        producto = Producto.objects.get(id=item['producto_id'])
+        LineaPedido.objects.create(
+            pedido=pedido,
+            producto=producto,
+            talla=item['talla'],
+            nombre_dorsal=item.get('nombre_dorsal'),
+            numero_dorsal=item.get('numero_dorsal')
+        )
+
+    # Limpiar sesión
+    request.session.pop('resumen_pedido', None)
+    request.session.pop('carrito', None)
+
+    return redirect('inicio')
+
+
+def calcular_total_carrito(carrito):
+    return sum(item['precio'] for item in carrito)

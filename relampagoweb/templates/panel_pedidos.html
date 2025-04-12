@@ -1,22 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
+
 <h2>Pedidos registrados</h2>
 
+<!-- Mostrar estado actual y botón para abrir/cerrar pedidos -->
 <p>
-  {% if config.pedidos_abiertos %}
-    ✅ Pedidos abiertos |
-    <a href="{% url 'alternar_pedidos' %}">🔒 Cerrar pedidos</a>
+  {% if pedidos_abiertos %}
+    ✅ <strong>Pedidos abiertos</strong> |
+    🔒 <a href="{% url 'cerrar_pedidos' %}">Cerrar pedidos</a>
   {% else %}
-    ❌ Pedidos cerrados |
-    <a href="{% url 'alternar_pedidos' %}">🔓 Abrir pedidos</a>
+    ❌ <strong>Pedidos cerrados</strong> |
+    🔓 <a href="{% url 'abrir_pedidos' %}">Abrir pedidos</a>
   {% endif %}
 </p>
+
+<!-- Botón de exportar a Excel -->
 <p>
-  <a href="{% url 'exportar_pedidos_excel' %}" style="text-decoration: none; color: black;">
-    📦 Exportar pedidos a Excel
-  </a>
+  📦 <a href="{% url 'exportar_pedidos' %}">Exportar pedidos a Excel</a>
 </p>
 
+<!-- Tabla de pedidos -->
 <table border="1" cellpadding="5" cellspacing="0">
   <thead>
     <tr>
@@ -36,9 +39,12 @@
       <td>{{ pedido.usuario.email }}</td>
       <td>{{ pedido.fecha|date:"d/m/Y H:i" }}</td>
       <td>{{ pedido.total }} €</td>
-      <td><a href="{% url 'detalle_pedido_admin' pedido.id %}">🔍 Ver detalles</a></td>
+      <td>
+        🔍 <a href="{% url 'detalle_pedido_admin' pedido.id %}">Ver detalles</a>
+      </td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
 {% endblock %}

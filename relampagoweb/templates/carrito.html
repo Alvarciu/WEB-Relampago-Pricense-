@@ -48,7 +48,7 @@
   <p><strong>Total: {{ total }} €</strong></p>
 
   {% if pedidos_abiertos %}
-    <a href="#">Finalizar pedido (Stripe)</a>
+    <a href="{% url 'resumen_pedido' %}">Finalizar pedido</a>
   {% else %}
     <p style="color: red;"><strong>❌ Los pedidos están cerrados por ahora. Vuelve más adelante.</strong></p>
   {% endif %}

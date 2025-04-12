@@ -21,5 +21,10 @@ urlpatterns = [
     path('panel/pedidos/', lista_pedidos_view, name='lista_pedidos'),
     path('panel/pedidos/<int:pedido_id>/', detalle_pedido_admin_view, name='detalle_pedido_admin'),
     path('panel/pedidos/toggle/', alternar_pedidos_view, name='alternar_pedidos'),
+    path('panel/pedidos/', panel_pedidos_view, name='panel_pedidos'),
+    path('resumen-pedido/', resumen_pedido_view, name='resumen_pedido'),
+    path('confirmar-pedido/', confirmar_pedido_view, name='confirmar_pedido'),
+    path('confirmar-pedido/', confirmar_pedido_view, name='confirmar_pedido'),
+    path('pago-simulado/', pago_simulado_view, name='pago_simulado'),
 ]
 
