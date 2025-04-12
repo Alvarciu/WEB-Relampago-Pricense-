@@ -48,7 +48,9 @@
   <p><strong>Total: {{ total }} €</strong></p>
 
   {% if pedidos_abiertos %}
-    <a href="{% url 'resumen_pedido' %}">Finalizar pedido</a>
+    <form action="{% url 'resumen_pedido' %}" method="get">
+      <button type="submit" style="background-color: green; color: white; padding: 10px 20px;">Finalizar pedido</button>
+    </form>
   {% else %}
     <p style="color: red;"><strong>❌ Los pedidos están cerrados por ahora. Vuelve más adelante.</strong></p>
   {% endif %}

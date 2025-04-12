@@ -18,8 +18,10 @@ from .models import Producto, Pedido, LineaPedido
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from relampagoweb.models import Producto
-
-
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from .models import Pedido, LineaPedido, Producto
 
 
 
@@ -204,13 +206,12 @@ def panel_pedidos_view(request):
         'pedidos_abiertos': pedidos_abiertos,
     })
 
-
 @login_required
 def resumen_pedido_view(request):
     raw_carrito = request.session.get('carrito', [])
     resumen = []
-
     total = 0
+
     for item in raw_carrito:
         try:
             producto = Producto.objects.get(id=item['producto_id'])
@@ -220,28 +221,53 @@ def resumen_pedido_view(request):
         except Producto.DoesNotExist:
             continue
 
+    # Guarda el resumen en la sesión para usarlo en el paso final
+    request.session['resumen_pedido'] = resumen
+
     return render(request, 'resumen_pedido.html', {
         'resumen': resumen,
         'total': total
     })
 
 
-
 @login_required
 def confirmar_pedido_view(request):
-    """
-    Guarda el resumen del pedido en la sesión, pero NO en la base de datos.
-    """
     carrito = request.session.get('carrito', [])
     if not carrito:
         return redirect('carrito')
 
-    # Guardamos el resumen en la sesión para paso siguiente
-    request.session['resumen_pedido'] = carrito
-    return render(request, 'resumen_pedido.html', {
-        'carrito': carrito,
-        'total': sum(item['precio'] for item in carrito)
+    pedido = Pedido.objects.create(usuario=request.user, pagado=True)
+    for item in carrito:
+        producto = Producto.objects.get(id=item['producto_id'])
+        LineaPedido.objects.create(
+            pedido=pedido,
+            producto=producto,
+            talla=item['talla'],
+            nombre_dorsal=item.get('nombre_dorsal'),
+            numero_dorsal=item.get('numero_dorsal')
+        )
+
+    # Borrar carrito tras confirmar
+    del request.session['carrito']
+
+    # Enviar email de confirmación
+    asunto = f"Confirmación de tu pedido #{pedido.id} en Relámpago Pricense FC"
+    mensaje = render_to_string('emails/confirmacion_pedido.txt', {
+        'pedido': pedido,
+        'usuario': request.user,
+        'lineas': pedido.lineas.all(),
+        'total': pedido.total
     })
+
+    send_mail(
+        subject=asunto,
+        message=mensaje,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[request.user.email],
+        fail_silently=False,
+    )
+
+    return render(request, 'pedido_confirmado.html', {'pedido': pedido})
 
 
 @login_required
@@ -250,8 +276,6 @@ def pago_simulado_view(request):
     Este es el paso final. Se considera que el usuario ha pagado y ahora sí
     se guarda el pedido en la base de datos.
     """
-    from .models import Pedido, LineaPedido, Producto
-
     resumen = request.session.get('resumen_pedido')
     if not resumen:
         return redirect('carrito')
@@ -274,7 +298,26 @@ def pago_simulado_view(request):
     request.session.pop('resumen_pedido', None)
     request.session.pop('carrito', None)
 
-    return redirect('inicio')
+    # Enviar correo de confirmación
+    enviar_confirmacion_pedido(request.user, pedido)
+
+    return render(request, 'pedido_confirmado.html', {'pedido': pedido})
+
+
+# 💌 Función para enviar el correo de confirmación
+def enviar_confirmacion_pedido(usuario, pedido):
+    asunto = f"✅ Pedido #{pedido.id} confirmado - Relámpago Pricense FC"
+    remitente = settings.DEFAULT_FROM_EMAIL
+    destinatario = [usuario.email]
+
+    html_content = render_to_string("emails/confirmacion_pedido.html", {
+        "usuario": usuario,
+        "pedido": pedido,
+    })
+
+    mensaje = EmailMultiAlternatives(asunto, "", remitente, destinatario)
+    mensaje.attach_alternative(html_content, "text/html")
+    mensaje.send()
 
 
 def calcular_total_carrito(carrito):

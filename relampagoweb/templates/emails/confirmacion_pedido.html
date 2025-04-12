@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Confirmación de pedido</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    .container { background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; }
+    h2 { color: #222; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+    .total { text-align: right; margin-top: 20px; font-size: 18px; }
+    .logo { width: 60px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>✅ ¡Gracias por tu pedido, {{ usuario.name }}!</h2>
+    <p>Hemos recibido correctamente tu pedido número <strong>#{{ pedido.id }}</strong>.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Talla</th>
+          <th>Dorsal</th>
+          <th>Precio</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in pedido.lineas.all %}
+        <tr>
+          <td>{{ item.producto.nombre }}</td>
+          <td>{{ item.talla }}</td>
+          <td>
+            {% if item.nombre_dorsal %}
+              {{ item.nombre_dorsal }} ({{ item.numero_dorsal }})
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>{{ item.producto.precio }} €</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p class="total"><strong>Total:</strong> {{ pedido.total }} €</p>
+
+    <p>Nos pondremos en contacto contigo cuando el pedido esté listo. ¡Gracias por confiar en el Relámpago Pricense FC!</p>
+  </div>
+</body>
+</html>
