@@ -17,11 +17,11 @@
     {% if user.is_authenticated %}
       Bienvenido, {{ user.name }} |
       <a href="{% url 'tienda' %}">Tienda</a> |
-      <a href="{% url 'carrito' %}">Carrito</a> |
-      <a href="{% url 'logout' %}">Cerrar sesión</a>
+      <a href="{% url 'carrito' %}">Carrito</a>
       {% if user.is_staff %}
         | <a href="{% url 'panel_pedidos' %}">📋 Panel de pedidos</a>
       {% endif %}
+      | <a href="{% url 'logout' %}">Cerrar sesión</a>
     {% else %}
       <a href="{% url 'login' %}">Iniciar sesión</a> |
       <a href="{% url 'registro' %}">Registrarse</a>

@@ -6,7 +6,7 @@
 <p>{{ producto.descripcion }}</p>
 <p><strong>{{ producto.precio }} €</strong></p>
 
-<form method="post" action="{% url 'añadir_al_carrito' producto.id %}">
+<form id="form-anadir-carrito" method="post" action="{% url 'añadir_al_carrito' producto.id %}" data-tipo="{{ producto.tipo }}">
   {% csrf_token %}
   <label>Talla:</label>
   <select name="talla" required>
@@ -25,4 +25,56 @@
 
   <button type="submit">Añadir al carrito</button>
 </form>
+
+<!-- Añade esto en tu producto_detail.html -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('#form-anadir-carrito');
+
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        const tipoProducto = form.dataset.tipo;
+        const nombre = form.querySelector('input[name="nombre_dorsal"]');
+        const numero = form.querySelector('input[name="numero_dorsal"]');
+
+        if (tipoProducto === 'equipacion') {
+          const nombreVacio = !nombre || nombre.value.trim() === "";
+          const numeroVacio = !numero || numero.value.trim() === "";
+
+          if (nombreVacio || numeroVacio) {
+            e.preventDefault(); // Evita que se envíe el form automáticamente
+
+            Swal.fire({
+              title: '⚠️ Camiseta sin personalizar',
+              text: 'No has introducido nombre o número de dorsal. ¿Quieres añadirla igualmente?',
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Sí, añadir al carrito',
+              cancelButtonText: 'No, volver'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                form.submit();
+              }
+            });
+          }
+        }
+      });
+
+      // Mostrar confirmación tras enviar (si no cancelamos antes)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("añadido") === "ok") {
+        Swal.fire({
+          title: '📦 Producto añadido',
+          text: 'El producto se ha añadido correctamente al carrito.',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    }
+  });
+</script>
 {% endblock %}

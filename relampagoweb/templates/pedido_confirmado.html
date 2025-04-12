@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align: center;">
+  <h2 style="color: green;">✅ Pedido confirmado</h2>
+  <p>¡Gracias por tu pedido, {{ user.first_name|default:user.name }}!</p>
+  <p>Hemos recibido tu pedido correctamente con el número <strong>#{{ pedido.id }}</strong>.</p>
+  <p>Te hemos enviado un correo de confirmación con todos los detalles.</p>
+
+  <h3>Resumen:</h3>
+  <ul style="list-style: none; padding: 0;">
+    {% for item in pedido.lineas.all %}
+      <li style="margin-bottom: 20px;">
+        <img src="{{ item.producto.imagen.url }}" width="100"><br>
+        <strong>{{ item.producto.nombre }}</strong> |
+        Talla: {{ item.talla }}<br>
+        {% if item.nombre_dorsal %}
+          Dorsal: {{ item.nombre_dorsal }} {{ item.numero_dorsal }}<br>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+
+  <p><strong>Total:</strong> {{ pedido.total }} €</p>
+
+  <a href="{% url 'tienda' %}" style="display:inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Volver a la tienda</a>
+</div>
+{% endblock %}

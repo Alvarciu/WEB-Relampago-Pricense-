@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -134,3 +135,12 @@ STATICFILES_DIRS = [BASE_DIR / 'relampagoweb/static']
 
 PEDIDOS_ABIERTOS = True  # Cambia esto a False para cerrar pedidos
 
+
+## Configuracion para la cuenta de correo
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'relampagopricense@gmail.com'
+EMAIL_HOST_PASSWORD = 'wbvh pqeb dioh mjpo'
+DEFAULT_FROM_EMAIL = 'Relámpago Pricense FC <relampagopricense@gmail.com>'

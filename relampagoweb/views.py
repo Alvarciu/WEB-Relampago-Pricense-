@@ -4,7 +4,7 @@ from django.contrib.auth import login, authenticate, logout
 from .forms import RegistroForm, LoginForm
 from .models import Producto
 from django.shortcuts import redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST
 import pandas as pd
 from django.http import HttpResponse
@@ -13,15 +13,16 @@ from .models import Pedido
 from django.conf import settings
 from .models import Configuracion
 from .models import get_configuracion
-from django.views.decorators.http import require_POST
 from .models import Producto, Pedido, LineaPedido
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from relampagoweb.models import Producto
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from django.urls import reverse
 
+# 🔐 Funciones de control de acceso
 
-
-
+def es_admin(user):
+    return user.is_authenticated and user.is_staff
 
 # Create your views here.
 def index(request):
@@ -29,7 +30,6 @@ def index(request):
 
 def inicio_view(request):
     return render(request, 'inicio.html')
-
 
 def registro_view(request):
     if request.method == 'POST':
@@ -67,46 +67,36 @@ def detalle_producto_view(request, producto_id):
 def añadir_al_carrito_view(request, producto_id):
     if request.method == 'POST':
         producto = get_object_or_404(Producto, id=producto_id)
-
         carrito = request.session.get('carrito', [])
-
         item = {
             'producto_id': producto.id,
             'nombre': producto.nombre,
             'precio': float(producto.precio),
             'talla': request.POST.get('talla'),
         }
-
-        # Solo si es equipación, añadimos personalización
         if producto.tipo == 'equipacion':
             item['nombre_dorsal'] = request.POST.get('nombre_dorsal')
             item['numero_dorsal'] = request.POST.get('numero_dorsal')
-
         carrito.append(item)
         request.session['carrito'] = carrito
-
-        return redirect('tienda')  # O a 'carrito' si ya lo tuvieras
+        return redirect(reverse('detalle_producto', args=[producto.id]) + '?añadido=ok')
 
 @login_required
 def carrito_view(request):
     raw_carrito = request.session.get('carrito', [])
     carrito = []
-
     total = 0
     for item in raw_carrito:
         producto = Producto.objects.get(id=item['producto_id'])
         item['imagen_url'] = producto.imagen.url
         carrito.append(item)
         total += item['precio']
-
     config = get_configuracion()
-
     return render(request, 'carrito.html', {
         'carrito': carrito,
         'total': total,
         'pedidos_abiertos': config.pedidos_abiertos,
     })
-
 
 @require_POST
 @login_required
@@ -123,7 +113,6 @@ def eliminar_del_carrito_view(request, item_index):
 @login_required
 def editar_item_carrito_view(request, item_index):
     carrito = request.session.get('carrito', [])
-
     try:
         item = carrito[item_index]
         item['talla'] = request.POST.get('talla')
@@ -134,7 +123,6 @@ def editar_item_carrito_view(request, item_index):
         request.session['carrito'] = carrito
     except IndexError:
         pass
-
     return redirect('carrito')
 
 @require_POST
@@ -143,8 +131,7 @@ def vaciar_carrito_view(request):
     request.session['carrito'] = []
     return redirect('carrito')
 
-
-@staff_member_required
+@user_passes_test(es_admin)
 def exportar_pedidos_excel(request):
     pedidos = Pedido.objects.prefetch_related('lineas__producto').all()
     datos = []
@@ -159,43 +146,38 @@ def exportar_pedidos_excel(request):
                 'Nombre dorsal': linea.nombre_dorsal or '',
                 'Dorsal': linea.numero_dorsal or '',
             })
-
     df = pd.DataFrame(datos)
-
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=pedidos.xlsx'
     df.to_excel(response, index=False)
-
     return response
 
-
-@staff_member_required
+@user_passes_test(es_admin)
 def lista_pedidos_view(request):
     pedidos = Pedido.objects.all().order_by('-fecha')
     config = get_configuracion()
     return render(request, 'admin/lista_pedidos.html', {
         'pedidos': pedidos,
-        'config': config  # 👈 aquí estás pasándola al HTML
+        'config': config
     })
 
-@staff_member_required
+@user_passes_test(es_admin)
 def detalle_pedido_admin_view(request, pedido_id):
     pedido = Pedido.objects.get(id=pedido_id)
     return render(request, 'admin/detalle_pedido.html', {'pedido': pedido})
-
 
 def get_configuracion():
     config, created = Configuracion.objects.get_or_create(id=1)
     return config
 
-@staff_member_required
+@user_passes_test(es_admin)
 def alternar_pedidos_view(request):
     config = get_configuracion()
     config.pedidos_abiertos = not config.pedidos_abiertos
     config.save()
     return redirect('lista_pedidos')
 
-@staff_member_required
+@user_passes_test(es_admin)
 def panel_pedidos_view(request):
     pedidos = Pedido.objects.all().order_by('-fecha')
     pedidos_abiertos = get_configuracion().pedidos_abiertos
@@ -204,12 +186,10 @@ def panel_pedidos_view(request):
         'pedidos_abiertos': pedidos_abiertos,
     })
 
-
 @login_required
 def resumen_pedido_view(request):
     raw_carrito = request.session.get('carrito', [])
     resumen = []
-
     total = 0
     for item in raw_carrito:
         try:
@@ -219,47 +199,50 @@ def resumen_pedido_view(request):
             total += item['precio']
         except Producto.DoesNotExist:
             continue
-
+    request.session['resumen_pedido'] = resumen
     return render(request, 'resumen_pedido.html', {
         'resumen': resumen,
         'total': total
     })
 
-
-
 @login_required
 def confirmar_pedido_view(request):
-    """
-    Guarda el resumen del pedido en la sesión, pero NO en la base de datos.
-    """
     carrito = request.session.get('carrito', [])
     if not carrito:
         return redirect('carrito')
-
-    # Guardamos el resumen en la sesión para paso siguiente
-    request.session['resumen_pedido'] = carrito
-    return render(request, 'resumen_pedido.html', {
-        'carrito': carrito,
-        'total': sum(item['precio'] for item in carrito)
+    pedido = Pedido.objects.create(usuario=request.user, pagado=True)
+    for item in carrito:
+        producto = Producto.objects.get(id=item['producto_id'])
+        LineaPedido.objects.create(
+            pedido=pedido,
+            producto=producto,
+            talla=item['talla'],
+            nombre_dorsal=item.get('nombre_dorsal'),
+            numero_dorsal=item.get('numero_dorsal')
+        )
+    del request.session['carrito']
+    asunto = f"Confirmación de tu pedido #{pedido.id} en Relámpago Pricense FC"
+    mensaje = render_to_string('emails/confirmacion_pedido.txt', {
+        'pedido': pedido,
+        'usuario': request.user,
+        'lineas': pedido.lineas.all(),
+        'total': pedido.total
     })
-
+    send_mail(
+        subject=asunto,
+        message=mensaje,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[request.user.email],
+        fail_silently=False,
+    )
+    return render(request, 'pedido_confirmado.html', {'pedido': pedido})
 
 @login_required
 def pago_simulado_view(request):
-    """
-    Este es el paso final. Se considera que el usuario ha pagado y ahora sí
-    se guarda el pedido en la base de datos.
-    """
-    from .models import Pedido, LineaPedido, Producto
-
     resumen = request.session.get('resumen_pedido')
     if not resumen:
         return redirect('carrito')
-
-    # Creamos el pedido
     pedido = Pedido.objects.create(usuario=request.user, pagado=True)
-
-    # Creamos las líneas del pedido
     for item in resumen:
         producto = Producto.objects.get(id=item['producto_id'])
         LineaPedido.objects.create(
@@ -269,13 +252,23 @@ def pago_simulado_view(request):
             nombre_dorsal=item.get('nombre_dorsal'),
             numero_dorsal=item.get('numero_dorsal')
         )
-
-    # Limpiar sesión
     request.session.pop('resumen_pedido', None)
     request.session.pop('carrito', None)
+    enviar_confirmacion_pedido(request.user, pedido)
+    return render(request, 'pedido_confirmado.html', {'pedido': pedido})
 
-    return redirect('inicio')
-
+# 📬 Funcíon para enviar el correo de confirmación
+def enviar_confirmacion_pedido(usuario, pedido):
+    asunto = f"✅ Pedido #{pedido.id} confirmado - Relámpago Pricense FC"
+    remitente = settings.DEFAULT_FROM_EMAIL
+    destinatario = [usuario.email]
+    html_content = render_to_string("emails/confirmacion_pedido.html", {
+        "usuario": usuario,
+        "pedido": pedido,
+    })
+    mensaje = EmailMultiAlternatives(asunto, "", remitente, destinatario)
+    mensaje.attach_alternative(html_content, "text/html")
+    mensaje.send()
 
 def calcular_total_carrito(carrito):
     return sum(item['precio'] for item in carrito)
