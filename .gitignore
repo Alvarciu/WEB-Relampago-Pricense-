@@ -17,8 +17,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Archivos de medios (productos subidos, imágenes, etc.)
-media/
 
 # Archivos de logs y dumps
 *.log

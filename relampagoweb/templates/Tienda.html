@@ -1,15 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
+
 <h2>Catálogo</h2>
-<div class="productos">
+
+<div class="product-grid">
   {% for producto in productos %}
-    <div class="producto">
-      <img src="{{ producto.imagen.url }}" width="200">
+    <a href="{% url 'detalle_producto' producto.id %}" class="product-card">
+      <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
       <h3>{{ producto.nombre }}</h3>
-      <p>{{ producto.descripcion }}</p>
       <p>{{ producto.precio }} €</p>
-      <a href="{% url 'detalle_producto' producto.id %}">Ver</a>
-    </div>
+    </a>
   {% endfor %}
 </div>
+
 {% endblock %}
