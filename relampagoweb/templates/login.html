@@ -2,10 +2,18 @@
 
 {% block content %}
 <h2>Login</h2>
+
 <form method="post">
   {% csrf_token %}
   {{ form.as_p }}
   <button type="submit">Entrar</button>
 </form>
+
+<p style="margin-top: 10px;">
+  <a href="{% url 'password_reset' %}" style="color: #1a73e8; text-decoration: none;">
+    ¿Has olvidado tu contraseña?
+  </a>
+</p>
+
 <a href="{% url 'registro' %}">¿No tienes cuenta? Regístrate</a>
 {% endblock %}

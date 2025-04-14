@@ -3,6 +3,7 @@ from .views import registro_view, login_view, logout_view
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from .views import *
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', login_required(inicio_view), name='inicio'),
@@ -26,5 +27,10 @@ urlpatterns = [
     path('confirmar-pedido/', confirmar_pedido_view, name='confirmar_pedido'),
     path('confirmar-pedido/', confirmar_pedido_view, name='confirmar_pedido'),
     path('pago-simulado/', pago_simulado_view, name='pago_simulado'),
+    path('password_reset/', auth_views.PasswordResetView.as_view(template_name='contraseña/password_reset_form.html'), name='password_reset'),
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='contraseña/password_reset_done.html'), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='contraseña/password_reset_confirm.html'), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='contraseña/password_reset_complete.html'), name='password_reset_complete'),
 ]
+
 
