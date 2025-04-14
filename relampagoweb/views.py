@@ -1,23 +1,19 @@
-from django.shortcuts import render, HttpResponse
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
-from .forms import RegistroForm, LoginForm
-from .models import Producto
-from django.shortcuts import redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.views.decorators.http import require_POST
-import pandas as pd
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
-from .models import Pedido
-from django.conf import settings
-from .models import Configuracion
-from .models import get_configuracion
-from .models import Producto, Pedido, LineaPedido
-from django.core.mail import send_mail
+from django.views.decorators.http import require_POST
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
-from django.core.mail import EmailMultiAlternatives
 from django.urls import reverse
+from django.conf import settings
+
+import pandas as pd
+
+from .forms import RegistroForm, LoginForm
+from .models import Producto, Pedido, LineaPedido, Configuracion, get_configuracion
+
 
 # 🔐 Funciones de control de acceso
 

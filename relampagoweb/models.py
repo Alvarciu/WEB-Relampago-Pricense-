@@ -61,6 +61,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         self.mensajes.all().delete()
         super().delete(*args, **kwargs)
 
+    @property
+    def es_gestor(self):
+        return self.groups.filter(name="Gestores").exists()
+
 
 ### --- MODELO DE PRODUCTO --- ###
 
