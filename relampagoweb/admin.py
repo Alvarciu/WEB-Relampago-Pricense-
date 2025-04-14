@@ -3,7 +3,7 @@ from . import models
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
-from .models import Usuario
+from .models import *
 from django.contrib import admin
 from .models import Producto
 
@@ -20,7 +20,7 @@ class UsuarioAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (_('Información personal'), {'fields': ('name', 'apellidos', 'telefono')}),
-        (_('Permisos'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        (_('Permisos'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions', 'es_gestor')}),
         (_('Fechas importantes'), {'fields': ('last_login',)}),
     )
 
@@ -35,8 +35,6 @@ class UsuarioAdmin(BaseUserAdmin):
         obj.mensajes.all().delete()
         super().delete_model(request, obj)
 
-
-
     # Funcion totalmente irrelevante:
     def mostrar_es_gestor(self, obj):
         return obj.es_gestor
@@ -44,4 +42,6 @@ class UsuarioAdmin(BaseUserAdmin):
     mostrar_es_gestor.short_description = "Es gestor"
 
 admin.site.register(Usuario, UsuarioAdmin)
+
+admin.site.register(Pedido)
 
