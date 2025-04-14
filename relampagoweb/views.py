@@ -8,11 +8,12 @@ from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.conf import settings
-
 import pandas as pd
-
 from .forms import RegistroForm, LoginForm
 from .models import Producto, Pedido, LineaPedido, Configuracion, get_configuracion
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mass_mail
+
 
 
 # 🔐 Funciones de control de acceso
@@ -166,12 +167,33 @@ def get_configuracion():
     config, created = Configuracion.objects.get_or_create(id=1)
     return config
 
-@user_passes_test(es_admin)
+@staff_member_required
 def alternar_pedidos_view(request):
     config = get_configuracion()
     config.pedidos_abiertos = not config.pedidos_abiertos
     config.save()
+
+    # Enviar correo solo si se han abierto los pedidos
+    if config.pedidos_abiertos:
+        usuarios = get_user_model().objects.all()
+        mensajes = []
+
+        for usuario in usuarios:
+            if usuario.email:
+                asunto = "🟢 ¡Se han abierto los pedidos!"
+                mensaje = (
+                    f"Hola {usuario.name},\n\n"
+                    f"Ya puedes hacer tu pedido en Relámpago Pricense FC desde nuestra tienda online.\n"
+                    f"No pierdas la oportunidad de conseguir tu camiseta personalizada.\n\n"
+                    f"👉 Entra ya en: http://127.0.0.1:8000/tienda/\n\n"
+                    f"¡Gracias por tu apoyo!\n"
+                )
+                mensajes.append((asunto, mensaje, settings.DEFAULT_FROM_EMAIL, [usuario.email]))
+
+        send_mass_mail(mensajes, fail_silently=True)
+
     return redirect('lista_pedidos')
+
 
 @user_passes_test(es_admin)
 def panel_pedidos_view(request):
