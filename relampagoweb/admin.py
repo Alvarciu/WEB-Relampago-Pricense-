@@ -43,5 +43,32 @@ class UsuarioAdmin(BaseUserAdmin):
 
 admin.site.register(Usuario, UsuarioAdmin)
 
-admin.site.register(Pedido)
+class LineaPedidoInline(admin.TabularInline):
+    model = LineaPedido
+    extra = 0
+    readonly_fields = ['producto', 'talla', 'nombre_dorsal', 'numero_dorsal']
+    can_delete = False
 
+class PedidoAdmin(admin.ModelAdmin):
+    list_display = ['id', 'usuario', 'pagado', 'fecha', 'total']
+    readonly_fields = ['mostrar_total', 'mostrar_serigrafiados']
+    inlines = [LineaPedidoInline]
+
+    def mostrar_total(self, obj):
+        return f"{obj.total} €"
+    mostrar_total.short_description = "Total del pedido"
+
+    def mostrar_serigrafiados(self, obj):
+        lineas = obj.lineas.all()
+        serigrafiados = [linea for linea in lineas if linea.nombre_dorsal or linea.numero_dorsal]
+        return "Sí" if serigrafiados else "No"
+    mostrar_serigrafiados.short_description = "¿Serigrafiado?"
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        pedido = Pedido.objects.get(pk=object_id)
+        extra_context = extra_context or {}
+        extra_context['title'] = f"Pedido {pedido.id} de {pedido.usuario.email}"
+        return super().change_view(request, object_id, form_url, extra_context=extra_context)
+
+admin.site.register(Pedido, PedidoAdmin)
+admin.site.register(LineaPedido)
