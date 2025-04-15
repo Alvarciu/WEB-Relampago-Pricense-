@@ -1,16 +1,124 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
 
-<h2>Catálogo</h2>
+<!-- CARRUSEL EQUIPACIONES -->
 
-<div class="product-grid">
-  {% for producto in productos %}
-    <a href="{% url 'detalle_producto' producto.id %}" class="product-card">
-      <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
-      <h3>{{ producto.nombre }}</h3>
-      <p>{{ producto.precio }} €</p>
-    </a>
-  {% endfor %}
+<h2 class="mt-4">Equipaciones</h2>
+<div id="carouselEquipacion" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000">
+
+  <!-- Indicadores -->
+  <div class="carousel-indicators">
+    {% for producto in equipaciones %}
+      <button type="button" data-bs-target="#carouselEquipacion" data-bs-slide-to="{{ forloop.counter0 }}"
+        {% if forloop.first %}class="active"{% endif %}
+        aria-current="{% if forloop.first %}true{% endif %}"
+        aria-label="Slide {{ forloop.counter }}"></button>
+    {% endfor %}
+  </div>
+
+  <!-- Slides -->
+  <div class="carousel-inner">
+    {% for producto in equipaciones %}
+      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-center p-4 gap-4">
+          
+          <!-- Imagen a la izquierda -->
+          <div class="carousel-img">
+            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="img-fluid" style="max-width: 300px; border-radius: 8px;">
+          </div>
+
+          <!-- Info a la derecha -->
+          <div class="carousel-text text-center text-md-start">
+            <h4>{{ producto.nombre }}</h4>
+            <p class="fs-5 fw-semibold">{{ producto.precio }} €</p>
+            <a href="{% url 'detalle_producto' producto.id %}" class="btn btn-primary mt-2">Ver producto</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Controles -->
+  <button class="carousel-control-prev" type="button" data-bs-target="#carouselEquipacion" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#carouselEquipacion" data-bs-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </button>
 </div>
+
+
+<!-- CARRUSEL SUDADERAS -->
+<h2 class="mt-4">Sudaderas</h2>
+<div id="carouselSudadera" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000">
+
+  <!-- Indicadores -->
+  <div class="carousel-indicators">
+    {% for producto in sudaderas %}
+      <button type="button" data-bs-target="#carouselSudadera" data-bs-slide-to="{{ forloop.counter0 }}"
+        {% if forloop.first %}class="active"{% endif %}
+        aria-current="{% if forloop.first %}true{% endif %}"
+        aria-label="Slide {{ forloop.counter }}"></button>
+    {% endfor %}
+  </div>
+
+  <!-- Slides -->
+  <div class="carousel-inner">
+    {% for producto in sudaderas %}
+      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-center p-4 gap-4">
+          
+          <!-- Imagen a la izquierda -->
+          <div class="carousel-img">
+            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="img-fluid" style="max-width: 300px; border-radius: 8px;">
+          </div>
+
+          <!-- Info a la derecha -->
+          <div class="carousel-text text-center text-md-start">
+            <h4>{{ producto.nombre }}</h4>
+            <p class="fs-5 fw-semibold">{{ producto.precio }} €</p>
+            <a href="{% url 'detalle_producto' producto.id %}" class="btn btn-primary mt-2">Ver producto</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Controles -->
+  <button class="carousel-control-prev" type="button" data-bs-target="#carouselSudadera" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#carouselSudadera" data-bs-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </button>
+</div>
+
+<!-- Estilo opcional para caption -->
+<style>
+.carousel-caption {
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+}
+
+.carousel-indicators [data-bs-target] {
+  background-color: #000000; /* bolitas blancas */
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 2rem; /* aumenta la distancia respecto al contenido */
+}
+
+/* Flecha izquierda (prev) - apunta a la izquierda */
+.carousel-control-prev-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23000' viewBox='0 0 16 16'%3E%3Cpath d='M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z'/%3E%3C/svg%3E");
+}
+
+/* Flecha derecha (next) - apunta a la derecha */
+.carousel-control-next-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23000' viewBox='0 0 16 16'%3E%3Cpath d='M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+}
+</style>
 
 {% endblock %}

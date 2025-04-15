@@ -54,8 +54,15 @@ def logout_view(request):
     return redirect('login')
 
 def tienda_view(request):
+   
     productos = Producto.objects.all()
-    return render(request, 'tienda.html', {'productos': productos})
+    equipaciones = productos.filter(tipo='equipacion')
+    sudaderas = productos.filter(tipo='sudadera')
+    return render(request, 'tienda.html', {
+        'equipaciones': equipaciones,
+        'sudaderas': sudaderas,
+    })
+
 
 def detalle_producto_view(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
