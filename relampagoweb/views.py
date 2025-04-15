@@ -130,7 +130,7 @@ def vaciar_carrito_view(request):
 
 @user_passes_test(es_admin)
 def exportar_pedidos_excel(request):
-    pedidos = Pedido.objects.prefetch_related('lineas__producto').all()
+    pedidos = Pedido.objects.prefetch_related('lineas__producto').filter(pagado=True)
     datos = []
     for pedido in pedidos:
         for linea in pedido.lineas.all():
@@ -151,12 +151,21 @@ def exportar_pedidos_excel(request):
 
 @user_passes_test(es_admin)
 def lista_pedidos_view(request):
-    pedidos = Pedido.objects.all().order_by('-fecha')
+    pedidos = Pedido.objects.all().order_by('-usuario__name')
     config = get_configuracion()
     return render(request, 'admin/lista_pedidos.html', {
         'pedidos': pedidos,
         'config': config
     })
+
+
+@user_passes_test(es_admin)
+def cambiar_estado_pedido(request, pedido_id):
+    if request.method == 'POST':
+        pedido = get_object_or_404(Pedido, id=pedido_id)
+        pedido.pagado = not pedido.pagado
+        pedido.save()
+    return redirect('lista_pedidos')  # Cambia esto por el nombre de tu vista si es diferente
 
 @user_passes_test(es_admin)
 def detalle_pedido_admin_view(request, pedido_id):

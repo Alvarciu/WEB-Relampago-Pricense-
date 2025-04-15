@@ -1,5 +1,68 @@
 {% extends "base.html" %}
 {% block content %}
+
+<style>
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    margin-top: 1em;
+  }
+
+  th {
+    background-color: #222;
+    color: #fff;
+    padding: 10px;
+    text-align: left;
+  }
+
+  td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+  }
+
+  tr:hover {
+    background-color: #f9f9f9;
+  }
+
+  .estado-form {
+    display: inline;
+  }
+
+  .estado-btn {
+    padding: 6px 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s;
+    color: white;
+  }
+
+  .estado-btn:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+
+  .estado-pagado {
+    background-color: #28a745;
+  }
+
+  .estado-moroso {
+    background-color: #dc3545;
+  }
+
+  .detalle-link {
+    text-decoration: none;
+    color: #007bff;
+  }
+
+  .detalle-link:hover {
+    text-decoration: underline;
+  }
+</style>
+
 <h2>Pedidos registrados</h2>
 
 <p>
@@ -17,7 +80,7 @@
   </a>
 </p>
 
-<table border="1" cellpadding="5" cellspacing="0">
+<table>
   <thead>
     <tr>
       <th>ID</th>
@@ -25,6 +88,7 @@
       <th>Email</th>
       <th>Fecha</th>
       <th>Total</th>
+      <th>Estado</th>
       <th>Acciones</th>
     </tr>
   </thead>
@@ -36,9 +100,20 @@
       <td>{{ pedido.usuario.email }}</td>
       <td>{{ pedido.fecha|date:"d/m/Y H:i" }}</td>
       <td>{{ pedido.total }} €</td>
-      <td><a href="{% url 'detalle_pedido_admin' pedido.id %}">🔍 Ver detalles</a></td>
+      <td>
+        <form method="POST" action="{% url 'cambiar_estado_pedido' pedido.id %}" class="estado-form">
+          {% csrf_token %}
+          {% if pedido.pagado %}
+            <button type="submit" class="estado-btn estado-pagado" title="Marcar como moroso">✔</button>
+          {% else %}
+            <button type="submit" class="estado-btn estado-moroso" title="Marcar como pagado">✖</button>
+          {% endif %}
+        </form>
+      </td>
+      <td><a href="{% url 'detalle_pedido_admin' pedido.id %}" class="detalle-link">🔍 Ver detalles</a></td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
 {% endblock %}
