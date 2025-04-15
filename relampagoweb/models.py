@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
+import shortuuid
 
 
 ### --- MODELO DE USUARIO --- ###
@@ -91,7 +92,7 @@ class Pedido(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pedidos')
     fecha = models.DateTimeField(auto_now_add=True)
     pagado = models.BooleanField(default=False)
-
+    id = models.CharField(primary_key=True, max_length=22, default=shortuuid.uuid, editable=False)
     #lo que significa que se comporta como un atributo normal, pero en realidad es un cálculo que se realiza cuando lo accedes.
     @property
     def total(self):

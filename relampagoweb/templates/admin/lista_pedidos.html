@@ -14,6 +14,17 @@
     color: #fff;
     padding: 10px;
     text-align: left;
+    cursor: default;
+  }
+
+  th.sortable {
+    cursor: pointer;
+  }
+
+  th.sortable .filtro-icono {
+    margin-left: 6px;
+    opacity: 0.7;
+    font-size: 14px;
   }
 
   td {
@@ -80,15 +91,15 @@
   </a>
 </p>
 
-<table>
+<table id="tabla-pedidos">
   <thead>
     <tr>
       <th>ID</th>
-      <th>Usuario</th>
+      <th class="sortable">Usuario <span class="filtro-icono">🔽</span></th>
       <th>Email</th>
       <th>Fecha</th>
       <th>Total</th>
-      <th>Estado</th>
+      <th class="sortable">Estado <span class="filtro-icono">🔽</span></th>
       <th>Acciones</th>
     </tr>
   </thead>
@@ -115,5 +126,32 @@
     {% endfor %}
   </tbody>
 </table>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+
+    const comparer = (idx, asc) => (a, b) => {
+      const v1 = getCellValue(asc ? a : b, idx).trim();
+      const v2 = getCellValue(asc ? b : a, idx).trim();
+      return !isNaN(v1) && !isNaN(v2) ?
+        parseFloat(v1) - parseFloat(v2) :
+        v1.localeCompare(v2);
+    };
+
+    document.querySelectorAll("th.sortable").forEach(th => {
+      th.addEventListener("click", () => {
+        const table = th.closest("table");
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+        const idx = Array.from(th.parentNode.children).indexOf(th);
+        const asc = !th.asc;
+        th.asc = asc;
+        rows.sort(comparer(idx, asc));
+        rows.forEach(row => tbody.appendChild(row));
+      });
+    });
+  });
+</script>
 
 {% endblock %}
