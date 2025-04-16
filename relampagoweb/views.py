@@ -169,7 +169,7 @@ def cambiar_estado_pedido(request, pedido_id):
 
 @user_passes_test(es_admin)
 def detalle_pedido_admin_view(request, pedido_id):
-    pedido = Pedido.objects.get(id=pedido_id)
+    pedido = get_object_or_404(Pedido, id=pedido_id)
     return render(request, 'admin/detalle_pedido.html', {'pedido': pedido})
 
 def get_configuracion():
