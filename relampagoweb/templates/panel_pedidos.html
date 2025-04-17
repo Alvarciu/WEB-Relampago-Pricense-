@@ -1,27 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Pedidos registrados</h2>
+<h2>📋 Pedidos registrados</h2>
 
-<!-- Mostrar estado actual y botón para abrir/cerrar pedidos -->
-<p>
+<!-- Estado y botón para alternar pedidos -->
+<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
   {% if pedidos_abiertos %}
-    ✅ <strong>Pedidos abiertos</strong> |
-    🔒 <a href="{% url 'cerrar_pedidos' %}">Cerrar pedidos</a>
+    <span style="color: #16a34a; font-weight: 600;">✅ Pedidos abiertos</span>
   {% else %}
-    ❌ <strong>Pedidos cerrados</strong> |
-    🔓 <a href="{% url 'abrir_pedidos' %}">Abrir pedidos</a>
+    <span style="color: #dc2626; font-weight: 600;">❌ Pedidos cerrados</span>
   {% endif %}
-</p>
 
-<!-- Botón de exportar a Excel -->
-<p>
+  <form method="post" action="{% url 'alternar_pedidos' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn-toggle">
+      {% if pedidos_abiertos %}
+        🔒 Cerrar pedidos
+      {% else %}
+        🔓 Abrir pedidos
+      {% endif %}
+    </button>
+  </form>
+</div>
+
+<!-- Exportar a Excel -->
+<p style="margin-bottom: 20px;">
   📦 <a href="{% url 'exportar_pedidos' %}">Exportar pedidos a Excel</a>
 </p>
 
-<!-- Tabla de pedidos -->
-<table border="1" cellpadding="5" cellspacing="0">
-  <thead>
+<!-- Tabla -->
+<table border="0" cellpadding="10" cellspacing="0" style="width: 100%; background-color: white; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.1);">
+  <thead style="background-color: #f1f5f9;">
     <tr>
       <th>ID</th>
       <th>Usuario</th>
@@ -33,14 +42,14 @@
   </thead>
   <tbody>
     {% for pedido in pedidos %}
-    <tr>
+    <tr style="border-top: 1px solid #e5e7eb;">
       <td>{{ pedido.id }}</td>
       <td>{{ pedido.usuario.name }}</td>
       <td>{{ pedido.usuario.email }}</td>
       <td>{{ pedido.fecha|date:"d/m/Y H:i" }}</td>
       <td>{{ pedido.total }} €</td>
       <td>
-        🔍 <a href="{% url 'detalle_pedido_admin' pedido.id %}">Ver detalles</a>
+        <a href="{% url 'detalle_pedido_admin' pedido.id %}" style="color: #1d4ed8; font-weight: 500;">🔍 Ver detalles</a>
       </td>
     </tr>
     {% endfor %}
