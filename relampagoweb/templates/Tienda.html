@@ -4,7 +4,7 @@
 
 <!-- CARRUSEL EQUIPACIONES -->
 
-<h2 class="mt-4">Equipaciones</h2>
+<h2 class="mt-4 text-center">EQUIPACIONES</h2>
 <div id="carouselEquipacion" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000">
 
   <!-- Indicadores -->
@@ -30,7 +30,7 @@
 
           <!-- Info a la derecha -->
           <div class="carousel-text text-center text-md-start">
-            <h4>{{ producto.nombre }}</h4>
+            <h4 style="font-family: lucida Bright;">{{ producto.nombre }}</h4>
             <p class="fs-5 fw-semibold">{{ producto.precio }} €</p>
             <a href="{% url 'detalle_producto' producto.id %}" class="btn btn-dark mt-2">Ver producto</a>
           </div>
@@ -50,7 +50,8 @@
 
 
 <!-- CARRUSEL SUDADERAS -->
-<h2 class="mt-4">Sudaderas</h2>
+ <hr>
+<h2 class="mt-4 text-center">SUDADERAS</h2>
 <div id="carouselSudadera" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000">
 
   <!-- Indicadores -->
@@ -76,7 +77,7 @@
 
           <!-- Info a la derecha -->
           <div class="carousel-text text-center text-md-start">
-            <h4>{{ producto.nombre }}</h4>
+            <h4 style="font-family: lucida Bright;">{{ producto.nombre }}</h4>
             <p class="fs-5 fw-semibold">{{ producto.precio }} €</p>
             <a href="{% url 'detalle_producto' producto.id %}" class="btn btn-dark mt-2">Ver producto</a>
           </div>
