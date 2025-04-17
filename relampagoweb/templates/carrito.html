@@ -1,63 +1,116 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Tu carrito</h2>
+<h2 style="text-align: center;">Tu carrito</h2>
+
+<style>
+  .carrito-item {
+    animation: fadeIn 0.5s ease-in;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 700px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .carrito-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .carrito-img {
+    flex: 0 0 150px;
+  }
+
+  .carrito-info {
+    flex: 1;
+    text-align: left;
+  }
+
+  .carrito-info form {
+    margin-bottom: 10px;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
 
 {% if carrito %}
-  <ul>
+  <ul style="list-style: none; padding: 0;">
     {% for item in carrito %}
-      <li>
-        <img src="{{ item.imagen_url }}" width="100"><br>
+      <li class="carrito-item">
+        <div class="carrito-img">
+          <img src="{{ item.imagen_url }}" width="150">
+        </div>
+        <div class="carrito-info">
+          <form action="{% url 'editar_item_carrito' forloop.counter0 %}" method="post">
+            {% csrf_token %}
+            <strong>{{ item.nombre }}</strong><br><br>
 
-        <form action="{% url 'editar_item_carrito' forloop.counter0 %}" method="post">
-          {% csrf_token %}
-          <strong>{{ item.nombre }}</strong><br>
+            <label>Talla:</label>
+            <select name="talla">
+              <option value="S" {% if item.talla == 'S' %}selected{% endif %}>S</option>
+              <option value="M" {% if item.talla == 'M' %}selected{% endif %}>M</option>
+              <option value="L" {% if item.talla == 'L' %}selected{% endif %}>L</option>
+              <option value="XL" {% if item.talla == 'XL' %}selected{% endif %}>XL</option>
+            </select><br><br>
 
-          <label>Talla:</label>
-          <select name="talla">
-            <option value="S" {% if item.talla == 'S' %}selected{% endif %}>S</option>
-            <option value="M" {% if item.talla == 'M' %}selected{% endif %}>M</option>
-            <option value="L" {% if item.talla == 'L' %}selected{% endif %}>L</option>
-            <option value="XL" {% if item.talla == 'XL' %}selected{% endif %}>XL</option>
-          </select><br>
+            {% if item.nombre_dorsal is not None %}
+              <label>Nombre dorsal:</label>
+              <input type="text" name="nombre_dorsal" value="{{ item.nombre_dorsal }}"><br><br>
 
-          {% if item.nombre_dorsal is not None %}
-            <label>Nombre dorsal:</label>
-            <input type="text" name="nombre_dorsal" value="{{ item.nombre_dorsal }}"><br>
+              <label>Número dorsal:</label>
+              <input type="number" name="numero_dorsal" value="{{ item.numero_dorsal }}"><br><br>
+            {% endif %}
 
-            <label>Número dorsal:</label>
-            <input type="number" name="numero_dorsal" value="{{ item.numero_dorsal }}"><br>
-          {% endif %}
+            <button type="submit" style="background-color: #f1c40f; color: black; font-weight: bold; padding: 10px 20px; border: none; border-radius: 5px;">
+              Guardar cambios
+            </button>
+          </form>
 
-          <button type="submit">Guardar cambios</button>
-        </form>
-
-        <form action="{% url 'eliminar_del_carrito' forloop.counter0 %}" method="post" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit">❌ Quitar</button>
-        </form>
+          <form action="{% url 'eliminar_del_carrito' forloop.counter0 %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" style="background-color: #f1c40f; color: black; font-weight: bold; padding: 10px 20px; border: none; border-radius: 5px;">
+              ❌ Quitar
+            </button>
+          </form>
+        </div>
       </li>
-      <hr>
     {% endfor %}
   </ul>
 
-  <form action="{% url 'vaciar_carrito' %}" method="post">
+  <form action="{% url 'vaciar_carrito' %}" method="post" style="text-align: center;">
     {% csrf_token %}
-    <button type="submit" style="background-color: red; color: white;">Vaciar carrito 🗑️</button>
+    <button type="submit" style="background-color: red; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Vaciar carrito 🗑️</button>
   </form>
 
-  <p><strong>Total: {{ total }} €</strong></p>
+  <p style="text-align: center; font-size: 1.2em;"><strong>Total: {{ total }} €</strong></p>
 
   {% if pedidos_abiertos %}
-    <form action="{% url 'resumen_pedido' %}" method="get">
-      <button type="submit" style="background-color: green; color: white; padding: 10px 20px;">Finalizar pedido</button>
+    <form action="{% url 'resumen_pedido' %}" method="get" style="text-align: center;">
+      <button type="submit" style="background-color: green; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Finalizar pedido</button>
     </form>
   {% else %}
-    <p style="color: red;"><strong>❌ Los pedidos están cerrados por ahora. Vuelve más adelante.</strong></p>
+    <p style="text-align: center; color: red;"><strong>❌ Los pedidos están cerrados por ahora. Vuelve más adelante.</strong></p>
   {% endif %}
 
 {% else %}
-  <p>Tu carrito está vacío.</p>
+  <p style="text-align: center;">Tu carrito está vacío.</p>
 {% endif %}
 
-<a href="{% url 'tienda' %}">← Volver a la tienda</a>
+<div style="text-align: center; margin-top: 20px;">
+  <a href="{% url 'tienda' %}">← Volver a la tienda</a>
+</div>
 {% endblock %}
