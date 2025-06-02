@@ -172,7 +172,7 @@ def cambiar_estado_pedido(request, pedido_id):
         pedido = get_object_or_404(Pedido, id=pedido_id)
         pedido.pagado = not pedido.pagado
         pedido.save()
-    return redirect('lista_pedidos')  # Cambia esto por el nombre de tu vista si es diferente
+    return redirect('lista_pedidos')  
 
 @user_passes_test(es_admin)
 def detalle_pedido_admin_view(request, pedido_id):
@@ -247,13 +247,17 @@ def confirmar_pedido_view(request):
     pedido = Pedido.objects.create(usuario=request.user, pagado=True)
     for item in carrito:
         producto = Producto.objects.get(id=item['producto_id'])
+        numero_dorsal_raw = item.get('numero_dorsal')
+        numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
+
         LineaPedido.objects.create(
             pedido=pedido,
             producto=producto,
             talla=item['talla'],
-            nombre_dorsal=item.get('nombre_dorsal'),
-            numero_dorsal=item.get('numero_dorsal')
+            nombre_dorsal=item.get('nombre_dorsal') or '',
+            numero_dorsal=numero_dorsal
         )
+
     del request.session['carrito']
     asunto = f"Confirmación de tu pedido #{pedido.id} en Relámpago Pricense FC"
     mensaje = render_to_string('emails/confirmacion_pedido.txt', {
@@ -279,12 +283,15 @@ def pago_simulado_view(request):
     pedido = Pedido.objects.create(usuario=request.user, pagado=True)
     for item in resumen:
         producto = Producto.objects.get(id=item['producto_id'])
+        numero_dorsal_raw = item.get('numero_dorsal')
+        numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
+
         LineaPedido.objects.create(
             pedido=pedido,
             producto=producto,
             talla=item['talla'],
-            nombre_dorsal=item.get('nombre_dorsal'),
-            numero_dorsal=item.get('numero_dorsal')
+            nombre_dorsal=item.get('nombre_dorsal') or '',
+            numero_dorsal=numero_dorsal
         )
     request.session.pop('resumen_pedido', None)
     request.session.pop('carrito', None)
