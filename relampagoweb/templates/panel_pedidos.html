@@ -3,17 +3,14 @@
 
 <h2>📋 Pedidos registrados</h2>
 
-<!-- Estado y botón para alternar pedidos -->
-<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
-  {% if pedidos_abiertos %}
-    <span style="color: #16a34a; font-weight: 600;">✅ Pedidos abiertos</span>
-  {% else %}
-    <span style="color: #dc2626; font-weight: 600;">❌ Pedidos cerrados</span>
-  {% endif %}
+<div class="d-flex align-items-center flex-wrap gap-3 mb-4">
+  <span class="{% if pedidos_abiertos %}text-success{% else %}text-danger{% endif %} fw-semibold">
+    {% if pedidos_abiertos %}✅ Pedidos abiertos{% else %}❌ Pedidos cerrados{% endif %}
+  </span>
 
   <form method="post" action="{% url 'alternar_pedidos' %}">
     {% csrf_token %}
-    <button type="submit" class="btn-toggle">
+    <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3 transition">
       {% if pedidos_abiertos %}
         🔒 Cerrar pedidos
       {% else %}
@@ -21,39 +18,56 @@
       {% endif %}
     </button>
   </form>
+
+  <a href="{% url 'exportar_pedidos' %}" class="btn btn-success btn-sm rounded-pill px-3 transition">
+    📤 Exportar pedidos a Excel
+  </a>
 </div>
 
-<!-- Exportar a Excel -->
-<p style="margin-bottom: 20px;">
-  📦 <a href="{% url 'exportar_pedidos' %}">Exportar pedidos a Excel</a>
-</p>
-
-<!-- Tabla -->
-<table border="0" cellpadding="10" cellspacing="0" style="width: 100%; background-color: white; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.1);">
-  <thead style="background-color: #f1f5f9;">
+<table class="table table-bordered bg-white shadow-sm rounded">
+  <thead class="table-light">
     <tr>
       <th>ID</th>
       <th>Usuario</th>
       <th>Email</th>
       <th>Fecha</th>
       <th>Total</th>
+      <th>Estado</th>
       <th>Acciones</th>
     </tr>
   </thead>
   <tbody>
     {% for pedido in pedidos %}
-    <tr style="border-top: 1px solid #e5e7eb;">
+    <tr>
       <td>{{ pedido.id }}</td>
       <td>{{ pedido.usuario.name }}</td>
       <td>{{ pedido.usuario.email }}</td>
       <td>{{ pedido.fecha|date:"d/m/Y H:i" }}</td>
       <td>{{ pedido.total }} €</td>
       <td>
-        <a href="{% url 'detalle_pedido_admin' pedido.id %}" style="color: #1d4ed8; font-weight: 500;">🔍 Ver detalles</a>
+        {% if pedido.pagado %}
+          <span class="badge bg-success">✔</span>
+        {% else %}
+          <span class="badge bg-danger">✘</span>
+        {% endif %}
+      </td>
+      <td>
+        <a href="{% url 'detalle_pedido_admin' pedido.id %}" class="text-primary fw-semibold">
+          🔍 Ver detalles
+        </a>
       </td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
+<style>
+.transition {
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+.transition:hover {
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+</style>
 
 {% endblock %}
