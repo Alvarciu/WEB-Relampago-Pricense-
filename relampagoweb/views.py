@@ -15,13 +15,9 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mass_mail
 
 
-
-# 🔐 Funciones de control de acceso
-
 def es_admin(user):
     return user.is_authenticated and user.is_staff
 
-# Create your views here.
 def index(request):
     return HttpResponse('Hello, world')
 
@@ -54,7 +50,6 @@ def logout_view(request):
     return redirect('login')
 
 def tienda_view(request):
-   
     productos = Producto.objects.all()
     equipaciones = productos.filter(tipo='equipacion')
     sudaderas = productos.filter(tipo='sudadera')
@@ -62,7 +57,6 @@ def tienda_view(request):
         'equipaciones': equipaciones,
         'sudaderas': sudaderas,
     })
-
 
 def detalle_producto_view(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
@@ -165,14 +159,13 @@ def lista_pedidos_view(request):
         'config': config
     })
 
-
 @user_passes_test(es_admin)
 def cambiar_estado_pedido(request, pedido_id):
     if request.method == 'POST':
         pedido = get_object_or_404(Pedido, id=pedido_id)
         pedido.pagado = not pedido.pagado
         pedido.save()
-    return redirect('lista_pedidos')  # Cambia esto por el nombre de tu vista si es diferente
+    return redirect('lista_pedidos')
 
 @user_passes_test(es_admin)
 def detalle_pedido_admin_view(request, pedido_id):
@@ -189,11 +182,9 @@ def alternar_pedidos_view(request):
     config.pedidos_abiertos = not config.pedidos_abiertos
     config.save()
 
-    # Enviar correo solo si se han abierto los pedidos
     if config.pedidos_abiertos:
         usuarios = get_user_model().objects.all()
         mensajes = []
-
         for usuario in usuarios:
             if usuario.email:
                 asunto = "🟢 ¡Se han abierto los pedidos!"
@@ -205,11 +196,9 @@ def alternar_pedidos_view(request):
                     f"¡Gracias por tu apoyo!\n"
                 )
                 mensajes.append((asunto, mensaje, settings.DEFAULT_FROM_EMAIL, [usuario.email]))
-
         send_mass_mail(mensajes, fail_silently=True)
 
     return redirect('lista_pedidos')
-
 
 @user_passes_test(es_admin)
 def panel_pedidos_view(request):
@@ -244,15 +233,17 @@ def confirmar_pedido_view(request):
     carrito = request.session.get('carrito', [])
     if not carrito:
         return redirect('carrito')
-    pedido = Pedido.objects.create(usuario=request.user, pagado=True)
+    pedido = Pedido.objects.create(usuario=request.user, pagado=False)
     for item in carrito:
         producto = Producto.objects.get(id=item['producto_id'])
+        numero_dorsal_raw = item.get('numero_dorsal')
+        numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
         LineaPedido.objects.create(
             pedido=pedido,
             producto=producto,
             talla=item['talla'],
-            nombre_dorsal=item.get('nombre_dorsal'),
-            numero_dorsal=item.get('numero_dorsal')
+            nombre_dorsal=item.get('nombre_dorsal') or '',
+            numero_dorsal=numero_dorsal
         )
     del request.session['carrito']
     asunto = f"Confirmación de tu pedido #{pedido.id} en Relámpago Pricense FC"
@@ -276,22 +267,23 @@ def pago_simulado_view(request):
     resumen = request.session.get('resumen_pedido')
     if not resumen:
         return redirect('carrito')
-    pedido = Pedido.objects.create(usuario=request.user, pagado=True)
+    pedido = Pedido.objects.create(usuario=request.user, pagado=False)
     for item in resumen:
         producto = Producto.objects.get(id=item['producto_id'])
+        numero_dorsal_raw = item.get('numero_dorsal')
+        numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
         LineaPedido.objects.create(
             pedido=pedido,
             producto=producto,
             talla=item['talla'],
-            nombre_dorsal=item.get('nombre_dorsal'),
-            numero_dorsal=item.get('numero_dorsal')
+            nombre_dorsal=item.get('nombre_dorsal') or '',
+            numero_dorsal=numero_dorsal
         )
     request.session.pop('resumen_pedido', None)
     request.session.pop('carrito', None)
     enviar_confirmacion_pedido(request.user, pedido)
     return render(request, 'pedido_confirmado.html', {'pedido': pedido})
 
-# 📬 Funcíon para enviar el correo de confirmación
 def enviar_confirmacion_pedido(usuario, pedido):
     asunto = f"✅ Pedido #{pedido.id} confirmado - Relámpago Pricense FC"
     remitente = settings.DEFAULT_FROM_EMAIL
