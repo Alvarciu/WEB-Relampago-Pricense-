@@ -77,12 +77,12 @@
   </nav>
 
   <hr>
-
-  {% if not config.pedidos_abiertos %}  <!-- FUNCIONA AUNQUE LA LOGICA ESTA AL REVES ASI Q NO TOCAR -->
+<!-- Alerta de pedidos cerrados (solo si config.pedidos_abiertos == False) -->
+  {% if config and not config.pedidos_abiertos %}
     <div class="alerta-pedidos">
       <div class="alerta-texto">🚨 Pedidos cerrados 🚨</div>
     </div>
-  {% endif %}
+  {% endif %}
 
 
   
