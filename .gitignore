@@ -1,5 +1,7 @@
 # Entorno virtual
 venv/
+.venv
+
 
 # Archivos de base de datos (SQLite)
 db.sqlite3
