@@ -13,6 +13,8 @@ from .forms import RegistroForm, LoginForm
 from .models import Producto, Pedido, LineaPedido, Configuracion, get_configuracion
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mass_mail
+from decimal import Decimal
+
 
 
 def es_admin(user):
@@ -86,17 +88,45 @@ def carrito_view(request):
     for item in raw_carrito:
         producto = Producto.objects.get(id=item['producto_id'])
         item['imagen_url'] = producto.imagen.url
-        item['tipo'] = producto.tipo  # <- Asegúrate de que cada item tenga el tipo
+        item['tipo'] = producto.tipo
         carrito.append(item)
 
-    total = calcular_total_carrito(carrito)  # ← aquí aplicas el descuento
+    aplicar_descuento = request.GET.get('aplicar_descuento') == '1'
+
+    if aplicar_descuento:
+        total = calcular_total_carrito(carrito)  # con descuento
+        total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
+        ahorro = total_sin_descuento - total
+    else:
+        total = sum(item['precio'] for item in carrito)
+        ahorro = 0
 
     config = get_configuracion()
     return render(request, 'carrito.html', {
         'carrito': carrito,
         'total': total,
+        'ahorro': ahorro,
+        'aplicar_descuento': aplicar_descuento,
         'pedidos_abiertos': config.pedidos_abiertos,
     })
+
+# def carrito_view(request):
+#     raw_carrito = request.session.get('carrito', [])
+#     carrito = []
+#     for item in raw_carrito:
+#         producto = Producto.objects.get(id=item['producto_id'])
+#         item['imagen_url'] = producto.imagen.url
+#         item['tipo'] = producto.tipo  # <- Asegúrate de que cada item tenga el tipo
+#         carrito.append(item)
+
+#     total = calcular_total_carrito(carrito)  # ← aquí aplicas el descuento
+
+#     config = get_configuracion()
+#     return render(request, 'carrito.html', {
+#         'carrito': carrito,
+#         'total': total,
+#         'pedidos_abiertos': config.pedidos_abiertos,
+#     })
 
 @require_POST
 @login_required
@@ -298,9 +328,11 @@ def enviar_confirmacion_pedido(usuario, pedido):
     mensaje.attach_alternative(html_content, "text/html")
     mensaje.send()
 
-from decimal import Decimal
 
 def calcular_total_carrito(carrito):
+    print("Carrito recibido:", carrito)
+    from decimal import Decimal
+
     total = Decimal('0.00')
     camisetas = []
 
@@ -310,8 +342,10 @@ def calcular_total_carrito(carrito):
         else:
             total += Decimal(item['precio'])
 
-    pares = len(camisetas) // 2
-    sueltas = len(camisetas) % 2
+    num_camisetas = len(camisetas)
+    pares = num_camisetas // 2
+    sueltas = num_camisetas % 2
 
     total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
+
     return total
