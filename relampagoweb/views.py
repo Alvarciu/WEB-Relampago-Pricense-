@@ -18,11 +18,14 @@ from django.core.mail import send_mass_mail
 def es_admin(user):
     return user.is_authenticated and user.is_staff
 
+
 def index(request):
     return HttpResponse('Hello, world')
 
+
 def inicio_view(request):
     return render(request, 'inicio.html')
+
 
 def registro_view(request):
     if request.method == 'POST':
@@ -35,6 +38,7 @@ def registro_view(request):
         form = RegistroForm()
     return render(request, 'registro.html', {'form': form})
 
+
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(data=request.POST)
@@ -45,9 +49,11 @@ def login_view(request):
         form = LoginForm()
     return render(request, 'login.html', {'form': form})
 
+
 def logout_view(request):
     logout(request)
     return redirect('login')
+
 
 def tienda_view(request):
     productos = Producto.objects.all()
@@ -67,22 +73,66 @@ def detalle_producto_view(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
     return render(request, 'detalle_producto.html', {'producto': producto})
 
+
+@login_required
 def añadir_al_carrito_view(request, producto_id):
+    """
+    - Si el producto es de tipo 'Equipación', leemos 'compra_tipo' (solo_camiseta o completo).
+      • solo_camiseta -> precio fijo 22.00 € y no se guardan dorsales.
+      • completo      -> precio = producto.precio y se guardan dorsales.
+    - Para camisetas/sudaderas, comportamiento normal: precio = producto.precio.
+    """
     if request.method == 'POST':
         producto = get_object_or_404(Producto, id=producto_id)
         carrito = request.session.get('carrito', [])
+
+        # Siempre pedimos la talla
+        talla = request.POST.get('talla')
+
+        # Inicializar valores por defecto
+        precio_item = float(producto.precio)
+        nombre_dorsal = ''
+        numero_dorsal = None
+
+        # Si es equipación, miramos la opción de compra
+        if producto.tipo == 'Equipación':
+            compra_tipo = request.POST.get('compra_tipo', 'solo_camiseta')
+            if compra_tipo == 'solo_camiseta':
+                precio_item = 22.00
+                # No guardamos dorsales cuando solo es camiseta
+                nombre_dorsal = ''
+                numero_dorsal = None
+            else:
+                # Equipación completa: tomamos precio original y dorsales
+                precio_item = float(producto.precio)
+                nombre_dorsal = request.POST.get('nombre_dorsal', '') or ''
+                numero_dorsal_raw = request.POST.get('numero_dorsal')
+                numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
+        else:
+            # No es equipación: precio estándar
+            precio_item = float(producto.precio)
+
+        # Construimos el ítem que se guardará en sesión
         item = {
             'producto_id': producto.id,
             'nombre': producto.nombre,
-            'precio': float(producto.precio),
-            'talla': request.POST.get('talla'),
+            'precio': precio_item,
+            'talla': talla,
+            'tipo': producto.tipo,
+            # Si es equipación guardamos la opción elegida, si no, None
+            'compra_tipo': request.POST.get('compra_tipo') if producto.tipo == 'Equipación' else None,
+            'nombre_dorsal': nombre_dorsal,
+            'numero_dorsal': numero_dorsal,
         }
-        if producto.tipo == 'equipacion':
-            item['nombre_dorsal'] = request.POST.get('nombre_dorsal')
-            item['numero_dorsal'] = request.POST.get('numero_dorsal')
+
         carrito.append(item)
         request.session['carrito'] = carrito
+
         return redirect(reverse('detalle_producto', args=[producto.id]) + '?añadido=ok')
+
+    # Si no es POST, redirigimos de nuevo a la página de detalle
+    return redirect('detalle_producto', producto_id)
+
 
 @login_required
 def carrito_view(request):
@@ -101,6 +151,7 @@ def carrito_view(request):
         'pedidos_abiertos': config.pedidos_abiertos,
     })
 
+
 @require_POST
 @login_required
 def eliminar_del_carrito_view(request, item_index):
@@ -111,6 +162,7 @@ def eliminar_del_carrito_view(request, item_index):
     except IndexError:
         pass
     return redirect('carrito')
+
 
 @require_POST
 @login_required
@@ -128,11 +180,13 @@ def editar_item_carrito_view(request, item_index):
         pass
     return redirect('carrito')
 
+
 @require_POST
 @login_required
 def vaciar_carrito_view(request):
     request.session['carrito'] = []
     return redirect('carrito')
+
 
 @user_passes_test(es_admin)
 def exportar_pedidos_excel(request):
@@ -155,6 +209,7 @@ def exportar_pedidos_excel(request):
     df.to_excel(response, index=False)
     return response
 
+
 @user_passes_test(es_admin)
 def lista_pedidos_view(request):
     pedidos = Pedido.objects.all().order_by('-usuario__name')
@@ -164,6 +219,7 @@ def lista_pedidos_view(request):
         'config': config
     })
 
+
 @user_passes_test(es_admin)
 def cambiar_estado_pedido(request, pedido_id):
     if request.method == 'POST':
@@ -172,14 +228,17 @@ def cambiar_estado_pedido(request, pedido_id):
         pedido.save()
     return redirect('lista_pedidos')
 
+
 @user_passes_test(es_admin)
 def detalle_pedido_admin_view(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
     return render(request, 'admin/detalle_pedido.html', {'pedido': pedido})
 
+
 def get_configuracion():
     config, created = Configuracion.objects.get_or_create(id=1)
     return config
+
 
 @staff_member_required
 def alternar_pedidos_view(request):
@@ -205,6 +264,7 @@ def alternar_pedidos_view(request):
 
     return redirect('lista_pedidos')
 
+
 @user_passes_test(es_admin)
 def panel_pedidos_view(request):
     pedidos = Pedido.objects.all().order_by('-fecha')
@@ -213,6 +273,7 @@ def panel_pedidos_view(request):
         'pedidos': pedidos,
         'pedidos_abiertos': pedidos_abiertos,
     })
+
 
 @login_required
 def resumen_pedido_view(request):
@@ -232,6 +293,7 @@ def resumen_pedido_view(request):
         'resumen': resumen,
         'total': total
     })
+
 
 @login_required
 def confirmar_pedido_view(request):
@@ -267,6 +329,7 @@ def confirmar_pedido_view(request):
     )
     return render(request, 'pedido_confirmado.html', {'pedido': pedido})
 
+
 @login_required
 def pago_simulado_view(request):
     resumen = request.session.get('resumen_pedido')
@@ -289,6 +352,7 @@ def pago_simulado_view(request):
     enviar_confirmacion_pedido(request.user, pedido)
     return render(request, 'pedido_confirmado.html', {'pedido': pedido})
 
+
 def enviar_confirmacion_pedido(usuario, pedido):
     asunto = f"✅ Pedido #{pedido.id} confirmado - Relámpago Pricense FC"
     remitente = settings.DEFAULT_FROM_EMAIL
@@ -300,6 +364,7 @@ def enviar_confirmacion_pedido(usuario, pedido):
     mensaje = EmailMultiAlternatives(asunto, "", remitente, destinatario)
     mensaje.attach_alternative(html_content, "text/html")
     mensaje.send()
+
 
 def calcular_total_carrito(carrito):
     return sum(item['precio'] for item in carrito)

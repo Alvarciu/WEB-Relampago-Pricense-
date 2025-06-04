@@ -1,4 +1,9 @@
-{% extends "base.html" %}
+ {% extends "base.html" %}
+{% comment %}
+
+{% load i18n %}
+{% load static %}
+{% load humanize %}
 {% load static %}
 {% block content %}
 
@@ -53,4 +58,45 @@
   </div>
 </section>
 
-{% endblock %}
+{% endblock %} {% endcomment %}
+{% load static %}
+{% block content %}
+
+
+<!-- SECCIÓN EQUIPACIONES COMPLETAS -->
+<section class="seccion-productos">
+  <h2 class="titulo-seccion">Equipaciones completas</h2>
+  <div class="grid-productos">
+    {% for producto in equipaciones %}
+      <div class="card-producto">
+        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+        <h3>{{ producto.nombre }}</h3>
+        <p class="precio">{{ producto.precio }} €</p>
+        <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+      </div>
+    {% empty %}
+      <p>No hay equipaciones disponibles.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- SECCIÓN SUDADERAS -->
+<section class="seccion-productos">
+  <h2 class="titulo-seccion">Sudaderas</h2>
+  <div class="grid-productos">
+    {% for producto in sudaderas %}
+      <div class="card-producto">
+        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+        <h3>{{ producto.nombre }}</h3>
+        <p class="precio">{{ producto.precio }} €</p>
+        <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+      </div>
+    {% empty %}
+      <p>No hay sudaderas disponibles.</p>
+    {% endfor %}
+  </div>
+</section>
+
+
+
+{% endblock %}
