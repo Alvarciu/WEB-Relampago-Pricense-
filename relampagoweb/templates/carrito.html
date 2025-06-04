@@ -93,7 +93,7 @@
 
   <form action="{% url 'vaciar_carrito' %}" method="post" style="text-align: center;">
     {% csrf_token %}
-    <button type="submit" style="background-color: red; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Vaciar carrito 🗑️</button>
+    <button type="submit" style="background-color: red; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Vaciar carrito</button>
   </form>
 
   <p style="text-align: center; font-size: 1.2em;"><strong>Total: {{ total }} €</strong></p>

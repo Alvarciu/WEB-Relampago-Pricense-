@@ -83,12 +83,14 @@ def añadir_al_carrito_view(request, producto_id):
 def carrito_view(request):
     raw_carrito = request.session.get('carrito', [])
     carrito = []
-    total = 0
     for item in raw_carrito:
         producto = Producto.objects.get(id=item['producto_id'])
         item['imagen_url'] = producto.imagen.url
+        item['tipo'] = producto.tipo  # <- Asegúrate de que cada item tenga el tipo
         carrito.append(item)
-        total += item['precio']
+
+    total = calcular_total_carrito(carrito)  # ← aquí aplicas el descuento
+
     config = get_configuracion()
     return render(request, 'carrito.html', {
         'carrito': carrito,
@@ -296,5 +298,20 @@ def enviar_confirmacion_pedido(usuario, pedido):
     mensaje.attach_alternative(html_content, "text/html")
     mensaje.send()
 
+from decimal import Decimal
+
 def calcular_total_carrito(carrito):
-    return sum(item['precio'] for item in carrito)
+    total = Decimal('0.00')
+    camisetas = []
+
+    for item in carrito:
+        if item.get('tipo') == 'equipacion':
+            camisetas.append(item)
+        else:
+            total += Decimal(item['precio'])
+
+    pares = len(camisetas) // 2
+    sueltas = len(camisetas) % 2
+
+    total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
+    return total
