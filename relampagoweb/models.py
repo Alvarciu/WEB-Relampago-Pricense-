@@ -71,8 +71,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
 class Producto(models.Model):
     TIPO_PRODUCTO = (
-        ('equipacion', 'Equipación'),
-        ('sudadera', 'Sudadera'),
+        ('Camiseta', 'Camiseta'),
+        ('Equipación', 'Equipación'),
+        ('Sudadera', 'Sudadera'),
     )
     nombre = models.CharField(max_length=100)
     tipo = models.CharField(max_length=20, choices=TIPO_PRODUCTO)

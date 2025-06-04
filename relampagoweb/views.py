@@ -51,12 +51,17 @@ def logout_view(request):
 
 def tienda_view(request):
     productos = Producto.objects.all()
-    equipaciones = productos.filter(tipo='equipacion')
-    sudaderas = productos.filter(tipo='sudadera')
+    camisetas = productos.filter(tipo='Camiseta')
+    sudaderas = productos.filter(tipo='Sudadera')
+    equipaciones = productos.filter(tipo='Equipación')
+    config = get_configuracion()
     return render(request, 'tienda.html', {
-        'equipaciones': equipaciones,
+        'camisetas': camisetas,
         'sudaderas': sudaderas,
+        'equipaciones': equipaciones,
+        'config': config,
     })
+
 
 def detalle_producto_view(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)

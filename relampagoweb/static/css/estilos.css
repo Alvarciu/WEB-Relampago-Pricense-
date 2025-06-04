@@ -4,106 +4,131 @@
 body {
   font-family: 'Inter', sans-serif;
   margin: 0;
-  padding: 20px;
+  padding: 0; /* Eliminamos el padding global para evitar que empuje el navbar */
   background-color: #f7f8fa;
   color: #333;
 }
 
-/* ======== Encabezado ======== */
-header {
+/* ======== NAVBAR MODERNO ======== */
+.navbar {
   background-color: #111;
-  color: white;
   padding: 10px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Logo y nombre */
+.navbar-logo {
   display: flex;
   align-items: center;
-  gap: 15px;
-  border-radius: 8px;
+  gap: 10px;
 }
 
-header img {
-  width: 50px;
-}
-
-h1 {
-  font-size: 1.5rem;
-  margin: 0;
-}
-
-/* ======== Navegación ======== */
-nav {
-  margin: 20px 0;
-}
-
-nav a {
-  margin-right: 15px;
-  text-decoration: none;
-  color: #1a73e8;
-  font-weight: 600;
-}
-
-nav a:hover {
-  text-decoration: underline;
-}
-
-/* ======== Botones ======== */
-button,
-input[type="submit"] {
-  background-color: #1a73e8;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-top: 5px;
-}
-
-button:hover {
-  background-color: #000000;
-}
-
-/* ======== Formularios ======== */
-form label {
-  font-weight: 600;
-}
-
-form input,
-form select {
-  margin-bottom: 10px;
-  padding: 5px;
-  width: 100%;
-  max-width: 300px;
-  border: 1px solid #ccc;
+.navbar-logo img {
+  width: 40px;
+  height: auto;
   border-radius: 4px;
 }
 
-/* ======== Listas de productos o carrito ======== */
-ul {
-  list-style: none;
-  padding: 0;
+.nombre-equipo {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #facc15; /* Amarillo deportivo */
 }
 
-li {
-  background-color: white;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 10px;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+/* Enlaces centrales */
+.navbar-links {
+  display: flex;
+  gap: 20px;
 }
 
-/* ======== Responsive ======== */
-@media (max-width: 600px) {
-  body {
-    padding: 10px;
-  }
+.navbar-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
 
-  header, nav, li {
+.navbar-links a:hover {
+  color: #facc15;
+}
+
+/* Zona de usuario a la derecha */
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.bienvenida {
+  color: white;
+  font-size: 0.9rem;
+}
+
+.btn-logout {
+  background-color: #ef4444;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.btn-logout:hover {
+  background-color: #dc2626;
+}
+
+/* ======== Responsive para NAVBAR ======== */
+@media (max-width: 768px) {
+  .navbar-container {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
   }
-
-  button {
+  .navbar-links {
+    flex-direction: column;
+    gap: 10px;
     width: 100%;
   }
+  .navbar-user {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+}
+
+/* ======== Alerta de pedidos cerrados ======== */
+.alerta-pedidos {
+  background-color: #c00000;
+  color: white;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  height: 40px;
+}
+
+.alerta-texto {
+  position: absolute;
+  animation: desplazamiento 10s linear infinite;
+  font-weight: bold;
+  font-size: 1.5rem;
+  padding-left: 100%;
+}
+
+@keyframes desplazamiento {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
 }
 
 /* ======== Tarjeta de producto (carrito) ======== */
@@ -173,6 +198,7 @@ li {
   color: #1a73e8;
 }
 
+/* ======== Botón toggle (admin) ======== */
 .btn-toggle {
   background-color: #1e40af;
   color: white;
@@ -187,4 +213,96 @@ li {
 
 .btn-toggle:hover {
   background-color: #1d4ed8;
+}
+
+/* ======== Cards de productos (tienda moderna) ======== */
+.seccion-productos {
+  padding: 2rem 1rem;
+}
+
+.titulo-seccion {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #222;
+}
+
+.grid-productos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+  padding: 0 1rem;
+}
+
+.card-producto {
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-producto:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-producto img {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.card-producto h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #111;
+}
+
+.card-producto .precio {
+  color: #1a73e8;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.card-producto .btn-ver {
+  margin-top: auto;
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: #111;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.card-producto .btn-ver:hover {
+  background-color: #000;
+}
+
+.titulo-seccion {
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+/* ======== Responsive general ======== */
+@media (max-width: 600px) {
+  body {
+    padding: 0 10px;
+  }
+  .grid-productos {
+    grid-template-columns: 1fr;
+  }
 }
