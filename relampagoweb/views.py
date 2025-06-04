@@ -97,9 +97,13 @@ def carrito_view(request):
         total = calcular_total_carrito(carrito)  # con descuento
         total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
         ahorro = total_sin_descuento - total
+        posible_ahorro = ahorro
     else:
-        total = sum(item['precio'] for item in carrito)
         ahorro = 0
+        total = calcular_total_carrito(carrito)  # con descuento
+        total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
+        posible_ahorro =  total_sin_descuento - total
+
 
     config = get_configuracion()
     return render(request, 'carrito.html', {
@@ -107,6 +111,7 @@ def carrito_view(request):
         'total': total,
         'ahorro': ahorro,
         'aplicar_descuento': aplicar_descuento,
+        'posible_ahorro': posible_ahorro,
         'pedidos_abiertos': config.pedidos_abiertos,
     })
 
@@ -330,7 +335,6 @@ def enviar_confirmacion_pedido(usuario, pedido):
 
 
 def calcular_total_carrito(carrito):
-    print("Carrito recibido:", carrito)
     from decimal import Decimal
 
     total = Decimal('0.00')
