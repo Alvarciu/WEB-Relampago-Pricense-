@@ -91,18 +91,23 @@ def carrito_view(request):
         item['tipo'] = producto.tipo
         carrito.append(item)
 
-    aplicar_descuento = request.GET.get('aplicar_descuento') == '1'
+    if request.method == "GET":
+        if 'aplicar_descuento' in request.GET:
+            request.session['aplicar_descuento'] = request.GET.get('aplicar_descuento') == '1'
+        elif 'aplicar_descuento' not in request.GET:
+            request.session['aplicar_descuento'] = False  # se apagó el toggle
+    aplicar_descuento = request.session.get('aplicar_descuento', False)
 
     if aplicar_descuento:
-        total = calcular_total_carrito(carrito)  # con descuento
+        total = calcular_total_carrito(carrito)  # ✅ con descuento
         total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
         ahorro = total_sin_descuento - total
-        posible_ahorro = ahorro
+        posible_ahorro = 0
     else:
+        total = sum(Decimal(item['precio']) for item in carrito)  # ✅ sin descuento
         ahorro = 0
-        total = calcular_total_carrito(carrito)  # con descuento
-        total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
-        posible_ahorro =  total_sin_descuento - total
+        posible_ahorro = total - calcular_total_carrito(carrito)
+
 
 
     config = get_configuracion()

@@ -145,7 +145,7 @@ input:checked + .slider:before {
 
 
   <p style="text-align: center; font-size: 1.2em;">
-  <strong>Total: {{ total }} €</strong><br>
+  <strong>Total: {{ total|floatformat:2 }} €</strong><br>
   {% if ahorro > 0 %}
   <span style="color: green;">💸 ¡Te estás ahorrando {{ ahorro|floatformat:2 }} €!</span>
 {% elif posible_ahorro > 0 %}
