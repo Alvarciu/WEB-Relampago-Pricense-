@@ -13,6 +13,8 @@ from .forms import RegistroForm, LoginForm
 from .models import Producto, Pedido, LineaPedido, Configuracion, get_configuracion
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mass_mail
+from decimal import Decimal
+
 
 
 def es_admin(user):
@@ -99,7 +101,7 @@ def añadir_al_carrito_view(request, producto_id):
             compra_tipo = request.POST.get('compra_tipo', 'solo_camiseta')
             if compra_tipo == 'solo_camiseta':
                 precio_item = 22.00
-                # No guardamos dorsales cuando solo es camiseta
+                # No guardamos dorsales cuando solo es 
                 nombre_dorsal = ''
                 numero_dorsal = None
             else:
@@ -138,19 +140,62 @@ def añadir_al_carrito_view(request, producto_id):
 def carrito_view(request):
     raw_carrito = request.session.get('carrito', [])
     carrito = []
-    total = 0
     for item in raw_carrito:
         producto = Producto.objects.get(id=item['producto_id'])
         item['imagen_url'] = producto.imagen.url
+        item['tipo'] = producto.tipo
         carrito.append(item)
-        total += item['precio']
+
+    if request.method == "GET":
+        if 'aplicar_descuento' in request.GET:
+            request.session['aplicar_descuento'] = request.GET.get('aplicar_descuento') == '1'
+        elif 'aplicar_descuento' not in request.GET:
+            request.session['aplicar_descuento'] = False  # se apagó el toggle
+    aplicar_descuento = request.session.get('aplicar_descuento', False)
+
+    print("🛒 Carrito actual:", carrito)  # ⬅️ AÑADE ESTO
+
+    print("✅ calculando descuento por camisetas...")
+
+    if aplicar_descuento:
+        total = calcular_total_carrito(carrito)  # ✅ con descuento
+        total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
+        ahorro = total_sin_descuento - total
+        posible_ahorro = 0
+    else:
+        total = sum(Decimal(item['precio']) for item in carrito)  # ✅ sin descuento
+        ahorro = 0
+        posible_ahorro = total - calcular_total_carrito(carrito)
+
+
+
     config = get_configuracion()
     return render(request, 'carrito.html', {
         'carrito': carrito,
         'total': total,
+        'ahorro': ahorro,
+        'aplicar_descuento': aplicar_descuento,
+        'posible_ahorro': posible_ahorro,
         'pedidos_abiertos': config.pedidos_abiertos,
     })
 
+# def carrito_view(request):
+#     raw_carrito = request.session.get('carrito', [])
+#     carrito = []
+#     for item in raw_carrito:
+#         producto = Producto.objects.get(id=item['producto_id'])
+#         item['imagen_url'] = producto.imagen.url
+#         item['tipo'] = producto.tipo  # <- Asegúrate de que cada item tenga el tipo
+#         carrito.append(item)
+
+#     total = calcular_total_carrito(carrito)  # ← aquí aplicas el descuento
+
+#     config = get_configuracion()
+#     return render(request, 'carrito.html', {
+#         'carrito': carrito,
+#         'total': total,
+#         'pedidos_abiertos': config.pedidos_abiertos,
+#     })
 
 @require_POST
 @login_required
@@ -367,4 +412,22 @@ def enviar_confirmacion_pedido(usuario, pedido):
 
 
 def calcular_total_carrito(carrito):
-    return sum(item['precio'] for item in carrito)
+    
+    from decimal import Decimal
+
+    total = Decimal('0.00')
+    camisetas = []
+
+    for item in carrito:
+        if item.get('compra_tipo') == 'solo_camiseta':
+            camisetas.append(item)
+        else:
+            total += Decimal(item['precio'])
+
+    num_camisetas = len(camisetas)
+    pares = num_camisetas // 2
+    sueltas = num_camisetas % 2
+
+    total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
+
+    return total
