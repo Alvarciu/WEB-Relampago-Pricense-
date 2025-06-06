@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block content %}
+  
+<!-- Contenedor principal: IMAGEN + INFO, con nuestra clase -->
+<div class="product-detail-container">
+  <!-- ======== IZQUIERDA: Imagen del producto ======== -->
+  <div class="product-image-wrapper">
+    <img
+      src="{{ producto.imagen.url }}"
+      alt="{{ producto.nombre }}"
+      class="product-image"
+    >
+  </div>
+
+  <!-- ======== DERECHA: Información y formulario ======== -->
+  <div class="product-info-card">
+    <!-- Título y subtítulo -->
+    <h1 class="product-title">{{ producto.nombre }}</h1>
+    <p class="product-subtitle">
+      Equipación oficial del Relámpago Pricense F.C. temporada 2024/2025
+    </p>
+    <div class="product-divider"></div>
+
+    <!-- Botones “Solo camiseta” / “Equipación completa” (solo si es tipo Equipación) -->
+    {% if producto.tipo == 'Equipación' %}
+      <div class="option-group">
+        <label class="option-button">
+          <input
+            type="radio"
+            name="compra_tipo"
+            value="solo_camiseta"
+            autocomplete="off"
+            checked
+          >
+          <span>Solo camiseta (22 €)</span>
+        </label>
+
+        <label class="option-button">
+          <input
+            type="radio"
+            name="compra_tipo"
+            value="completo"
+            autocomplete="off"
+          >
+          <span>Equipación completa ({{ producto.precio|floatformat:2 }} €)</span>
+        </label>
+      </div>
+
+      <p class="current-price">
+        Precio actual: <span class="price-value" id="precio-actual">22.00</span> €
+      </p>
+    {% else %}
+      <p class="current-price">
+        Precio: <span class="price-value" id="precio-actual">{{ producto.precio|floatformat:2 }}</span> €
+      </p>
+    {% endif %}
+
+    <!-- ========== FORMULARIO “Añadir al carrito” ========== -->
+    <form
+      id="form-add-to-cart"
+      method="post"
+      action="{% url 'añadir_al_carrito' producto.id %}"
+    >
+      {% csrf_token %}
+      <!-- Guardamos el tipo de compra en un input oculto -->
+      {% if producto.tipo == 'Equipación' %}
+        <input
+          type="hidden"
+          name="compra_tipo"
+          id="input-compra-tipo"
+          value="solo_camiseta"
+        >
+      {% endif %}
+
+      <!-- Selección de Talla -->
+      <div class="form-group">
+        <label for="talla" class="form-label">Talla:</label>
+        <select
+          name="talla"
+          id="talla"
+          class="form-select w-50"
+          required
+        >
+          <option value="S">S</option>
+          <option value="M">M</option>
+          <option value="L">L</option>
+          <option value="XL">XL</option>
+        </select>
+      </div>
+
+      <!-- Campos de Dorsal (siempre visibles) -->
+      <div id="dorsal-fields" class="form-group">
+        <label for="nombre_dorsal" class="form-label">Nombre dorsal:</label>
+        <input
+          type="text"
+          name="nombre_dorsal"
+          id="nombre_dorsal"
+          class="form-input w-75"
+          placeholder="Ej: ÁLVARO"
+          maxlength="20"
+        >
+        <label for="numero_dorsal" class="form-label mt-2">Número dorsal:</label>
+        <input
+          type="number"
+          name="numero_dorsal"
+          id="numero_dorsal"
+          class="form-input w-50"
+          placeholder="Ej: 9"
+          min="0"
+        >
+      </div>
+
+      <!-- Botón de añadir al carrito -->
+      <button type="submit" class="btn-add-cart">
+        Añadir al carrito
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ===========================================
+     SweetAlert2 (para notificaciones de “añadido” o “no personalizado”)
+     =========================================== -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // PRECIOS
+    const precioCompleto = parseFloat("{{ producto.precio }}") || 0;
+    const precioSolo = 22.00;
+    const precioActualEl = document.getElementById('precio-actual');
+    const inputTipoOculto = document.getElementById('input-compra-tipo');
+    const radios = document.querySelectorAll('input[name="compra_tipo"]');
+
+    if (radios.length > 0) {
+      radios.forEach(radio => {
+        radio.addEventListener('change', () => {
+          if (radio.value === 'solo_camiseta') {
+            precioActualEl.textContent = precioSolo.toFixed(2);
+            inputTipoOculto.value = 'solo_camiseta';
+          } else {
+            precioActualEl.textContent = precioCompleto.toFixed(2);
+            inputTipoOculto.value = 'completo';
+          }
+        });
+      });
+    }
+
+    // COMPROBAR PERSONALIZACIÓN antes de enviar
+    const form = document.getElementById('form-add-to-cart');
+    form.addEventListener('submit', function (e) {
+      const nombre = document.getElementById('nombre_dorsal');
+      const numero = document.getElementById('numero_dorsal');
+      const tipo = inputTipoOculto ? inputTipoOculto.value : null;
+
+      // Si el usuario no ha rellenado ninguno de los campos de dorsal
+      if (!nombre.value.trim() && !numero.value.trim()) {
+        e.preventDefault();
+        Swal.fire({
+          title: '⚠️ Sin personalizar',
+          text: 'No has introducido nombre o número de dorsal. ¿Quieres añadirlo igual?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, añadir al carrito',
+          cancelButtonText: 'No, volver'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            form.submit();
+          }
+        });
+      }
+    });
+
+    // ALERTA “añadido=ok”
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('añadido') === 'ok') {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: '✅ Producto añadido al carrito',
+        showConfirmButton: false,
+        timer: 1800
+      });
+    }
+  });
+</script>
+{% endblock %}

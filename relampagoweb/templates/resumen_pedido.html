@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📅 Resumen del pedido</h2>
+
+<ul>
+  {% for item in resumen %}
+    <li>
+      <img src="{{ item.imagen_url }}" width="100"><br>
+      <strong>{{ item.nombre }}</strong><br>
+      Talla: {{ item.talla }}<br>
+      Precio: {{ item.precio }} €<br>
+      {% if item.nombre_dorsal %}
+        Dorsal: {{ item.nombre_dorsal }} {{ item.numero_dorsal }}<br>
+      {% endif %}
+    </li>
+    <hr>
+  {% endfor %}
+</ul>
+
+<p><strong>Total:</strong> {{ total }} €</p>
+
+<form method="post" action="{% url 'pago_simulado' %}">
+  {% csrf_token %}
+  <button type="submit" style="background-color: green; color: white; padding: 10px 20px;">Confirmar pedido</button>
+</form>
+
+<p><a href="{% url 'carrito' %}">← Volver al carrito</a></p>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+  /* Eliminar scroll y márgenes/padding por defecto */
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden; /* evita scroll innecesario */
+    font-family: Arial, sans-serif;
+  }
+
+  /* Fondo completo con imagen */
+  body {
+    background-image: url("{% static 'img/fondoIglesia.jpeg' %}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+  }
+
+  /* Ocultar elementos globales */
+  nav.navbar.px-4.py-2.mb-0,
+  header,
+  .alerta-pedidos {
+    display: none !important;
+  }
+
+  /* Capa blanca semitransparente */
+  .overlay {
+    position: fixed; /* 🔁 fijo, cubre toda la pantalla */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.85);
+    z-index: 0;
+  }
+
+  /* Contenedor centrado */
+  .login-container {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    margin-top: -50px;
+  }
+
+  .logo {
+    max-width: 150px;
+    margin-bottom: 10px;
+  }
+
+  form {
+    margin-top: 20px;
+  }
+
+  .input-field {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px; /* espacio entre inputs y botón */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 1rem;
+  display: block; /* que cada input ocupe toda la línea */
+}
+
+.login-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #f1c40f;
+  color: black;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  margin-top: 10px; /* para que haya espacio encima */
+}
+
+.login-btn:hover {
+  background-color: #d4ac0d; /* cambio de color al pasar el cursor */
+}
+</style>
+
+<!-- Capa blanca translúcida -->
+<div class="overlay"></div>
+
+<!-- Contenido centrado -->
+<div class="login-container">
+  <img src="{% static 'img/escudo.png' %}" alt="Logo del equipo" class="logo" />
+
+  <h2>¡Hola!</h2>
+  <h5>Inicia sesión para poder acceder</h5>
+
+  <form method="post">
+  {% csrf_token %}
+
+  <input type="email" name="username" placeholder="Correo electrónico" required class="input-field" />
+  <input type="password" name="password" placeholder="Contraseña" required class="input-field" />
+
+  <button type="submit" class="login-btn">Entrar</button>
+</form>
+
+
+  <p style="margin-top: 10px;">
+    <a href="{% url 'password_reset' %}" style="color: #1a73e8; text-decoration: none;">
+      ¿Has olvidado tu contraseña?
+    </a>
+  </p>
+
+  <a href="{% url 'registro' %}" style="color: #000;">¿No tienes cuenta? Regístrate</a>
+</div>
+{% endblock %}

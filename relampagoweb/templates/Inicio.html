@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Bienvenido, {{ user.name }}</h2>
+<p>¡Explora la tienda o consulta tus pedidos!</p>
+{% endblock %}
+{% if user.is_authenticated %}
+  Bienvenido, {{ user.name }} | <a href="{% url 'logout' %}">Cerrar sesión</a>
+{% else %}
+  <a href="{% url 'login' %}">Iniciar sesión</a> | <a href="{% url 'registro' %}">Registrarse</a>
+{% endif %}

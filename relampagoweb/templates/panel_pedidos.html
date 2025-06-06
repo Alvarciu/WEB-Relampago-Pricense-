@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>📋 Pedidos registrados</h2>
+
+<div class="d-flex align-items-center flex-wrap gap-3 mb-4">
+  <span class="{% if pedidos_abiertos %}text-success{% else %}text-danger{% endif %} fw-semibold">
+    {% if pedidos_abiertos %}✅ Pedidos abiertos{% else %}❌ Pedidos cerrados{% endif %}
+  </span>
+
+  <form method="post" action="{% url 'alternar_pedidos' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3 transition">
+      {% if pedidos_abiertos %}
+        🔒 Cerrar pedidos
+      {% else %}
+        🔓 Abrir pedidos
+      {% endif %}
+    </button>
+  </form>
+
+  <a href="{% url 'exportar_pedidos' %}" class="btn btn-success btn-sm rounded-pill px-3 transition">
+    📤 Exportar pedidos a Excel
+  </a>
+</div>
+
+<table class="table table-bordered bg-white shadow-sm rounded">
+  <thead class="table-light">
+    <tr>
+      <th>ID</th>
+      <th>Usuario</th>
+      <th>Email</th>
+      <th>Fecha</th>
+      <th>Total</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for pedido in pedidos %}
+    <tr>
+      <td>{{ pedido.id }}</td>
+      <td>{{ pedido.usuario.name }}</td>
+      <td>{{ pedido.usuario.email }}</td>
+      <td>{{ pedido.fecha|date:"d/m/Y H:i" }}</td>
+      <td>{{ pedido.total }} €</td>
+      <td>
+        {% if pedido.pagado %}
+          <span class="badge bg-success">✔</span>
+        {% else %}
+          <span class="badge bg-danger">✘</span>
+        {% endif %}
+      </td>
+      <td>
+        <a href="{% url 'detalle_pedido_admin' pedido.id %}" class="text-primary fw-semibold">
+          🔍 Ver detalles
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<style>
+.transition {
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+.transition:hover {
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 style="text-align: center;">Tu carrito</h2>
+
+<style>
+  .carrito-item {
+    animation: fadeIn 0.5s ease-in;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 700px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .carrito-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .carrito-img {
+    flex: 0 0 150px;
+  }
+
+  .carrito-info {
+    flex: 1;
+    text-align: left;
+  }
+
+  .carrito-info form {
+    margin-bottom: 10px;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
+{% if carrito %}
+  <ul style="list-style: none; padding: 0;">
+    {% for item in carrito %}
+      <li class="carrito-item">
+        <div class="carrito-img">
+          <img src="{{ item.imagen_url }}" width="150">
+        </div>
+        <div class="carrito-info">
+          <form action="{% url 'editar_item_carrito' forloop.counter0 %}" method="post">
+            {% csrf_token %}
+            <strong>{{ item.nombre }}</strong><br><br>
+          
+
+            <label>Talla:</label>
+            <select name="talla">
+              <option value="S" {% if item.talla == 'S' %}selected{% endif %}>S</option>
+              <option value="M" {% if item.talla == 'M' %}selected{% endif %}>M</option>
+              <option value="L" {% if item.talla == 'L' %}selected{% endif %}>L</option>
+              <option value="XL" {% if item.talla == 'XL' %}selected{% endif %}>XL</option>
+            </select><br><br>
+
+            {% if item.nombre_dorsal is not None %}
+              <label>Nombre dorsal:</label>
+              <input type="text" name="nombre_dorsal" value="{{ item.nombre_dorsal }}"><br><br>
+
+              <label>Número dorsal:</label>
+              <input type="number" name="numero_dorsal" value="{{ item.numero_dorsal }}"><br><br>
+
+              <label>Precio:</label>
+              <input type="number" name="numero_dorsal" value="{{ item.precio }}"><br><br>
+            {% endif %}
+
+            <button type="submit" style="background-color: #f1c40f; color: black; font-weight: bold; padding: 10px 20px; border: none; border-radius: 5px;">
+              Guardar cambios
+            </button>
+          </form>
+
+          <form action="{% url 'eliminar_del_carrito' forloop.counter0 %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" style="background-color: #f1c40f; color: black; font-weight: bold; padding: 10px 20px; border: none; border-radius: 5px;">
+              ❌ Quitar
+            </button>
+          </form>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <form action="{% url 'vaciar_carrito' %}" method="post" style="text-align: center;">
+    {% csrf_token %}
+    <button type="submit" style="background-color: red; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Vaciar carrito</button>
+  </form>
+
+<form method="get" style="text-align: center; margin-bottom: 20px;">
+  <label for="aplicar_descuento" style="font-size: 1.1em;">¿Aplicar descuento por pack?</label>
+  <label class="switch">
+    <input type="checkbox" name="aplicar_descuento" value="1" {% if aplicar_descuento %}checked{% endif %} onchange="this.form.submit()">
+    <span class="slider round"></span>
+  </label>
+  
+</form>
+
+<style>
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  margin-left: 10px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px; width: 26px;
+  left: 4px; bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color:rgb(249,178,52);
+}
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+</style>
+
+
+  <p style="text-align: center; font-size: 1.2em;">
+  <strong>Total: {{ total|floatformat:2 }} €</strong><br>
+  {% if ahorro > 0 %}
+    <span style="color: green;">💸 ¡Te estás ahorrando {{ ahorro|floatformat:2 }} €!</span>
+  {% elif posible_ahorro > 0 %}
+    <span style="color: orange;">💡 Podrías ahorrar {{ posible_ahorro|floatformat:2 }} € si aplicas el descuento por cantidad.</span>
+  {% endif %}
+
+  {% if pedidos_abiertos %}
+    <form action="{% url 'resumen_pedido' %}" method="get" style="text-align: center;">
+      <button type="submit" style="background-color: green; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Finalizar pedido</button>
+    </form>
+  {% else %}
+    <p style="text-align: center; color: red;"><strong>❌ Los pedidos están cerrados por ahora. Vuelve más adelante.</strong></p>
+  {% endif %}
+
+{% else %}
+  <p style="text-align: center;">Tu carrito está vacío.</p>
+{% endif %}
+
+<div style="text-align: center; margin-top: 20px;">
+  <a href="{% url 'tienda' %}">← Volver a la tienda</a>
+</div>
+{% endblock %}
