@@ -14,7 +14,9 @@ from .models import Producto, Pedido, LineaPedido, Configuracion, get_configurac
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mass_mail
 from decimal import Decimal
-
+from django.contrib import messages
+from email.mime.image import MIMEImage
+import os
 
 
 def es_admin(user):
@@ -153,10 +155,6 @@ def carrito_view(request):
             request.session['aplicar_descuento'] = False  # se apagó el toggle
     aplicar_descuento = request.session.get('aplicar_descuento', False)
 
-    print("🛒 Carrito actual:", carrito)  # ⬅️ AÑADE ESTO
-
-    print("✅ calculando descuento por camisetas...")
-
     if aplicar_descuento:
         total = calcular_total_carrito(carrito)  # ✅ con descuento
         total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
@@ -269,8 +267,13 @@ def lista_pedidos_view(request):
 def cambiar_estado_pedido(request, pedido_id):
     if request.method == 'POST':
         pedido = get_object_or_404(Pedido, id=pedido_id)
+        estaba_no_pagado = not pedido.pagado  # Guardamos el estado anterior
         pedido.pagado = not pedido.pagado
         pedido.save()
+
+        if estaba_no_pagado and pedido.pagado:
+            enviar_email_pago_confirmado(pedido)  # ✉️ Enviar solo si ahora está pagado
+
     return redirect('lista_pedidos')
 
 
@@ -340,16 +343,21 @@ def resumen_pedido_view(request):
     })
 
 
+
 @login_required
 def confirmar_pedido_view(request):
     carrito = request.session.get('carrito', [])
     if not carrito:
         return redirect('carrito')
+
+    # Crear pedido
     pedido = Pedido.objects.create(usuario=request.user, pagado=False)
+
     for item in carrito:
         producto = Producto.objects.get(id=item['producto_id'])
         numero_dorsal_raw = item.get('numero_dorsal')
         numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
+
         LineaPedido.objects.create(
             pedido=pedido,
             producto=producto,
@@ -357,21 +365,35 @@ def confirmar_pedido_view(request):
             nombre_dorsal=item.get('nombre_dorsal') or '',
             numero_dorsal=numero_dorsal
         )
+
+    # Limpiar el carrito de la sesión
     del request.session['carrito']
+
+    # Preparar correo de confirmación
     asunto = f"Confirmación de tu pedido #{pedido.id} en Relámpago Pricense FC"
-    mensaje = render_to_string('emails/confirmacion_pedido.txt', {
+    html_content = render_to_string('emails/confirmacion_pedido.html', {
         'pedido': pedido,
-        'usuario': request.user,
-        'lineas': pedido.lineas.all(),
-        'total': pedido.total
+        'usuario': request.user
     })
-    send_mail(
+
+    email = EmailMultiAlternatives(
         subject=asunto,
-        message=mensaje,
+        body="Gracias por tu pedido. Consulta los detalles en la versión HTML.",
         from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[request.user.email],
-        fail_silently=False,
+        to=[request.user.email]
     )
+    email.attach_alternative(html_content, "text/html")
+
+    # Adjuntar el escudo inline
+    logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
+    with open(logo_path, 'rb') as f:
+        logo = MIMEImage(f.read())
+        logo.add_header('Content-ID', '<logo_escudo>')
+        logo.add_header('Content-Disposition', 'inline')
+        email.attach(logo)
+
+    email.send()
+
     return render(request, 'pedido_confirmado.html', {'pedido': pedido})
 
 
@@ -431,3 +453,29 @@ def calcular_total_carrito(carrito):
     total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
 
     return total
+
+
+def enviar_email_pago_confirmado(pedido):
+    subject = f"Pago confirmado del pedido #{pedido.id} en Relámpago Pricense FC"
+    html_content = render_to_string('emails/pedido_pagado.html', {
+        'pedido': pedido,
+        'usuario': pedido.usuario,
+    })
+
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body="Hemos recibido tu pago. Gracias por confiar en Relámpago Pricense FC.",
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[pedido.usuario.email]
+    )
+    email.attach_alternative(html_content, "text/html")
+
+    # Adjuntar el escudo
+    escudo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
+    if os.path.exists(escudo_path):
+        with open(escudo_path, 'rb') as f:
+            image = MIMEImage(f.read())
+            image.add_header('Content-ID', '<logo_escudo>')
+            email.attach(image)
+
+    email.send()

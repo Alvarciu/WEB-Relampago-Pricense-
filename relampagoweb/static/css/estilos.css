@@ -398,6 +398,7 @@ body {
 /* ==================================
    BOTONES “Solo camiseta” / “Equipación completa”
    ================================== */
+<<<<<<< HEAD
 .option-group {
   display: flex;
   flex-direction: row;
@@ -447,6 +448,59 @@ body {
 .option-button:hover {
   background-color: #e8e8e8;
 }
+=======
+
+/* Contenedor del botón */
+.option-button {
+  position: relative;
+  display: inline-block;
+  margin: 5px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Ocultamos el input */
+.option-button input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Estilo del botón visual (span) */
+.option-button span {
+  user-select: none;  
+  display: inline-block;
+  padding: 6px 16px;               /* ✅ Altura más natural */
+  background-color: none ;
+  border-radius: 12px;             /* ✅ Ya no es un óvalo extremo */
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+  min-width: 200px;
+  text-align: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border: 1px solid #ccc;        /* ✅ borde gris claro */
+
+}
+
+.option-button:focus,
+.option-button input[type="radio"]:focus,
+.option-button span:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.5); /* Resaltado al enfocar */
+}
+
+
+/* Estilo cuando está seleccionado */
+.option-button input[type="radio"]:checked + span {
+  background-color: #f1c40f;       /* Amarillo corporativo */
+  color: #111;
+}
+
+
+>>>>>>> master
 
 /* Oculta bloques con la clase .d-none */
 .d-none {
