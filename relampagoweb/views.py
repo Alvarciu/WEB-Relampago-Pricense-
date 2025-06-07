@@ -323,20 +323,30 @@ def panel_pedidos_view(request):
     })
 
 
+
 @login_required
 def resumen_pedido_view(request):
     raw_carrito = request.session.get('carrito', [])
     resumen = []
-    total = 0
+    aplicar_descuento = request.session.get('aplicar_descuento', False)
+
+    # Rellenamos el resumen con info visual
     for item in raw_carrito:
         try:
             producto = Producto.objects.get(id=item['producto_id'])
             item['imagen_url'] = producto.imagen.url
             resumen.append(item)
-            total += item['precio']
         except Producto.DoesNotExist:
             continue
+
+    # Calculamos el total con o sin descuento
+    if aplicar_descuento:
+        total = calcular_total_carrito(resumen)  # con descuento
+    else:
+        total = sum(Decimal(item['precio']) for item in resumen)  # sin descuento
+
     request.session['resumen_pedido'] = resumen
+
     return render(request, 'resumen_pedido.html', {
         'resumen': resumen,
         'total': total
