@@ -406,41 +406,51 @@ body {
   margin-bottom: 12px;
 }
 
-/* Botón personalizado (sin reborde extra, fondo neutro y redondeado) */
+/* Contenedor del botón */
 .option-button {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  background-color: #f2f2f2;
+  display: inline-block;
+  margin: 5px;
+  padding: 0;
+  background: none;
   border: none;
-  border-radius: 999px; /* Muy redondeado */
-  font-size: 0.95rem;
-  color: #333;
   cursor: pointer;
-  transition: background-color 0.2s ease;
 }
 
+/* Ocultamos el input */
 .option-button input[type="radio"] {
   position: absolute;
   opacity: 0;
-  cursor: pointer;
+  pointer-events: none;
 }
 
-/* El span que va dentro del label */
+/* Estilo del botón visual (span) */
 .option-button span {
+  user-select: none;  
   display: inline-block;
-  width: 100%;
+  padding: 6px 16px;               /* ✅ Altura más natural */
+  background-color: none ;
+  border-radius: 12px;             /* ✅ Ya no es un óvalo extremo */
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+  min-width: 200px;
   text-align: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Cuando el radio está seleccionado, pintamos todo el botón en amarillo y texto oscuro */
+.option-button:focus,
+.option-button input[type="radio"]:focus,
+.option-button span:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+
+/* Estilo cuando está seleccionado */
 .option-button input[type="radio"]:checked + span {
-  background-color: #f1c40f; /* Amarillo de nuestra marca */
-  color: #111;            /* Texto oscuro */
-  border-radius: 999px;
-  padding: 8px 18px;
+  background-color: #f1c40f;       /* Amarillo corporativo */
+  color: #111;
 }
 
 /* Hover suave */
