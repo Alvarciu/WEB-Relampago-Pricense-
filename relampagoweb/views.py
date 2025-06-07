@@ -14,7 +14,9 @@ from .models import Producto, Pedido, LineaPedido, Configuracion, get_configurac
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mass_mail
 from decimal import Decimal
-
+from django.contrib import messages
+from email.mime.image import MIMEImage
+import os
 
 
 def es_admin(user):
@@ -336,16 +338,21 @@ def resumen_pedido_view(request):
     })
 
 
+
 @login_required
 def confirmar_pedido_view(request):
     carrito = request.session.get('carrito', [])
     if not carrito:
         return redirect('carrito')
+
+    # Crear pedido
     pedido = Pedido.objects.create(usuario=request.user, pagado=False)
+
     for item in carrito:
         producto = Producto.objects.get(id=item['producto_id'])
         numero_dorsal_raw = item.get('numero_dorsal')
         numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
+
         LineaPedido.objects.create(
             pedido=pedido,
             producto=producto,
@@ -353,21 +360,35 @@ def confirmar_pedido_view(request):
             nombre_dorsal=item.get('nombre_dorsal') or '',
             numero_dorsal=numero_dorsal
         )
+
+    # Limpiar el carrito de la sesión
     del request.session['carrito']
+
+    # Preparar correo de confirmación
     asunto = f"Confirmación de tu pedido #{pedido.id} en Relámpago Pricense FC"
-    mensaje = render_to_string('emails/confirmacion_pedido.txt', {
+    html_content = render_to_string('emails/confirmacion_pedido.html', {
         'pedido': pedido,
-        'usuario': request.user,
-        'lineas': pedido.lineas.all(),
-        'total': pedido.total
+        'usuario': request.user
     })
-    send_mail(
+
+    email = EmailMultiAlternatives(
         subject=asunto,
-        message=mensaje,
+        body="Gracias por tu pedido. Consulta los detalles en la versión HTML.",
         from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[request.user.email],
-        fail_silently=False,
+        to=[request.user.email]
     )
+    email.attach_alternative(html_content, "text/html")
+
+    # Adjuntar el escudo inline
+    logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
+    with open(logo_path, 'rb') as f:
+        logo = MIMEImage(f.read())
+        logo.add_header('Content-ID', '<logo_escudo>')
+        logo.add_header('Content-Disposition', 'inline')
+        email.attach(logo)
+
+    email.send()
+
     return render(request, 'pedido_confirmado.html', {'pedido': pedido})
 
 
