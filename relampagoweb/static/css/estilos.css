@@ -398,13 +398,6 @@ body {
 /* ==================================
    BOTONES “Solo camiseta” / “Equipación completa”
    ================================== */
-.option-group {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
 
 /* Contenedor del botón */
 .option-button {
@@ -437,13 +430,15 @@ body {
   min-width: 200px;
   text-align: center;
   transition: background-color 0.2s ease, color 0.2s ease;
+  border: 1px solid #ccc;        /* ✅ borde gris claro */
+
 }
 
 .option-button:focus,
 .option-button input[type="radio"]:focus,
 .option-button span:focus {
   outline: none;
-  box-shadow: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.5); /* Resaltado al enfocar */
 }
 
 
@@ -453,10 +448,7 @@ body {
   color: #111;
 }
 
-/* Hover suave */
-.option-button:hover {
-  background-color: #e8e8e8;
-}
+
 
 /* Oculta bloques con la clase .d-none */
 .d-none {
