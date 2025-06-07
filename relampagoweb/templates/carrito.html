@@ -15,6 +15,7 @@
     display: flex;
     gap: 20px;
     align-items: center;
+    position: relative;
   }
 
   .carrito-item:hover {
@@ -33,6 +34,15 @@
 
   .carrito-info form {
     margin-bottom: 10px;
+  }
+
+  .precio-carrito {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #e67e22;
   }
 
   @keyframes fadeIn {
@@ -58,7 +68,6 @@
           <form action="{% url 'editar_item_carrito' forloop.counter0 %}" method="post">
             {% csrf_token %}
             <strong>{{ item.nombre }}</strong><br><br>
-          
 
             <label>Talla:</label>
             <select name="talla">
@@ -74,9 +83,6 @@
 
               <label>Número dorsal:</label>
               <input type="number" name="numero_dorsal" value="{{ item.numero_dorsal }}"><br><br>
-
-              <label>Precio:</label>
-              <input type="number" name="numero_dorsal" value="{{ item.precio }}"><br><br>
             {% endif %}
 
             <button type="submit" style="background-color: #f1c40f; color: black; font-weight: bold; padding: 10px 20px; border: none; border-radius: 5px;">
@@ -91,6 +97,10 @@
             </button>
           </form>
         </div>
+
+        <div class="precio-carrito">
+          Precio: {{ item.precio|floatformat:2 }} €
+        </div>
       </li>
     {% endfor %}
   </ul>
@@ -100,61 +110,60 @@
     <button type="submit" style="background-color: red; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Vaciar carrito</button>
   </form>
 
-<form method="get" style="text-align: center; margin-bottom: 20px;">
-  <label for="aplicar_descuento" style="font-size: 1.1em;">¿Aplicar descuento por pack?</label>
-  <label class="switch">
-    <input type="checkbox" name="aplicar_descuento" value="1" {% if aplicar_descuento %}checked{% endif %} onchange="this.form.submit()">
-    <span class="slider round"></span>
-  </label>
-  
-</form>
+  <form method="get" style="text-align: center; margin-bottom: 20px;">
+    <label for="aplicar_descuento" style="font-size: 1.1em;">¿Aplicar descuento por pack?</label>
+    <label class="switch">
+      <input type="checkbox" name="aplicar_descuento" value="1" {% if aplicar_descuento %}checked{% endif %} onchange="this.form.submit()">
+      <span class="slider round"></span>
+    </label>
+  </form>
 
-<style>
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-  margin-left: 10px;
-}
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #ccc;
-  transition: .4s;
-  border-radius: 34px;
-}
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px; width: 26px;
-  left: 4px; bottom: 4px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-}
-input:checked + .slider {
-  background-color:rgb(249,178,52);
-}
-input:checked + .slider:before {
-  transform: translateX(26px);
-}
-</style>
-
+  <style>
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+      margin-left: 10px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px; width: 26px;
+      left: 4px; bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: rgb(249,178,52);
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+  </style>
 
   <p style="text-align: center; font-size: 1.2em;">
-  <strong>Total: {{ total|floatformat:2 }} €</strong><br>
-  {% if ahorro > 0 %}
-    <span style="color: green;">💸 ¡Te estás ahorrando {{ ahorro|floatformat:2 }} €!</span>
-  {% elif posible_ahorro > 0 %}
-    <span style="color: orange;">💡 Podrías ahorrar {{ posible_ahorro|floatformat:2 }} € si aplicas el descuento por cantidad.</span>
-  {% endif %}
+    <strong>Total: {{ total|floatformat:2 }} €</strong><br>
+    {% if ahorro > 0 %}
+      <span style="color: green;">💸 ¡Te estás ahorrando {{ ahorro|floatformat:2 }} €!</span>
+    {% elif posible_ahorro > 0 %}
+      <span style="color: orange;">💡 Podrías ahorrar {{ posible_ahorro|floatformat:2 }} € si aplicas el descuento por cantidad.</span>
+    {% endif %}
+  </p>
 
   {% if pedidos_abiertos %}
     <form action="{% url 'resumen_pedido' %}" method="get" style="text-align: center;">
