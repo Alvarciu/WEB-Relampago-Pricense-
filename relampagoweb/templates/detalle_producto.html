@@ -23,28 +23,26 @@
 
     <!-- Botones “Solo camiseta” / “Equipación completa” (solo si es tipo Equipación) -->
     {% if producto.tipo == 'Equipación' %}
-      <div class="option-group">
-        <label class="option-button">
-          <input
-            type="radio"
-            name="compra_tipo"
-            value="solo_camiseta"
-            autocomplete="off"
-            checked
-          >
-          <span>Solo camiseta (22 €)</span>
-        </label>
+      <label class="option-button">
+        <input
+          type="radio"
+          name="compra_tipo"
+          value="solo_camiseta"
+          autocomplete="off"
+          checked
+        >
+        <span>Solo camiseta (22.00 €)</span>
+      </label>
 
-        <label class="option-button">
-          <input
-            type="radio"
-            name="compra_tipo"
-            value="completo"
-            autocomplete="off"
-          >
-          <span>Equipación completa ({{ producto.precio|floatformat:2 }} €)</span>
-        </label>
-      </div>
+      <label class="option-button">
+        <input
+          type="radio"
+          name="compra_tipo"
+          value="completo"
+          autocomplete="off"
+        >
+        <span>Equipación completa ({{ producto.precio|floatformat:2 }} €)</span>
+      </label>
 
       <p class="current-price">
         Precio actual: <span class="price-value" id="precio-actual">22.00</span> €

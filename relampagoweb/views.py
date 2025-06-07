@@ -153,10 +153,6 @@ def carrito_view(request):
             request.session['aplicar_descuento'] = False  # se apagó el toggle
     aplicar_descuento = request.session.get('aplicar_descuento', False)
 
-    print("🛒 Carrito actual:", carrito)  # ⬅️ AÑADE ESTO
-
-    print("✅ calculando descuento por camisetas...")
-
     if aplicar_descuento:
         total = calcular_total_carrito(carrito)  # ✅ con descuento
         total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
