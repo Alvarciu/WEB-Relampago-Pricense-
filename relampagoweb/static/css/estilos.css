@@ -398,57 +398,6 @@ body {
 /* ==================================
    BOTONES “Solo camiseta” / “Equipación completa”
    ================================== */
-<<<<<<< HEAD
-.option-group {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-/* Botón personalizado (sin reborde extra, fondo neutro y redondeado) */
-.option-button {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  background-color: #f2f2f2;
-  border: none;
-  border-radius: 999px; /* Muy redondeado */
-  font-size: 0.95rem;
-  color: #333;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.option-button input[type="radio"] {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-}
-
-/* El span que va dentro del label */
-.option-button span {
-  display: inline-block;
-  width: 100%;
-  text-align: center;
-}
-
-/* Cuando el radio está seleccionado, pintamos todo el botón en amarillo y texto oscuro */
-.option-button input[type="radio"]:checked + span {
-  background-color: #f1c40f; /* Amarillo de nuestra marca */
-  color: #111;            /* Texto oscuro */
-  border-radius: 999px;
-  padding: 8px 18px;
-}
-
-/* Hover suave */
-.option-button:hover {
-  background-color: #e8e8e8;
-}
-=======
 
 /* Contenedor del botón */
 .option-button {
@@ -500,7 +449,6 @@ body {
 }
 
 
->>>>>>> master
 
 /* Oculta bloques con la clase .d-none */
 .d-none {
