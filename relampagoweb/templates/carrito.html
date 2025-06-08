@@ -67,7 +67,15 @@
         <div class="carrito-info">
           <form action="{% url 'editar_item_carrito' forloop.counter0 %}" method="post">
             {% csrf_token %}
-            <strong>{{ item.nombre }}</strong><br><br>
+
+             {% if item.tipo == "Equipación" %}
+              {% if item.compra_tipo == "solo_camiseta" %}
+                <h5><strong>Solo camiseta </strong> </h5>
+              {% elif item.compra_tipo == "completo" %}
+                <h5><strong>Tipo: Equipación completa</strong></h5><br>
+              {% endif %}
+            {% endif %}
+
 
             <label>Talla:</label>
             <select name="talla">
@@ -77,14 +85,7 @@
               <option value="XL" {% if item.talla == 'XL' %}selected{% endif %}>XL</option>
             </select><br><br>
 
-            {% if item.tipo == "Equipación" %}
-              {% if item.compra_tipo == "solo_camiseta" %}
-                <p><strong>Tipo:</strong> Solo camiseta</p>
-              {% elif item.compra_tipo == "completo" %}
-                <p><strong>Tipo:</strong> Equipación completa</p>
-              {% endif %}
-            {% endif %}
-
+           
             {% if item.nombre_dorsal is not None %}
               <label>Nombre dorsal:</label>
               <input type="text" name="nombre_dorsal" value="{{ item.nombre_dorsal }}"><br><br>
