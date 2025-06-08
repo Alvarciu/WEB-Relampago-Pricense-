@@ -16,6 +16,15 @@
         {% if item.nombre_dorsal %}
           Dorsal: {{ item.nombre_dorsal }} {{ item.numero_dorsal }}<br>
         {% endif %}
+        {% if item.compra_tipo == 'solo_camiseta' %}
+          {% if pedido.usar_descuento %}
+            Precio: 20.00 €<br>
+          {% else %}
+            Precio: 22.00 €<br>
+          {% endif %}
+        {% else %}
+          Precio: {{ item.producto.precio }} €<br>
+        {% endif %}
       </li>
     {% endfor %}
   </ul>

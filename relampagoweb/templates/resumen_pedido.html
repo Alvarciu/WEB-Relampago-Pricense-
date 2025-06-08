@@ -89,18 +89,28 @@
   </h2>
 
   {% for item in resumen %}
-    <div class="producto-resumen">
-      <img src="{{ item.imagen_url }}" alt="{{ item.nombre }}">
-      <div class="producto-info">
-        <h5>{{ item.nombre }}</h5>
-        <p><strong>Talla:</strong> {{ item.talla }}</p>
-        {% if item.nombre_dorsal %}
-          <p><strong>Dorsal:</strong> {{ item.nombre_dorsal }} {{ item.numero_dorsal }}</p>
+  <div class="producto-resumen">
+    <img src="{{ item.imagen_url }}" alt="{{ item.nombre }}">
+    <div class="producto-info">
+      <h5>{{ item.nombre }}</h5>
+
+      {% if item.tipo == "Equipación" %}
+        {% if item.compra_tipo == "solo_camiseta" %}
+          <h5><strong>Tipo:</strong> Solo camiseta</h5>
+        {% elif item.compra_tipo == "completo" %}
+          <h5><strong>Tipo:</strong> Equipación completa</h5>
         {% endif %}
-        <p><strong>Precio:</strong> {{ item.precio }} €</p>
-      </div>
+      {% endif %}
+
+      <p><strong>Talla:</strong> {{ item.talla }}</p>
+      {% if item.nombre_dorsal %}
+        <p><strong>Dorsal:</strong> {{ item.nombre_dorsal }} {{ item.numero_dorsal }}</p>
+      {% endif %}
+      <p><strong>Precio:</strong> {{ item.precio }} €</p>
     </div>
+  </div>
   {% endfor %}
+
 
   <p class="resumen-total">Total: {{ total }} €</p>
 

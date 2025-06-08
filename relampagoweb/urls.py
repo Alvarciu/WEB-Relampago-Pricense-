@@ -8,7 +8,7 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('', login_required(inicio_view), name='inicio'),
     path('registro/', registro_view, name='registro'),
-     path('accounts/login/', login_view , name='login'),
+    path('accounts/login/', login_view , name='login'),
     path('logout/', logout_view, name='logout'),
     path('', login_required(lambda request: render(request, 'inicio.html')), name='inicio'),
     path('tienda/', tienda_view, name='tienda'),
