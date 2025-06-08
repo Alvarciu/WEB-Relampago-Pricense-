@@ -105,7 +105,7 @@ class Pedido(models.Model):
         camisetas = []
 
         for linea in self.lineas.all():
-            if linea.producto.tipo == 'Equipación' and not linea.nombre_dorsal and not linea.numero_dorsal:
+            if linea.compra_tipo == 'solo_camiseta':
                 camisetas.append(linea)
             else:
                 total += linea.producto.precio
@@ -118,6 +118,7 @@ class Pedido(models.Model):
             total += sum(linea.producto.precio for linea in camisetas)
 
         return total
+
 
     def __str__(self):
         return f"Pedido {self.id} de {self.usuario.email}"
