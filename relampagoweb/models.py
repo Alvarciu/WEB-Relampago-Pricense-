@@ -94,23 +94,43 @@ class Pedido(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     pagado = models.BooleanField(default=False)
     id = models.CharField(primary_key=True, max_length=22, default=shortuuid.uuid, editable=False)
+    usar_descuento = models.BooleanField(default=False)
+
     #lo que significa que se comporta como un atributo normal, pero en realidad es un cálculo que se realiza cuando lo accedes.
     @property
     def total(self):
-        return sum(linea.producto.precio for linea in self.lineas.all())
+        from decimal import Decimal
+
+        total = Decimal('0.00')
+        camisetas = []
+
+        for linea in self.lineas.all():
+            if linea.producto.tipo == 'Equipación' and not linea.nombre_dorsal and not linea.numero_dorsal:
+                camisetas.append(linea)
+            else:
+                total += linea.producto.precio
+
+        if self.usar_descuento:
+            pares = len(camisetas) // 2
+            sueltas = len(camisetas) % 2
+            total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
+        else:
+            total += sum(linea.producto.precio for linea in camisetas)
+
+        return total
 
     def __str__(self):
         return f"Pedido {self.id} de {self.usuario.email}"
 
 
 # Cada "línea de pedido" representa un producto que el usuario ha comprado en ese pedido. 
-# Si alguien compra varias camisetas, habrá varias líneas de pedido, una para cada camiseta.
 class LineaPedido(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='lineas')
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     talla = models.CharField(max_length=10)
     nombre_dorsal = models.CharField(max_length=100, blank=True, null=True)
     numero_dorsal = models.PositiveIntegerField(blank=True, null=True)
+    compra_tipo = models.CharField(max_length=20, blank=True, null=True)  # <- AÑADIDO
 
     def __str__(self):
         return f"{self.producto.nombre} x1"

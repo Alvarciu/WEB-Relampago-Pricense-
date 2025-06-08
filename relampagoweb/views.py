@@ -1,35 +1,42 @@
+# Librerías estándar de Python
+import os
+from decimal import Decimal
+from email.mime.image import MIMEImage
+import pandas as pd
+
+# Django - Atajos y utilidades
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.admin.views.decorators import staff_member_required
-from django.views.decorators.http import require_POST
-from django.core.mail import send_mail, EmailMultiAlternatives
-from django.template.loader import render_to_string
 from django.urls import reverse
 from django.conf import settings
-import pandas as pd
+from django.contrib import messages
+
+# Django - Autenticación y permisos
+from django.contrib.auth import login, authenticate, logout, get_user_model
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.admin.views.decorators import staff_member_required
+
+# Django - Formularios y modelos propios
 from .forms import RegistroForm, LoginForm
 from .models import Producto, Pedido, LineaPedido, Configuracion, get_configuracion
-from django.contrib.auth import get_user_model
-from django.core.mail import send_mass_mail
-from decimal import Decimal
-from django.contrib import messages
-from email.mime.image import MIMEImage
-import os
+
+# Django - Correos
+from django.core.mail import send_mail, send_mass_mail, EmailMultiAlternatives
+from django.template.loader import render_to_string
+
+# Django - Decoradores HTTP
+from django.views.decorators.http import require_POST
 
 
 def es_admin(user):
     return user.is_authenticated and user.is_staff
 
-
 def index(request):
     return HttpResponse('Hello, world')
 
-
+# INICIO DE SESION Y REGISTRO
 def inicio_view(request):
     return render(request, 'inicio.html')
-
 
 def registro_view(request):
     if request.method == 'POST':
@@ -42,7 +49,6 @@ def registro_view(request):
         form = RegistroForm()
     return render(request, 'registro.html', {'form': form})
 
-
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(data=request.POST)
@@ -53,12 +59,16 @@ def login_view(request):
         form = LoginForm()
     return render(request, 'login.html', {'form': form})
 
-
 def logout_view(request):
     logout(request)
     return redirect('login')
 
+# ====== FIN DE SESION Y REGISTRO ======
 
+
+
+
+# TIENDA Y PRODUCTOS
 def tienda_view(request):
     productos = Producto.objects.all()
     camisetas = productos.filter(tipo='Camiseta')
@@ -138,6 +148,10 @@ def añadir_al_carrito_view(request, producto_id):
     return redirect('detalle_producto', producto_id)
 
 
+
+
+#==========  ACCIONES DEL CARRITO ===========
+# - Ver carrito
 @login_required
 def carrito_view(request):
     raw_carrito = request.session.get('carrito', [])
@@ -147,14 +161,12 @@ def carrito_view(request):
         item['imagen_url'] = producto.imagen.url
         item['tipo'] = producto.tipo
         carrito.append(item)
-
     if request.method == "GET":
         if 'aplicar_descuento' in request.GET:
             request.session['aplicar_descuento'] = request.GET.get('aplicar_descuento') == '1'
         elif 'aplicar_descuento' not in request.GET:
             request.session['aplicar_descuento'] = False  # se apagó el toggle
     aplicar_descuento = request.session.get('aplicar_descuento', False)
-
     if aplicar_descuento:
         total = calcular_total_carrito(carrito)  # ✅ con descuento
         total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
@@ -164,9 +176,6 @@ def carrito_view(request):
         total = sum(Decimal(item['precio']) for item in carrito)  # ✅ sin descuento
         ahorro = 0
         posible_ahorro = total - calcular_total_carrito(carrito)
-
-
-
     config = get_configuracion()
     return render(request, 'carrito.html', {
         'carrito': carrito,
@@ -177,24 +186,8 @@ def carrito_view(request):
         'pedidos_abiertos': config.pedidos_abiertos,
     })
 
-# def carrito_view(request):
-#     raw_carrito = request.session.get('carrito', [])
-#     carrito = []
-#     for item in raw_carrito:
-#         producto = Producto.objects.get(id=item['producto_id'])
-#         item['imagen_url'] = producto.imagen.url
-#         item['tipo'] = producto.tipo  # <- Asegúrate de que cada item tenga el tipo
-#         carrito.append(item)
 
-#     total = calcular_total_carrito(carrito)  # ← aquí aplicas el descuento
-
-#     config = get_configuracion()
-#     return render(request, 'carrito.html', {
-#         'carrito': carrito,
-#         'total': total,
-#         'pedidos_abiertos': config.pedidos_abiertos,
-#     })
-
+# ELIMINAR, EDITAR Y VACÍO DEL CARRITO
 @require_POST
 @login_required
 def eliminar_del_carrito_view(request, item_index):
@@ -230,98 +223,9 @@ def vaciar_carrito_view(request):
     request.session['carrito'] = []
     return redirect('carrito')
 
+### ============ FIN ACCIONES DEL CARRITO ============ ###
 
-@user_passes_test(es_admin)
-def exportar_pedidos_excel(request):
-    pedidos = Pedido.objects.prefetch_related('lineas__producto').filter(pagado=True)
-    datos = []
-    for pedido in pedidos:
-        for linea in pedido.lineas.all():
-            datos.append({
-                'Nº Pedido': pedido.id,
-                'Nombre': pedido.usuario.name,
-                'Email': pedido.usuario.email,
-                'Producto': linea.producto.nombre,
-                'Talla': linea.talla,
-                'Nombre dorsal': linea.nombre_dorsal or '',
-                'Dorsal': linea.numero_dorsal or '',
-            })
-    df = pd.DataFrame(datos)
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename=pedidos.xlsx'
-    df.to_excel(response, index=False)
-    return response
-
-
-@user_passes_test(es_admin)
-def lista_pedidos_view(request):
-    pedidos = Pedido.objects.all().order_by('-usuario__name')
-    config = get_configuracion()
-    return render(request, 'admin/lista_pedidos.html', {
-        'pedidos': pedidos,
-        'config': config
-    })
-
-
-@user_passes_test(es_admin)
-def cambiar_estado_pedido(request, pedido_id):
-    if request.method == 'POST':
-        pedido = get_object_or_404(Pedido, id=pedido_id)
-        estaba_no_pagado = not pedido.pagado  # Guardamos el estado anterior
-        pedido.pagado = not pedido.pagado
-        pedido.save()
-
-        if estaba_no_pagado and pedido.pagado:
-            enviar_email_pago_confirmado(pedido)  # ✉️ Enviar solo si ahora está pagado
-
-    return redirect('lista_pedidos')
-
-
-@user_passes_test(es_admin)
-def detalle_pedido_admin_view(request, pedido_id):
-    pedido = get_object_or_404(Pedido, id=pedido_id)
-    return render(request, 'admin/detalle_pedido.html', {'pedido': pedido})
-
-
-def get_configuracion():
-    config, created = Configuracion.objects.get_or_create(id=1)
-    return config
-
-
-@staff_member_required
-def alternar_pedidos_view(request):
-    config = get_configuracion()
-    config.pedidos_abiertos = not config.pedidos_abiertos
-    config.save()
-
-    if config.pedidos_abiertos:
-        usuarios = get_user_model().objects.all()
-        mensajes = []
-        for usuario in usuarios:
-            if usuario.email:
-                asunto = "🟢 ¡Se han abierto los pedidos!"
-                mensaje = (
-                    f"Hola {usuario.name},\n\n"
-                    f"Ya puedes hacer tu pedido en Relámpago Pricense FC desde nuestra tienda online.\n"
-                    f"No pierdas la oportunidad de conseguir tu camiseta personalizada.\n\n"
-                    f"👉 Entra ya en: http://127.0.0.1:8000/tienda/\n\n"
-                    f"¡Gracias por tu apoyo!\n"
-                )
-                mensajes.append((asunto, mensaje, settings.DEFAULT_FROM_EMAIL, [usuario.email]))
-        send_mass_mail(mensajes, fail_silently=True)
-
-    return redirect('lista_pedidos')
-
-
-@user_passes_test(es_admin)
-def panel_pedidos_view(request):
-    pedidos = Pedido.objects.all().order_by('-fecha')
-    pedidos_abiertos = get_configuracion().pedidos_abiertos
-    return render(request, 'panel_pedidos.html', {
-        'pedidos': pedidos,
-        'pedidos_abiertos': pedidos_abiertos,
-    })
-
+### ============ GESTION DE PEDIDOS ============ ### 
 
 
 @login_required
@@ -352,38 +256,55 @@ def resumen_pedido_view(request):
         'total': total
     })
 
-
-
 @login_required
 def confirmar_pedido_view(request):
     carrito = request.session.get('carrito', [])
+    usar_descuento = request.session.get('usar_descuento', False)
     if not carrito:
         return redirect('carrito')
 
-    # Crear pedido
-    pedido = Pedido.objects.create(usuario=request.user, pagado=False)
+    pedido = Pedido.objects.create(usuario=request.user, pagado=False, usar_descuento=usar_descuento)
 
     for item in carrito:
         producto = Producto.objects.get(id=item['producto_id'])
         numero_dorsal_raw = item.get('numero_dorsal')
         numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
+        compra_tipo = item.get('compra_tipo')  # nuevo
 
         LineaPedido.objects.create(
             pedido=pedido,
             producto=producto,
             talla=item['talla'],
             nombre_dorsal=item.get('nombre_dorsal') or '',
-            numero_dorsal=numero_dorsal
+            numero_dorsal=numero_dorsal,
+            compra_tipo=item.get('compra_tipo')  #¡
         )
 
-    # Limpiar el carrito de la sesión
-    del request.session['carrito']
 
-    # Preparar correo de confirmación
+
+    # Limpiar sesión
+    del request.session['carrito']
+    request.session.pop('usar_descuento', None)
+
+    # Calcular total con o sin descuento
+    carrito_items = []
+    for linea in pedido.lineas.all():
+        carrito_items.append({
+            'precio': float(linea.producto.precio),
+            'tipo': linea.producto.tipo,
+            'compra_tipo': 'solo_camiseta' if not linea.nombre_dorsal else 'completo'
+        })
+
+    if usar_descuento:
+        total = calcular_total_carrito(carrito_items)
+    else:
+        total = sum(Decimal(item['precio']) for item in carrito_items)
+
+    # Preparar correo
     asunto = f"Confirmación de tu pedido #{pedido.id} en Relámpago Pricense FC"
     html_content = render_to_string('emails/confirmacion_pedido.html', {
         'pedido': pedido,
-        'usuario': request.user
+        'usuario': request.user,
     })
 
     email = EmailMultiAlternatives(
@@ -394,17 +315,21 @@ def confirmar_pedido_view(request):
     )
     email.attach_alternative(html_content, "text/html")
 
-    # Adjuntar el escudo inline
     logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
-    with open(logo_path, 'rb') as f:
-        logo = MIMEImage(f.read())
-        logo.add_header('Content-ID', '<logo_escudo>')
-        logo.add_header('Content-Disposition', 'inline')
-        email.attach(logo)
+    if os.path.exists(logo_path):
+        with open(logo_path, 'rb') as f:
+            logo = MIMEImage(f.read())
+            logo.add_header('Content-ID', '<logo_escudo>')
+            logo.add_header('Content-Disposition', 'inline')
+            email.attach(logo)
 
     email.send()
 
-    return render(request, 'pedido_confirmado.html', {'pedido': pedido})
+    return render(request, 'pedido_confirmado.html', {
+        'pedido': pedido,
+        'total': total
+    })
+
 
 
 @login_required
@@ -489,3 +414,102 @@ def enviar_email_pago_confirmado(pedido):
             email.attach(image)
 
     email.send()
+
+### ============ FIN GESTION DE PEDIDOS ============ ###
+
+
+### ============ ADMINISTRACIÓN DE PEDIDOS ============ ###
+
+@user_passes_test(es_admin)
+def exportar_pedidos_excel(request):
+    pedidos = Pedido.objects.prefetch_related('lineas__producto').filter(pagado=True)
+    datos = []
+    for pedido in pedidos:
+        for linea in pedido.lineas.all():
+            datos.append({
+                'Nº Pedido': pedido.id,
+                'Nombre': pedido.usuario.name,
+                'Email': pedido.usuario.email,
+                'Producto': linea.producto.nombre,
+                'Talla': linea.talla,
+                'Nombre dorsal': linea.nombre_dorsal or '',
+                'Dorsal': linea.numero_dorsal or '',
+            })
+    df = pd.DataFrame(datos)
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=pedidos.xlsx'
+    df.to_excel(response, index=False)
+    return response
+
+
+@user_passes_test(es_admin)
+def lista_pedidos_view(request):
+    pedidos = Pedido.objects.all().order_by('-usuario__name')
+    config = get_configuracion()
+    return render(request, 'admin/lista_pedidos.html', {
+        'pedidos': pedidos,
+        'config': config
+    })
+
+
+@user_passes_test(es_admin)
+def cambiar_estado_pedido(request, pedido_id):
+    if request.method == 'POST':
+        pedido = get_object_or_404(Pedido, id=pedido_id)
+        estaba_no_pagado = not pedido.pagado  # Guardamos el estado anterior
+        pedido.pagado = not pedido.pagado
+        pedido.save()
+
+        if estaba_no_pagado and pedido.pagado:
+            enviar_email_pago_confirmado(pedido)  # ✉️ Enviar solo si ahora está pagado
+
+    return redirect('lista_pedidos')
+
+
+@user_passes_test(es_admin)
+def detalle_pedido_admin_view(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    return render(request, 'admin/detalle_pedido.html', {'pedido': pedido})
+
+
+def get_configuracion():
+    config, created = Configuracion.objects.get_or_create(id=1)
+    return config
+
+
+## MANDAR CORREO PARA ABRIR PEDIDOS ###
+@staff_member_required
+def alternar_pedidos_view(request):
+    config = get_configuracion()
+    config.pedidos_abiertos = not config.pedidos_abiertos
+    config.save()
+
+    if config.pedidos_abiertos:
+        usuarios = get_user_model().objects.all()
+        mensajes = []
+        for usuario in usuarios:
+            if usuario.email:
+                asunto = "🟢 ¡Se han abierto los pedidos!"
+                mensaje = (
+                    f"Hola {usuario.name},\n\n"
+                    f"Ya puedes hacer tu pedido en Relámpago Pricense FC desde nuestra tienda online.\n"
+                    f"No pierdas la oportunidad de conseguir tu camiseta personalizada.\n\n"
+                    f"👉 Entra ya en: http://127.0.0.1:8000/tienda/\n\n"
+                    f"¡Gracias por tu apoyo!\n"
+                )
+                mensajes.append((asunto, mensaje, settings.DEFAULT_FROM_EMAIL, [usuario.email]))
+        send_mass_mail(mensajes, fail_silently=True)
+
+    return redirect('lista_pedidos')
+
+
+@user_passes_test(es_admin)
+def panel_pedidos_view(request):
+    pedidos = Pedido.objects.all().order_by('-fecha')
+    pedidos_abiertos = get_configuracion().pedidos_abiertos
+    return render(request, 'panel_pedidos.html', {
+        'pedidos': pedidos,
+        'pedidos_abiertos': pedidos_abiertos,
+    })
+
+
