@@ -69,6 +69,7 @@
           value="solo_camiseta"
         >
       {% endif %}
+      
 
       <!-- Selección de Talla -->
       <div class="form-group">
@@ -85,28 +86,29 @@
           <option value="XL">XL</option>
         </select>
       </div>
-
-      <!-- Campos de Dorsal (siempre visibles) -->
-      <div id="dorsal-fields" class="form-group">
-        <label for="nombre_dorsal" class="form-label">Nombre dorsal:</label>
-        <input
-          type="text"
-          name="nombre_dorsal"
-          id="nombre_dorsal"
-          class="form-input w-75"
-          placeholder="Ej: ÁLVARO"
-          maxlength="20"
-        >
-        <label for="numero_dorsal" class="form-label mt-2">Número dorsal:</label>
-        <input
-          type="number"
-          name="numero_dorsal"
-          id="numero_dorsal"
-          class="form-input w-50"
-          placeholder="Ej: 9"
-          min="0"
-        >
-      </div>
+      {% if producto.tipo == 'Equipación' %}
+        <!-- Campos de Dorsal (siempre visibles) -->
+        <div id="dorsal-fields" class="form-group">
+          <label for="nombre_dorsal" class="form-label">Nombre dorsal:</label>
+          <input
+            type="text"
+            name="nombre_dorsal"
+            id="nombre_dorsal"
+            class="form-input w-75"
+            placeholder="Ej: ÁLVARO"
+            maxlength="20"
+          >
+          <label for="numero_dorsal" class="form-label mt-2">Número dorsal:</label>
+          <input
+            type="number"
+            name="numero_dorsal"
+            id="numero_dorsal"
+            class="form-input w-50"
+            placeholder="Ej: 9"
+            min="0"
+          >
+        </div>
+      {% endif %}
 
       <!-- Botón de añadir al carrito -->
       <button type="submit" class="btn-add-cart">

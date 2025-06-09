@@ -68,12 +68,14 @@
           <form action="{% url 'editar_item_carrito' forloop.counter0 %}" method="post">
             {% csrf_token %}
 
-             {% if item.tipo == "Equipación" %}
+            {% if item.tipo == "Equipación" %}
               {% if item.compra_tipo == "solo_camiseta" %}
-                <h5><strong>Camiseta</strong></h5><br>
+                <h5><strong>Camiseta Oficial 2024/2025</strong></h5><br>
               {% elif item.compra_tipo == "completo" %}
-                <h5><strong>Equipación completa</strong></h5><br>
+                <h5><strong>{{ item.nombre }}</strong></h5><br>
               {% endif %}
+            {% else %}
+              <h5><strong>{{ item.nombre }}</strong></h5><br>
             {% endif %}
 
 
@@ -85,15 +87,15 @@
               <option value="XL" {% if item.talla == 'XL' %}selected{% endif %}>XL</option>
             </select><br><br>
 
-           
-            {% if item.nombre_dorsal is not None %}
-              <label>Nombre dorsal:</label>
-              <input type="text" name="nombre_dorsal" value="{{ item.nombre_dorsal }}"><br><br>
+            {% if item.tipo == "Equipación" %}
+              {% if item.nombre_dorsal is not None %}
+                <label>Nombre dorsal:</label>
+                <input type="text" name="nombre_dorsal" value="{{ item.nombre_dorsal }}"><br><br>
 
-              <label>Número dorsal:</label>
-              <input type="number" name="numero_dorsal" value="{{ item.numero_dorsal }}"><br><br>
+                <label>Número dorsal:</label>
+                <input type="number" name="numero_dorsal" value="{{ item.numero_dorsal }}"><br><br>
+              {% endif %}
             {% endif %}
-
             <button type="submit" style="background-color: #f1c40f; color: black; font-weight: bold; padding: 10px 20px; border: none; border-radius: 5px;">
               Guardar cambios
             </button>
