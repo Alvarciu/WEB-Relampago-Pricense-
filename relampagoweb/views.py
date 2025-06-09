@@ -27,6 +27,15 @@ from django.template.loader import render_to_string
 # Django - Decoradores HTTP
 from django.views.decorators.http import require_POST
 
+from django.utils import translation
+
+# Django - Recuperacion de contraseñas
+from django.contrib.auth.views import PasswordResetView
+from django.contrib.messages.views import SuccessMessageMixin
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+
 
 def es_admin(user):
     return user.is_authenticated and user.is_staff
@@ -39,6 +48,7 @@ def inicio_view(request):
     return render(request, 'inicio.html')
 
 def registro_view(request):
+    translation.activate('es')
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
@@ -513,3 +523,55 @@ def panel_pedidos_view(request):
     })
 
 
+
+# ✔⃣ Vista personalizada que sobrescribe el envio del email
+class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
+    template_name = 'contraseña/password_reset_form.html'
+    email_template_name = 'emails/password_reset_email.html'  # ← ✅ usa solo esta
+    subject_template_name = 'emails/password_reset_subject.txt'
+    success_url = '/password_reset/done/'
+    success_message = "Si el correo existe, se ha enviado el enlace de recuperación."
+
+
+
+    def form_valid(self, form):
+        """
+        Sobrescribimos el método para enviar el correo con estilo HTML usando EmailMultiAlternatives,
+        como ya haces en tus pedidos.
+        """
+        print("🔧 Se está usando CustomPasswordResetView ✅")
+        email = form.cleaned_data["email"]
+        usuario_modelo = get_user_model()
+        usuarios = usuario_modelo._default_manager.filter(email__iexact=email, is_active=True)
+        for user in usuarios:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_url = self.request.build_absolute_uri(
+                reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token})
+            )
+            enviar_email_recuperacion_contraseña(user, reset_url)
+
+        return super().form_valid(form)
+
+
+def enviar_email_recuperacion_contraseña(usuario, reset_url):
+    asunto = "🔐 Recupera tu contraseña - Relámpago Pricense FC"
+    remitente = settings.DEFAULT_FROM_EMAIL
+    destinatario = [usuario.email]
+
+    html_content = render_to_string("emails/password_reset_email.html", {
+        "reset_url": reset_url,
+        "usuario": usuario,
+    })
+
+    mensaje = EmailMultiAlternatives(asunto, "", remitente, destinatario)
+    mensaje.attach_alternative(html_content, "text/html")
+
+    logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
+    if os.path.exists(logo_path):
+        with open(logo_path, 'rb') as f:
+            image = MIMEImage(f.read())
+            image.add_header('Content-ID', '<logo_escudo>')
+            mensaje.attach(image)
+
+    mensaje.send()
