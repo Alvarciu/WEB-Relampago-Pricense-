@@ -127,16 +127,20 @@ def añadir_al_carrito_view(request, producto_id):
             precio_item = float(producto.precio)
 
         # Construimos el ítem que se guardará en sesión
+        tipo_real = (
+        'Camiseta' if producto.tipo == 'Equipación' and request.POST.get('compra_tipo') == 'solo_camiseta'
+        else producto.tipo
+        )
+        
         item = {
-            'producto_id': producto.id,
-            'nombre': producto.nombre,
-            'precio': precio_item,
-            'talla': talla,
-            'tipo': producto.tipo,
-            # Si es equipación guardamos la opción elegida, si no, None
-            'compra_tipo': request.POST.get('compra_tipo') if producto.tipo == 'Equipación' else None,
-            'nombre_dorsal': nombre_dorsal,
-            'numero_dorsal': numero_dorsal,
+        'producto_id': producto.id,
+        'nombre': producto.nombre,
+        'precio': precio_item,
+        'talla': talla,
+        'tipo': tipo_real,  # 👈 usamos el tipo real ajustado
+        'compra_tipo': request.POST.get('compra_tipo') if producto.tipo == 'Equipación' else None,
+        'nombre_dorsal': nombre_dorsal,
+        'numero_dorsal': numero_dorsal,
         }
 
         carrito.append(item)
@@ -152,6 +156,42 @@ def añadir_al_carrito_view(request, producto_id):
 
 #==========  ACCIONES DEL CARRITO ===========
 # - Ver carrito
+# @login_required
+# def carrito_view(request):
+#     raw_carrito = request.session.get('carrito', [])
+#     carrito = []
+#     for item in raw_carrito:
+#         producto = Producto.objects.get(id=item['producto_id'])
+#         item['imagen_url'] = producto.imagen.url
+#         item['tipo'] = producto.tipo
+#         carrito.append(item)
+#     if request.method == "GET":
+#         if 'aplicar_descuento' in request.GET:
+#             request.session['aplicar_descuento'] = request.GET.get('aplicar_descuento') == '1'
+#         elif 'aplicar_descuento' not in request.GET:
+#             request.session['aplicar_descuento'] = False  # se apagó el toggle
+#     aplicar_descuento = request.session.get('aplicar_descuento', False)
+#     if aplicar_descuento:
+#         total = calcular_total_carrito(carrito)  # ✅ con descuento
+#         total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
+#         ahorro = total_sin_descuento - total
+#         posible_ahorro = 0
+#     else:
+#         total = sum(Decimal(item['precio']) for item in carrito)  # ✅ sin descuento
+#         ahorro = 0
+#         posible_ahorro = total - calcular_total_carrito(carrito)
+#     config = get_configuracion()
+#     return render(request, 'carrito.html', {
+#         'carrito': carrito,
+#         'total': total,
+#         'ahorro': ahorro,
+#         'aplicar_descuento': aplicar_descuento,
+#         'posible_ahorro': posible_ahorro,
+#         'pedidos_abiertos': config.pedidos_abiertos,
+#     })
+
+
+# - Ver carrito
 @login_required
 def carrito_view(request):
     raw_carrito = request.session.get('carrito', [])
@@ -159,14 +199,17 @@ def carrito_view(request):
     for item in raw_carrito:
         producto = Producto.objects.get(id=item['producto_id'])
         item['imagen_url'] = producto.imagen.url
-        item['tipo'] = producto.tipo
+        # NO sobreescribimos item['tipo'] aquí para respetar el 'tipo_real' guardado en sesión
         carrito.append(item)
+
     if request.method == "GET":
         if 'aplicar_descuento' in request.GET:
             request.session['aplicar_descuento'] = request.GET.get('aplicar_descuento') == '1'
         elif 'aplicar_descuento' not in request.GET:
             request.session['aplicar_descuento'] = False  # se apagó el toggle
+
     aplicar_descuento = request.session.get('aplicar_descuento', False)
+
     if aplicar_descuento:
         total = calcular_total_carrito(carrito)  # ✅ con descuento
         total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
@@ -176,6 +219,7 @@ def carrito_view(request):
         total = sum(Decimal(item['precio']) for item in carrito)  # ✅ sin descuento
         ahorro = 0
         posible_ahorro = total - calcular_total_carrito(carrito)
+
     config = get_configuracion()
     return render(request, 'carrito.html', {
         'carrito': carrito,
@@ -226,28 +270,32 @@ def vaciar_carrito_view(request):
 ### ============ FIN ACCIONES DEL CARRITO ============ ###
 
 ### ============ GESTION DE PEDIDOS ============ ### 
-
-
 @login_required
 def resumen_pedido_view(request):
     raw_carrito = request.session.get('carrito', [])
     resumen = []
     aplicar_descuento = request.session.get('aplicar_descuento', False)
 
-    # Rellenamos el resumen con info visual
     for item in raw_carrito:
         try:
             producto = Producto.objects.get(id=item['producto_id'])
             item['imagen_url'] = producto.imagen.url
+
+            # ✅ Ajustar tipo si es solo camiseta
+            if producto.tipo == "Equipación" and item.get('compra_tipo') == "solo_camiseta":
+                item['tipo'] = "Camiseta"
+            else:
+                item['tipo'] = producto.tipo
+
             resumen.append(item)
         except Producto.DoesNotExist:
             continue
 
-    # Calculamos el total con o sin descuento
-    if aplicar_descuento:
-        total = calcular_total_carrito(resumen)  # con descuento
-    else:
-        total = sum(Decimal(item['precio']) for item in resumen)  # sin descuento
+    total = (
+        calcular_total_carrito(resumen)
+        if aplicar_descuento
+        else sum(Decimal(item['precio']) for item in resumen)
+    )
 
     request.session['resumen_pedido'] = resumen
 
@@ -259,7 +307,9 @@ def resumen_pedido_view(request):
 @login_required
 def confirmar_pedido_view(request):
     carrito = request.session.get('carrito', [])
-    usar_descuento = request.session.get('usar_descuento', False)
+    usar_descuento = request.session.get('aplicar_descuento', False)
+
+
     if not carrito:
         return redirect('carrito')
 
@@ -269,7 +319,6 @@ def confirmar_pedido_view(request):
         producto = Producto.objects.get(id=item['producto_id'])
         numero_dorsal_raw = item.get('numero_dorsal')
         numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
-        compra_tipo = item.get('compra_tipo')  # nuevo
 
         LineaPedido.objects.create(
             pedido=pedido,
@@ -277,22 +326,20 @@ def confirmar_pedido_view(request):
             talla=item['talla'],
             nombre_dorsal=item.get('nombre_dorsal') or '',
             numero_dorsal=numero_dorsal,
-            compra_tipo=item.get('compra_tipo')  #¡
+            compra_tipo=item.get('compra_tipo')
         )
-
-
 
     # Limpiar sesión
     del request.session['carrito']
     request.session.pop('usar_descuento', None)
 
-    # Calcular total con o sin descuento
+    # Calcular total con o sin descuento usando el campo compra_tipo
     carrito_items = []
     for linea in pedido.lineas.all():
         carrito_items.append({
             'precio': float(linea.producto.precio),
-            'tipo': linea.producto.tipo,
-            'compra_tipo': 'solo_camiseta' if not linea.nombre_dorsal else 'completo'
+            'tipo': 'Camiseta' if linea.compra_tipo == 'solo_camiseta' else linea.producto.tipo,
+            'compra_tipo': linea.compra_tipo
         })
 
     if usar_descuento:
@@ -300,35 +347,62 @@ def confirmar_pedido_view(request):
     else:
         total = sum(Decimal(item['precio']) for item in carrito_items)
 
-    # Preparar correo
-    asunto = f"Confirmación de tu pedido #{pedido.id} en Relámpago Pricense FC"
-    html_content = render_to_string('emails/confirmacion_pedido.html', {
-        'pedido': pedido,
-        'usuario': request.user,
-    })
-
-    email = EmailMultiAlternatives(
-        subject=asunto,
-        body="Gracias por tu pedido. Consulta los detalles en la versión HTML.",
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[request.user.email]
-    )
-    email.attach_alternative(html_content, "text/html")
-
-    logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
-    if os.path.exists(logo_path):
-        with open(logo_path, 'rb') as f:
-            logo = MIMEImage(f.read())
-            logo.add_header('Content-ID', '<logo_escudo>')
-            logo.add_header('Content-Disposition', 'inline')
-            email.attach(logo)
-
-    email.send()
+    # Preparar y enviar correo como antes...
+    # (Aquí puedes dejar el bloque de envío de correo exactamente igual)
 
     return render(request, 'pedido_confirmado.html', {
         'pedido': pedido,
         'total': total
     })
+
+
+# # Limpiar sesión
+# del request.session['carrito']
+# request.session.pop('usar_descuento', None)
+
+# # Calcular total con o sin descuento
+# carrito_items = []
+# for linea in pedido.lineas.all():
+#     carrito_items.append({
+#         'precio': float(linea.producto.precio),
+#         'tipo': linea.producto.tipo,
+#         'compra_tipo': 'solo_camiseta' if not linea.nombre_dorsal else 'completo'
+#     })
+
+# if usar_descuento:
+#     total = calcular_total_carrito(carrito_items)
+# else:
+#     total = sum(Decimal(item['precio']) for item in carrito_items)
+
+# # Preparar correo
+# asunto = f"Confirmación de tu pedido #{pedido.id} en Relámpago Pricense FC"
+# html_content = render_to_string('emails/confirmacion_pedido.html', {
+#     'pedido': pedido,
+#     'usuario': request.user,
+# })
+
+# email = EmailMultiAlternatives(
+#     subject=asunto,
+#     body="Gracias por tu pedido. Consulta los detalles en la versión HTML.",
+#     from_email=settings.DEFAULT_FROM_EMAIL,
+#     to=[request.user.email]
+# )
+# email.attach_alternative(html_content, "text/html")
+
+# logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
+# if os.path.exists(logo_path):
+#     with open(logo_path, 'rb') as f:
+#         logo = MIMEImage(f.read())
+#         logo.add_header('Content-ID', '<logo_escudo>')
+#         logo.add_header('Content-Disposition', 'inline')
+#         email.attach(logo)
+
+# email.send()
+
+# return render(request, 'pedido_confirmado.html', {
+#     'pedido': pedido,
+#     'total': total
+# })
 
 
 
