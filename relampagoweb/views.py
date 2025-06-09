@@ -113,9 +113,9 @@ def añadir_al_carrito_view(request, producto_id):
             compra_tipo = request.POST.get('compra_tipo', 'solo_camiseta')
             if compra_tipo == 'solo_camiseta':
                 precio_item = 22.00
-                # No guardamos dorsales cuando solo es 
-                nombre_dorsal = ''
-                numero_dorsal = None
+                nombre_dorsal = request.POST.get('nombre_dorsal', '') or ''
+                numero_dorsal_raw = request.POST.get('numero_dorsal')
+                numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
             else:
                 # Equipación completa: tomamos precio original y dorsales
                 precio_item = float(producto.precio)
