@@ -1,11 +1,167 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block layout %}{% endblock %}
 
 {% block content %}
-<h2>Registro</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Registrarse</button>
-</form>
-<a href="{% url 'login' %}">¿Ya tienes cuenta? Inicia sesión</a>
+<style>
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+  }
+
+  *, *::before, *::after {
+    box-sizing: inherit;
+  }
+
+  body {
+    background-image: url("{% static 'img/fondoIglesia.jpeg' %}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  .auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+
+  .auth-box {
+    display: flex;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 16px;
+    overflow: hidden;
+    max-width: 900px;
+    width: 100%;
+    color: white;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  }
+
+  .auth-image {
+    background-image: url("{% static 'img/escudo.png' %}");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    flex: 1;
+    min-height: 250px;
+  }
+
+  .auth-form {
+    flex: 1;
+    padding: 40px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .auth-form h2 {
+    margin-bottom: 10px;
+    font-size: 24px;
+  }
+
+  .auth-form p {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .auth-form form {
+    margin: 0 !important;
+  }
+
+  .auth-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
+
+  .auth-form input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+  }
+
+  .auth-form .errorlist {
+    color: #ff7070;
+    font-size: 14px;
+    margin-top: -5px;
+    margin-bottom: 10px;
+  }
+
+  .auth-form button[type="submit"] {
+    background-color: #f1c40f;
+    color: black;
+    font-weight: bold;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+    width: 100%;
+  }
+
+  .auth-form button:hover {
+    background-color: #d4ac0d;
+  }
+
+  .auth-form a {
+    color: #1a73e8;
+    text-decoration: none;
+    font-size: 14px;
+    display: block;
+    margin-top: 12px;
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .auth-box {
+      flex-direction: column;
+    }
+    .auth-image {
+      display: none;
+    }
+  }
+</style>
+
+<div class="auth-container">
+  <div class="auth-box">
+    <div class="auth-image"></div>
+    <div class="auth-form">
+      <h2>Registro</h2>
+      <p>Crea tu cuenta para comenzar</p>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% for field in form %}
+          <div>
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+              <div class="errorlist">
+                {{ field.errors|striptags }}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <button type="submit">Registrarse</button>
+      </form>
+
+      <a href="{% url 'login' %}">¿Ya tienes cuenta? Inicia sesión</a>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -27,6 +27,8 @@ from django.template.loader import render_to_string
 # Django - Decoradores HTTP
 from django.views.decorators.http import require_POST
 
+from django.utils import translation
+
 
 def es_admin(user):
     return user.is_authenticated and user.is_staff
@@ -39,6 +41,7 @@ def inicio_view(request):
     return render(request, 'inicio.html')
 
 def registro_view(request):
+    translation.activate('es')
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
