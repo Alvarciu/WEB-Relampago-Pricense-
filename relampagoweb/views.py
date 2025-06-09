@@ -151,46 +151,6 @@ def añadir_al_carrito_view(request, producto_id):
     # Si no es POST, redirigimos de nuevo a la página de detalle
     return redirect('detalle_producto', producto_id)
 
-
-
-
-#==========  ACCIONES DEL CARRITO ===========
-# - Ver carrito
-# @login_required
-# def carrito_view(request):
-#     raw_carrito = request.session.get('carrito', [])
-#     carrito = []
-#     for item in raw_carrito:
-#         producto = Producto.objects.get(id=item['producto_id'])
-#         item['imagen_url'] = producto.imagen.url
-#         item['tipo'] = producto.tipo
-#         carrito.append(item)
-#     if request.method == "GET":
-#         if 'aplicar_descuento' in request.GET:
-#             request.session['aplicar_descuento'] = request.GET.get('aplicar_descuento') == '1'
-#         elif 'aplicar_descuento' not in request.GET:
-#             request.session['aplicar_descuento'] = False  # se apagó el toggle
-#     aplicar_descuento = request.session.get('aplicar_descuento', False)
-#     if aplicar_descuento:
-#         total = calcular_total_carrito(carrito)  # ✅ con descuento
-#         total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
-#         ahorro = total_sin_descuento - total
-#         posible_ahorro = 0
-#     else:
-#         total = sum(Decimal(item['precio']) for item in carrito)  # ✅ sin descuento
-#         ahorro = 0
-#         posible_ahorro = total - calcular_total_carrito(carrito)
-#     config = get_configuracion()
-#     return render(request, 'carrito.html', {
-#         'carrito': carrito,
-#         'total': total,
-#         'ahorro': ahorro,
-#         'aplicar_descuento': aplicar_descuento,
-#         'posible_ahorro': posible_ahorro,
-#         'pedidos_abiertos': config.pedidos_abiertos,
-#     })
-
-
 # - Ver carrito
 @login_required
 def carrito_view(request):
@@ -304,58 +264,6 @@ def resumen_pedido_view(request):
         'total': total
     })
 
-# @login_required
-# def confirmar_pedido_view(request):
-#     carrito = request.session.get('carrito', [])
-#     usar_descuento = request.session.get('aplicar_descuento', False)
-
-
-#     if not carrito:
-#         return redirect('carrito')
-
-#     pedido = Pedido.objects.create(usuario=request.user, pagado=False, usar_descuento=usar_descuento)
-
-#     for item in carrito:
-#         producto = Producto.objects.get(id=item['producto_id'])
-#         numero_dorsal_raw = item.get('numero_dorsal')
-#         numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
-
-#         LineaPedido.objects.create(
-#             pedido=pedido,
-#             producto=producto,
-#             talla=item['talla'],
-#             nombre_dorsal=item.get('nombre_dorsal') or '',
-#             numero_dorsal=numero_dorsal,
-#             compra_tipo=item.get('compra_tipo')
-#         )
-
-#     # Limpiar sesión
-#     del request.session['carrito']
-#     request.session.pop('usar_descuento', None)
-
-#     # Calcular total con o sin descuento usando el campo compra_tipo
-#     carrito_items = []
-#     for linea in pedido.lineas.all():
-#         # Aseguramos el precio correcto según tipo de compra
-#         if linea.compra_tipo == 'solo_camiseta':
-#             precio_real = 22.00
-#         else:
-#             precio_real = float(linea.producto.precio)
-
-#         carrito_items.append({
-#             'precio': precio_real,
-#             'tipo': 'Camiseta' if linea.compra_tipo == 'solo_camiseta' else linea.producto.tipo,
-#             'compra_tipo': linea.compra_tipo
-#         })
-
-
-#     # Preparar y enviar correo como antes...
-#     # (Aquí puedes dejar el bloque de envío de correo exactamente igual)
-
-#     return render(request, 'pedido_confirmado.html', {
-#         'pedido': pedido,
-#         'total': total
-#     })
 
 from decimal import Decimal
 
