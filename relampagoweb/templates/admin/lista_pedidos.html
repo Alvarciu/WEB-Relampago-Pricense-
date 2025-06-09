@@ -97,6 +97,7 @@
       <th>ID</th>
       <th class="sortable">Usuario <span class="filtro-icono">🔽</span></th>
       <th>Email</th>
+      <th>Telefono</th>
       <th>Fecha</th>
       <th>Total</th>
       <th class="sortable">Estado <span class="filtro-icono">🔽</span></th>
@@ -109,6 +110,7 @@
       <td>{{ pedido.id }}</td>
       <td>{{ pedido.usuario.name }}</td>
       <td>{{ pedido.usuario.email }}</td>
+      <td>{{ pedido.usuario.telefono }}</td>
       <td>{{ pedido.fecha|date:"d/m/Y H:i" }}</td>
       <td>{{ pedido.total }} €</td>
       <td>
