@@ -79,17 +79,22 @@
             {% endif %}
 
             <label><strong>Talla:</strong> {{ item.talla }}</label><br>
+
+          {% if item.nombre_dorsal or item.numero_dorsal %}
             {% if item.nombre_dorsal %}
               <label><strong>Nombre:</strong> {{ item.nombre_dorsal }}</label><br>
             {% else %}
-              <label><strong>Nombre:</strong> Este articulo no cuenta con nombre </label><br>
+              <label><strong>Nombre:</strong> Este artículo no tiene nombre personalizado</label><br>
             {% endif %}
 
             {% if item.numero_dorsal %}
-              <label><strong>Numero:</strong> {{ item.numero_dorsal }}</label><br>
+              <label><strong>Número:</strong> {{ item.numero_dorsal }}</label><br>
             {% else %}
-              <label><strong>Numero:</strong> Este articulo no cuenta con número </label><br>
+              <label><strong>Número:</strong> Este artículo no tiene número personalizado</label><br>
             {% endif %}
+          {% else %}
+            <label><strong>Personalización:</strong> Este artículo no está personalizado</label><br>
+          {% endif %}
 
           </form>
           <form action="{% url 'eliminar_del_carrito' forloop.counter0 %}" method="post" style="display:inline;">
