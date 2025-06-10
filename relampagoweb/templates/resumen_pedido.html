@@ -85,7 +85,7 @@
 
 <div class="resumen-container">
   <h2 class="resumen-title">
-    <i class="bi bi-calendar-check-fill text-primary"></i> Resumen del pedido
+    <i class="bi bi-calendar-check-fill text-primary"></i> Resumens del pedido
   </h2>
 
   {% for item in resumen %}
@@ -93,14 +93,6 @@
     <img src="{{ item.imagen_url }}" alt="{{ item.nombre }}">
     <div class="producto-info">
       <h5>{{ item.nombre }}</h5>
-
-      {% if item.tipo == "Equipación" %}
-        {% if item.compra_tipo == "solo_camiseta" %}
-          <h5><strong>Tipo:</strong> Solo camiseta</h5>
-        {% elif item.compra_tipo == "completo" %}
-          <h5><strong>Tipo:</strong> Equipación completa</h5>
-        {% endif %}
-      {% endif %}
 
       <p><strong>Talla:</strong> {{ item.talla }}</p>
       {% if item.nombre_dorsal %}

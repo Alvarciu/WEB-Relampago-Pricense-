@@ -31,7 +31,7 @@ urlpatterns = [
     path('pedido/<str:pedido_id>/cambiar_estado/', cambiar_estado_pedido, name='cambiar_estado_pedido'),
 
     # Administración
-    path('exportar-pedidos/', exportar_pedidos_excel , name='exportar_pedidos_excel'),
+    path('exportar-pedidos/', exportar_pedidos_excel , name='exportar_pedidos'),
     path('panel/pedidos/', lista_pedidos_view, name='lista_pedidos'),
     path('panel/pedidos/toggle/', alternar_pedidos_view, name='alternar_pedidos'),
     path('panel/pedidos/<str:pedido_id>/', detalle_pedido_admin_view, name='detalle_pedido_admin'),

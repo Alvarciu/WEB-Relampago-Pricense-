@@ -118,8 +118,6 @@ class Pedido(models.Model):
             total += sum(linea.producto.precio for linea in camisetas)
 
         return total
-
-
     def __str__(self):
         return f"Pedido {self.id} de {self.usuario.email}"
 
