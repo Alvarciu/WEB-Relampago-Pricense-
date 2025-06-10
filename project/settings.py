@@ -27,7 +27,10 @@ SECRET_KEY = 'django-insecure-pzf!=rjq%q$prpepp_eu-b_aj_l$ao2*!uqz2z!53b%r-lzvjw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = ['berural.onrender.com','localhost', '127.0.0.1']
+
+# CSRF_TRUSTED_ORIGINS = ['https://berural.onrender.com']
 
 
 # Application definition
@@ -46,6 +49,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -70,7 +74,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'project.wsgi.application'
+# WSGI_APPLICATION = 'project.wsgi.application'
 
 
 # Database
@@ -122,7 +126,12 @@ TIME_ZONE = 'Europe/Madrid'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATICFILES_STORAGE="whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WSGI_APPLICATION = "project.wsgi.application"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -134,9 +143,8 @@ AUTH_USER_MODEL = 'relampagoweb.Usuario'  # Usa la app donde esté tu modelo
 
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'
 
-STATICFILES_DIRS = [BASE_DIR / 'relampagoweb/static']
 
 PEDIDOS_ABIERTOS = True  # Cambia esto a False para cerrar pedidos
 

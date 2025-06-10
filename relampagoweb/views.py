@@ -10,6 +10,8 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.conf import settings
 from django.contrib import messages
+from django.http import Http404
+
 
 # Django - Autenticación y permisos
 from django.contrib.auth import login, authenticate, logout, get_user_model
@@ -73,9 +75,15 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+from django.http import JsonResponse
+from .models import Usuario
+
+def verificar_email(request):
+    email = request.GET.get('email')
+    existe = Usuario.objects.filter(email=email).exists()
+    return JsonResponse({'exists': existe})
+
 # ====== FIN DE SESION Y REGISTRO ======
-
-
 
 
 # TIENDA Y PRODUCTOS
@@ -561,55 +569,58 @@ def panel_pedidos_view(request):
     })
 
 
+# views.py
+import uuid
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.shortcuts import render, redirect
+from .forms import PasswordResetRequestForm
+from .models import Usuario  # O get_user_model()
 
-# ✔⃣ Vista personalizada que sobrescribe el envio del email
-class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
-    template_name = 'contraseña/password_reset_form.html'
-    email_template_name = 'emails/password_reset_email.html'  # ← ✅ usa solo esta
-    subject_template_name = 'emails/password_reset_subject.txt'
-    success_url = '/password_reset/done/'
-    success_message = "Si el correo existe, se ha enviado el enlace de recuperación."
+reset_tokens = {}  # Diccionario para almacenar tokens de restablecimiento de contraseña
+
+def solicitar_reset_password(request):
+    if request.method == "POST":
+        form = PasswordResetRequestForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            try:
+                user = Usuario.objects.get(email=email)
+                token = str(uuid.uuid4())
+                reset_tokens[token] = user.id  # ⚠️ En producción: usar modelo
+                link = request.build_absolute_uri(f"/reset-password/{token}/")
+                send_mail(
+                    "Recuperación de contraseña",
+                    f"Hola, haz clic en este enlace para restablecer tu contraseña:\n{link}",
+                    "noreply@berural.com",
+                    [email],
+                )
+                return render(request, "Contrasena/mensaje_enviado.html")
+            except Usuario.DoesNotExist:
+                form.add_error('email', 'No existe un usuario con ese correo.')
+    else:
+        form = PasswordResetRequestForm()
+    return render(request, "Contrasena/solicitar_reset_password.html", {"form": form})
 
 
+# views.py
+from .forms import CambiarPasswordForm
 
-    def form_valid(self, form):
-        """
-        Sobrescribimos el método para enviar el correo con estilo HTML usando EmailMultiAlternatives,
-        como ya haces en tus pedidos.
-        """
-        print("🔧 Se está usando CustomPasswordResetView ✅")
-        email = form.cleaned_data["email"]
-        usuario_modelo = get_user_model()
-        usuarios = usuario_modelo._default_manager.filter(email__iexact=email, is_active=True)
-        for user in usuarios:
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            reset_url = self.request.build_absolute_uri(
-                reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token})
-            )
-            enviar_email_recuperacion_contraseña(user, reset_url)
+def resetear_password(request, token):
+    user_id = reset_tokens.get(token)
+    if not user_id:
+        raise Http404("Token no válido o expirado")
 
-        return super().form_valid(form)
+    usuario = Usuario.objects.get(id=user_id)
 
+    if request.method == "POST":
+        form = CambiarPasswordForm(request.POST)
+        if form.is_valid():
+            usuario.set_password(form.cleaned_data['password'])
+            usuario.save()
+            del reset_tokens[token]
+            return redirect("login")
+    else:
+        form = CambiarPasswordForm()
 
-def enviar_email_recuperacion_contraseña(usuario, reset_url):
-    asunto = "🔐 Recupera tu contraseña - Relámpago Pricense FC"
-    remitente = settings.DEFAULT_FROM_EMAIL
-    destinatario = [usuario.email]
-
-    html_content = render_to_string("emails/password_reset_email.html", {
-        "reset_url": reset_url,
-        "usuario": usuario,
-    })
-
-    mensaje = EmailMultiAlternatives(asunto, "", remitente, destinatario)
-    mensaje.attach_alternative(html_content, "text/html")
-
-    logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
-    if os.path.exists(logo_path):
-        with open(logo_path, 'rb') as f:
-            image = MIMEImage(f.read())
-            image.add_header('Content-ID', '<logo_escudo>')
-            mensaje.attach(image)
-
-    mensaje.send()
+    return render(request, "Contrasena/password_reset.html", {"form": form})
