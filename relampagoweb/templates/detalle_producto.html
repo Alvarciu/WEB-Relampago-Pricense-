@@ -1,197 +1,196 @@
 {% extends "base.html" %}
 {% block content %}
-  
-<!-- Contenedor principal: IMAGEN + INFO, con nuestra clase -->
+
+<!-- Estilo responsive solo para los botones de tipo -->
+<style>
+  .tipo-producto-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1rem;
+    align-items: center; /* <-- Esto centra los botones en pantallas pequeñas */
+  }
+
+  @media (min-width: 768px) {
+    .tipo-producto-buttons {
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: stretch;
+      gap: 16px;
+    }
+  }
+</style>
+
+<!-- Contenedor principal: IMAGEN + INFO -->
 <div class="product-detail-container">
-  <!-- ======== IZQUIERDA: Imagen del producto ======== -->
   <div class="product-image-wrapper">
-    <img
-      src="{{ producto.imagen.url }}"
-      alt="{{ producto.nombre }}"
-      class="product-image"
-    >
+    <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="product-image">
   </div>
 
-  <!-- ======== DERECHA: Información y formulario ======== -->
   <div class="product-info-card">
-    <!-- Título y subtítulo -->
     <h1 class="product-title">{{ producto.nombre }}</h1>
     <p class="product-subtitle">
       Equipación oficial del Relámpago Pricense F.C. temporada 2024/2025
     </p>
     <div class="product-divider"></div>
 
-    <!-- Botones “Solo camiseta” / “Equipación completa” (solo si es tipo Equipación) -->
     {% if producto.tipo == 'Equipación' %}
+    <div class="tipo-producto-buttons">
       <label class="option-button">
-        <input
-          type="radio"
-          name="compra_tipo"
-          value="solo_camiseta"
-          autocomplete="off"
-          checked
-        >
-        <span>Solo camiseta (22.00 €)</span>
+        <input type="radio" name="compra_tipo" value="solo_camiseta" autocomplete="off" checked>
+        <span>Solo camiseta<br>(22,00 €)</span>
       </label>
-
       <label class="option-button">
-        <input
-          type="radio"
-          name="compra_tipo"
-          value="completo"
-          autocomplete="off"
-        >
-        <span>Equipación completa ({{ producto.precio|floatformat:2 }} €)</span>
+        <input type="radio" name="compra_tipo" value="completo" autocomplete="off">
+        <span>Equipación completa <br>({{ producto.precio|floatformat:2 }} €)</span>
       </label>
-
-      <p class="current-price">
-        Precio actual: <span class="price-value" id="precio-actual">22.00</span> €
-      </p>
+    </div>
+    <p class="current-price">
+      Precio actual: <span class="price-value" id="precio-actual">22.00</span> €
+    </p>
     {% else %}
-      <p class="current-price">
-        Precio: <span class="price-value" id="precio-actual">{{ producto.precio|floatformat:2 }}</span> €
-      </p>
+    <p class="current-price">
+      Precio: <span class="price-value" id="precio-actual">{{ producto.precio|floatformat:2 }}</span> €
+    </p>
     {% endif %}
 
-    <!-- ========== FORMULARIO “Añadir al carrito” ========== -->
-    <!-- Reemplaza solo esta parte del formulario -->
-<form id="form-add-to-cart" method="post" action="{% url 'añadir_al_carrito' producto.id %}">
-  {% csrf_token %}
-  {% if producto.tipo == 'Equipación' %}
-    <input type="hidden" name="compra_tipo" id="input-compra-tipo" value="solo_camiseta">
-  {% endif %}
+    <!-- Formulario -->
+    <form id="form-add-to-cart" method="post" action="{% url 'añadir_al_carrito' producto.id %}">
+      {% csrf_token %}
+      {% if producto.tipo == 'Equipación' %}
+      <input type="hidden" name="compra_tipo" id="input-compra-tipo" value="solo_camiseta">
+      {% endif %}
 
-  <!-- Talla -->
-  <label for="talla" style="display:block; margin-bottom:6px; font-weight:bold;">Talla:</label>
-  <select name="talla" id="talla" required style="width:100%; padding:12px; border-radius:6px; border:1px solid #ccc; font-size:1rem;">
-    <option value="8-7XS">8-7XS</option>
-    <option value="6-5XS">6-5XS</option>
-    <option value="4-3XS">4-3XS</option>
-    <option value="2XS">2XS</option>
-    <option value="XS">XS</option>
-    <option value="S">S</option>
-    <option value="M">M</option>
-    <option value="L">L</option>
-    <option value="XL">XL</option>
-    <option value="2-3XL">2-3XL</option>
-    <option value="4-5XL">4-5XL</option>
-  </select>
+      <label for="talla" style="display:block; margin-bottom:6px; font-weight:bold;">Talla:</label>
+      <select name="talla" id="talla" required style="width:100%; padding:12px; border-radius:6px; border:1px solid #ccc; font-size:1rem;">
+        <option value="8-7XS">8-7XS</option>
+        <option value="6-5XS">6-5XS</option>
+        <option value="4-3XS">4-3XS</option>
+        <option value="2XS">2XS</option>
+        <option value="XS">XS</option>
+        <option value="S">S</option>
+        <option value="M">M</option>
+        <option value="L">L</option>
+        <option value="XL">XL</option>
+        <option value="2-3XL">2-3XL</option>
+        <option value="4-5XL">4-5XL</option>
+      </select>
 
-  <button type="button" onclick="mostrarGuiaTallas()" style="margin-top:10px; background:#2563eb; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; width:100%; font-size:1rem;">
-    Guía de tallas
-  </button>
+      <button type="button" onclick="mostrarGuiaTallas()" style="margin-top:10px; background:#2563eb; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; width:100%; font-size:1rem;">
+        Guía de tallas
+      </button>
 
-  {% if producto.tipo == 'Equipación' %}
-    <!-- Dorsal -->
-    <label for="nombre_dorsal" style="display:block; margin-top:15px; font-weight:bold;">Nombre dorsal:</label>
-    <input type="text" name="nombre_dorsal" id="nombre_dorsal" placeholder="Ej: ÁLVARO" maxlength="20"
-           style="width:100%; padding:12px; border-radius:6px; border:1px solid #ccc; font-size:1rem;">
+      {% if producto.tipo == 'Equipación' %}
+      <label for="nombre_dorsal" style="display:block; margin-top:15px; font-weight:bold;">Nombre dorsal:</label>
+      <input type="text" name="nombre_dorsal" id="nombre_dorsal" placeholder="Ej: ÁLVARO" maxlength="20"
+        style="width:100%; padding:12px; border-radius:6px; border:1px solid #ccc; font-size:1rem;">
 
-    <label for="numero_dorsal" style="display:block; margin-top:15px; font-weight:bold;">Número dorsal:</label>
-    <input type="number" name="numero_dorsal" id="numero_dorsal" placeholder="Ej: 9" min="0"
-           style="width:100%; padding:12px; border-radius:6px; border:1px solid #ccc; font-size:1rem;">
-  {% endif %}
+      <label for="numero_dorsal" style="display:block; margin-top:15px; font-weight:bold;">Número dorsal:</label>
+      <input type="number" name="numero_dorsal" id="numero_dorsal" placeholder="Ej: 9" min="0"
+        style="width:100%; padding:12px; border-radius:6px; border:1px solid #ccc; font-size:1rem;">
+      {% endif %}
 
-  <button type="submit"
-          style="margin-top:20px; background:#0f62fe; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; width:100%; font-size:1rem;">
-    Añadir al carrito
-  </button>
-</form>
+      <button type="submit"
+        style="margin-top:20px; background:#0f62fe; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; width:100%; font-size:1rem;">
+        Añadir al carrito
+      </button>
+    </form>
   </div>
 </div>
 
-<!-- Modal guía de tallas con tabla -->
-  <div id="modal-tallas" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); z-index:1000;">
-    <div style="background:white; border-radius:12px; padding:20px; max-width:90vw; margin:5vh auto; position:relative; overflow:auto;">
-      <button onclick="cerrarGuiaTallas()" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:20px; cursor:pointer;">✖️</button>
-      <h3 style="text-align:center; margin-bottom:20px;">Guía de tallas (cm)</h3>
-      <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
-        <thead>
-          <tr style="background-color:#facc15;">
-            <th style="padding:8px; border:1px solid #ccc;">Talla</th>
-            <th style="padding:8px; border:1px solid #ccc;">Alto</th>
-            <th style="padding:8px; border:1px solid #ccc;">Ancho</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td style="padding:8px; border:1px solid #ccc;">8-7XS</td><td style="padding:8px; border:1px solid #ccc;">50</td><td style="padding:8px; border:1px solid #ccc;">37</td></tr>
-          <tr><td style="padding:8px; border:1px solid #ccc;">6-5XS</td><td style="padding:8px; border:1px solid #ccc;">53</td><td style="padding:8px; border:1px solid #ccc;">41</td></tr>
-          <tr><td style="padding:8px; border:1px solid #ccc;">4-3XS</td><td style="padding:8px; border:1px solid #ccc;">57</td><td style="padding:8px; border:1px solid #ccc;">43</td></tr>
-          <tr><td style="padding:8px; border:1px solid #ccc;">2XS</td><td style="padding:8px; border:1px solid #ccc;">61</td><td style="padding:8px; border:1px solid #ccc;">45</td></tr>
-          <tr><td style="padding:8px; border:1px solid #ccc;">XS</td><td style="padding:8px; border:1px solid #ccc;">65</td><td style="padding:8px; border:1px solid #ccc;">47</td></tr>
-          <tr><td style="padding:8px; border:1px solid #ccc;">S</td><td style="padding:8px; border:1px solid #ccc;">71</td><td style="padding:8px; border:1px solid #ccc;">49</td></tr>
-          <tr><td style="padding:8px; border:1px solid #ccc;">M</td><td style="padding:8px; border:1px solid #ccc;">72</td><td style="padding:8px; border:1px solid #ccc;">52</td></tr>
-          <tr><td style="padding:8px; border:1px solid #ccc;">L</td><td style="padding:8px; border:1px solid #ccc;">73</td><td style="padding:8px; border:1px solid #ccc;">53</td></tr>
-          <tr><td style="padding:8px; border:1px solid #ccc;">XL</td><td style="padding:8px; border:1px solid #ccc;">75</td><td style="padding:8px; border:1px solid #ccc;">55</td></tr>
-          <tr><td style="padding:8px; border:1px solid #ccc;">2-3XL</td><td style="padding:8px; border:1px solid #ccc;">79</td><td style="padding:8px; border:1px solid #ccc;">59</td></tr>
-          <tr><td style="padding:8px; border:1px solid #ccc;">4-5XL</td><td style="padding:8px; border:1px solid #ccc;">84</td><td style="padding:8px; border:1px solid #ccc;">63</td></tr>
-        </tbody>
-      </table>
-    </div>
+<!-- Modal guía de tallas -->
+<div id="modal-tallas" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); z-index:1000;">
+  <div style="background:white; border-radius:12px; padding:20px; max-width:90vw; margin:5vh auto; position:relative; overflow:auto;">
+    <button onclick="cerrarGuiaTallas()" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:20px; cursor:pointer;">✖️</button>
+    <h3 style="text-align:center; margin-bottom:20px;">Guía de tallas (cm)</h3>
+    <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+      <thead>
+        <tr style="background-color:#facc15;">
+          <th style="padding:8px; border:1px solid #ccc;">Talla</th>
+          <th style="padding:8px; border:1px solid #ccc;">Alto</th>
+          <th style="padding:8px; border:1px solid #ccc;">Ancho</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>8-7XS</td><td>50</td><td>37</td></tr>
+        <tr><td>6-5XS</td><td>53</td><td>41</td></tr>
+        <tr><td>4-3XS</td><td>57</td><td>43</td></tr>
+        <tr><td>2XS</td><td>61</td><td>45</td></tr>
+        <tr><td>XS</td><td>65</td><td>47</td></tr>
+        <tr><td>S</td><td>71</td><td>49</td></tr>
+        <tr><td>M</td><td>72</td><td>52</td></tr>
+        <tr><td>L</td><td>73</td><td>53</td></tr>
+        <tr><td>XL</td><td>75</td><td>55</td></tr>
+        <tr><td>2-3XL</td><td>79</td><td>59</td></tr>
+        <tr><td>4-5XL</td><td>84</td><td>63</td></tr>
+      </tbody>
+    </table>
   </div>
+</div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"/>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script>
-    function mostrarGuiaTallas() {
-      document.getElementById('modal-tallas').style.display = 'block';
-    }
-    function cerrarGuiaTallas() {
-      document.getElementById('modal-tallas').style.display = 'none';
-    }
-    document.addEventListener('DOMContentLoaded', function () {
-      const precioCompleto = parseFloat("{{ producto.precio }}") || 0;
-      const precioSolo = 22.00;
-      const precioActualEl = document.getElementById('precio-actual');
-      const inputTipoOculto = document.getElementById('input-compra-tipo');
-      const radios = document.querySelectorAll('input[name="compra_tipo"]');
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  function mostrarGuiaTallas() {
+    document.getElementById('modal-tallas').style.display = 'block';
+  }
+  function cerrarGuiaTallas() {
+    document.getElementById('modal-tallas').style.display = 'none';
+  }
 
-      if (radios.length > 0) {
-        radios.forEach(radio => {
-          radio.addEventListener('change', () => {
-            if (radio.value === 'solo_camiseta') {
-              precioActualEl.textContent = precioSolo.toFixed(2);
-              inputTipoOculto.value = 'solo_camiseta';
-            } else {
-              precioActualEl.textContent = precioCompleto.toFixed(2);
-              inputTipoOculto.value = 'completo';
-            }
-          });
+  document.addEventListener('DOMContentLoaded', function () {
+    const precioCompleto = parseFloat("{{ producto.precio }}") || 0;
+    const precioSolo = 22.00;
+    const precioActualEl = document.getElementById('precio-actual');
+    const inputTipoOculto = document.getElementById('input-compra-tipo');
+    const radios = document.querySelectorAll('input[name="compra_tipo"]');
+
+    if (radios.length > 0) {
+      radios.forEach(radio => {
+        radio.addEventListener('change', () => {
+          if (radio.value === 'solo_camiseta') {
+            precioActualEl.textContent = precioSolo.toFixed(2);
+            inputTipoOculto.value = 'solo_camiseta';
+          } else {
+            precioActualEl.textContent = precioCompleto.toFixed(2);
+            inputTipoOculto.value = 'completo';
+          }
         });
-      }
-
-      const form = document.getElementById('form-add-to-cart');
-      form.addEventListener('submit', function (e) {
-        const nombre = document.getElementById('nombre_dorsal');
-        const numero = document.getElementById('numero_dorsal');
-        if (nombre && numero && !nombre.value.trim() && !numero.value.trim()) {
-          e.preventDefault();
-          Swal.fire({
-            title: '⚠️ Sin personalizar',
-            text: 'No has introducido nombre o número de dorsal. ¿Quieres añadirlo igual?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, añadir al carrito',
-            cancelButtonText: 'No, volver'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              form.submit();
-            }
-          });
-        }
       });
+    }
 
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('añadido') === 'ok') {
+    const form = document.getElementById('form-add-to-cart');
+    form.addEventListener('submit', function (e) {
+      const nombre = document.getElementById('nombre_dorsal');
+      const numero = document.getElementById('numero_dorsal');
+      if (nombre && numero && !nombre.value.trim() && !numero.value.trim()) {
+        e.preventDefault();
         Swal.fire({
-          toast: true,
-          position: 'top-end',
-          icon: 'success',
-          title: '✅ Producto añadido al carrito',
-          showConfirmButton: false,
-          timer: 1800
+          title: '⚠️ Sin personalizar',
+          text: 'No has introducido nombre o número de dorsal. ¿Quieres añadirlo igual?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, añadir al carrito',
+          cancelButtonText: 'No, volver'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            form.submit();
+          }
         });
       }
     });
-  </script>
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('añadido') === 'ok') {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: '✅ Producto añadido al carrito',
+        showConfirmButton: false,
+        timer: 1800
+      });
+    }
+  });
+</script>
 {% endblock %}
