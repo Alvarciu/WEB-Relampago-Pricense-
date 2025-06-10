@@ -575,7 +575,16 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect
 from .forms import PasswordResetRequestForm
+from django.utils.html import strip_tags
+
 from .models import Usuario  # O get_user_model()
+from email.mime.image import MIMEImage
+from django.conf import settings
+import os
+
+
+
+
 
 reset_tokens = {}  # Diccionario para almacenar tokens de restablecimiento de contraseña
 
@@ -587,14 +596,34 @@ def solicitar_reset_password(request):
             try:
                 user = Usuario.objects.get(email=email)
                 token = str(uuid.uuid4())
-                reset_tokens[token] = user.id  # ⚠️ En producción: usar modelo
-                link = request.build_absolute_uri(f"/reset-password/{token}/")
-                send_mail(
-                    "Recuperación de contraseña",
-                    f"Hola, haz clic en este enlace para restablecer tu contraseña:\n{link}",
-                    "noreply@berural.com",
-                    [email],
+                reset_tokens[token] = user.id  # ⚠️ Sustituir por modelo/token seguro en producción
+
+                # Generar enlace
+                enlace = request.build_absolute_uri(f"/reset-password/{token}/")
+
+                # Renderizar plantilla HTML
+                html_content = render_to_string("emails/password_reset_email.html", {
+                    "user": user,
+                    "enlace": enlace
+                })
+                text_content = strip_tags(html_content)
+
+                # Enviar email
+                msg = EmailMultiAlternatives(
+                    subject="🔐 Recuperación de contraseña",
+                    body=text_content,
+                    from_email="noreply@berural.com",
+                    to=[email]
                 )
+                msg.attach_alternative(html_content, "text/html")
+                # Ruta absoluta al logo
+                logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
+                with open(logo_path, 'rb') as f:
+                    logo = MIMEImage(f.read())
+                    logo.add_header('Content-ID', '<logo_escudo>')
+                    msg.attach(logo)
+                msg.send()
+
                 return render(request, "Contrasena/mensaje_enviado.html")
             except Usuario.DoesNotExist:
                 form.add_error('email', 'No existe un usuario con ese correo.')
