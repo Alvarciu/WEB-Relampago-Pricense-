@@ -487,6 +487,7 @@ def exportar_pedidos_excel(request):
                 'Nombre': pedido.usuario.name,
                 'Email': pedido.usuario.email,
                 'Producto': linea.producto.nombre,
+                'Tipo': 'Camiseta' if linea.compra_tipo == 'solo_camiseta' else linea.producto.tipo,
                 'Talla': linea.talla,
                 'Nombre dorsal': linea.nombre_dorsal or '',
                 'Dorsal': linea.numero_dorsal or '',
