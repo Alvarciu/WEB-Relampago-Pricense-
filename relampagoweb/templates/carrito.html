@@ -55,6 +55,69 @@
       transform: translateY(0);
     }
   }
+
+  .carrito-acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
+
+/* Botón reutilizable */
+.btn-quitar {
+  background-color: #f1c40f;
+  color: black;
+  font-weight: bold;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+}
+
+/* En móvil: reorganizar y alinear */
+/* Solo en pantallas pequeñas reorganizamos */
+@media (max-width: 600px) {
+  .carrito-item {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .carrito-img {
+    margin-bottom: 10px;
+  }
+
+  .carrito-info {
+    text-align: center;
+  }
+
+  .precio-carrito {
+    position: static !important;
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+  }
+
+  .acciones-mobile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+  }
+
+  .btn-quitar {
+    background-color: #f1c40f;
+    color: black;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+  }
+}
+
+
 </style>
 
 {% if carrito %}
@@ -97,17 +160,22 @@
           {% endif %}
 
           </form>
-          <form action="{% url 'eliminar_del_carrito' forloop.counter0 %}" method="post" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" style="background-color: #f1c40f; color: black; font-weight: bold; padding: 10px 20px; border: none; border-radius: 5px;">
-              ❌ Quitar
-            </button>
-          </form>
-        </div>
-
+          <div class="acciones-mobile">
         <div class="precio-carrito">
           Precio: {{ item.precio|floatformat:2 }} €
         </div>
+        <form action="{% url 'eliminar_del_carrito' forloop.counter0 %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn-quitar">
+            ❌ Quitar
+          </button>
+        </form>
+      </div>
+
+          </form>
+          </div>
+        </div>
+
       </li>
     {% endfor %}
   </ul>

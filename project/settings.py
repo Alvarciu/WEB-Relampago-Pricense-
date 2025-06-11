@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-pzf!=rjq%q$prpepp_eu-b_aj_l$ao2*!uqz2z!53b%r-lzvjw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'relampagopricensefc.com', 'www.relampagopricensefc.com']
