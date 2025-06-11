@@ -29,8 +29,8 @@ DEBUG = False
 
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'relampagopricensefc.com', 'www.relampagopricensefc.com']
+CSRF_TRUSTED_ORIGINS = ['https://relampagopricensefc.com', 'https://www.relampagopricensefc.com']
 
-CSRF_TRUSTED_ORIGINS = ['https://relampagopricensefc.com']
 
 
 # Application definition
