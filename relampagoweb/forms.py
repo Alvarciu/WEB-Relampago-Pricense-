@@ -82,7 +82,7 @@ class CambiarPasswordForm(forms.Form):
     label = "Cambiar contraseña"
     password = forms.CharField(
         label='Nueva contraseña',
-        widget=forms.PasswordInput(attrs={'placeholder': 'Innnntroduce tu nueva contraseña'})
+        widget=forms.PasswordInput(attrs={'placeholder': 'Introduce tu nueva contraseña'})
     )
     password2 = forms.CharField(
         label='Repite la nueva contraseña',
