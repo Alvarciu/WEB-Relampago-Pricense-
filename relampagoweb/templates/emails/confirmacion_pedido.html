@@ -72,7 +72,7 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="email-container">
     <img src="cid:logo_escudo" alt="Escudo del club" class="logo">
 
     <h2>¡Gracias por tu pedido, {{ usuario.name }}!</h2>
@@ -94,6 +94,7 @@
           <th>Producto</th>
           <th>Talla</th>
           <th>Dorsal</th>
+          <th>Número</th>
           <th>Precio</th>
         </tr>
       </thead>
@@ -103,15 +104,33 @@
           <td>{{ item.producto.nombre }}</td>
           <td>{{ item.talla }}</td>
           <td>
-            {% if item.nombre_dorsal %}
-              {{ item.nombre_dorsal }} ({{ item.numero_dorsal }})
-            {% else %}
-              -
-            {% endif %}
+              {% if item.nombre_dorsal %}
+                {{ item.nombre_dorsal }} 
+              {% else %}
+                -
+              {% endif %}
           </td>
-          <td>{{ item.producto.precio }} €</td>
-        </tr>
+          <td>
+              {% if item.numero_dorsal %}
+                ({{ item.numero_dorsal }})
+              {% else %}
+                -
+              {% endif %}
+          </td>
+          <td>
+            {% if item.compra_tipo == 'solo_camiseta' %}
+            {% if item.con_descuento %}
+              20.00 €
+            {% else %}
+              22.00 €
+            {% endif %}
+          {% else %}
+            {{ item.producto.precio }} €
+          {% endif %}
         {% endfor %}
+          </td>
+        </tr>
+    
       </tbody>
     </table>
 

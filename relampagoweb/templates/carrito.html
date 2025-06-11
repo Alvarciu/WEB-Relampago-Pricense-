@@ -112,19 +112,19 @@
     {% endfor %}
   </ul>
 
+
+
+   <p style="text-align: center; font-size: 1.2em;">
+    <strong>Total del carrito:</strong>  € {{ total|floatformat:2 }} 
+  </p>
   <form action="{% url 'vaciar_carrito' %}" method="post" style="text-align: center;">
     {% csrf_token %}
     <button type="submit" style="background-color: red; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Vaciar carrito</button>
   </form>
 
-  <form method="get" style="text-align: center; margin-bottom: 20px;">
-    <label for="aplicar_descuento" style="font-size: 1.1em;">¿Aplicar descuento por pack?</label>
-    <label class="switch">
-      <input type="checkbox" name="aplicar_descuento" value="1" {% if aplicar_descuento %}checked{% endif %} onchange="this.form.submit()">
-      <span class="slider round"></span>
-    </label>
-  </form>
 
+  <br>
+ 
   <style>
     .switch {
       position: relative;
@@ -163,21 +163,41 @@
     }
   </style>
 
-  <p style="text-align: center; font-size: 1.2em;">
-    <strong>Total: {{ total|floatformat:2 }} €</strong><br>
-    {% if ahorro > 0 %}
-      <span style="color: green;">💸 ¡Te estás ahorrando {{ ahorro|floatformat:2 }} €!</span>
-    {% elif posible_ahorro > 0 %}
-      <span style="color: orange;">💡 Podrías ahorrar {{ posible_ahorro|floatformat:2 }} € si aplicas el descuento por cantidad.</span>
-    {% endif %}
-  </p>
+{% if mostrar_descuento %}
+    <form method="get" style="text-align: center; margin: 20px 0;">
+      <label for="aplicar_descuento" style="font-size: 1.1em;">¿Aplicar descuento por pack?</label>
+      <label class="switch">
+        <input
+          type="checkbox"
+          name="aplicar_descuento"
+          value="1"
+          {% if aplicar_descuento %}checked{% endif %}
+          onchange="this.form.submit()"
+        >
+        <span class="slider round"></span>
+      </label>
+    </form>
+
+    <p style="text-align: center; font-size: 1.2em;">
+      <strong>Total: {{ total|floatformat:2 }} €</strong><br>
+      {% if ahorro > 0 %}
+        <span style="color: green;">💸 ¡Te estás ahorrando {{ ahorro|floatformat:2 }} €!</span>
+      {% elif posible_ahorro > 0 %}
+        <span style="color: orange;">💡 Podrías ahorrar {{ posible_ahorro|floatformat:2 }} € si aplicas el descuento por cantidad.</span>
+      {% endif %}
+    </p>
+  {% endif %}
 
   {% if pedidos_abiertos %}
     <form action="{% url 'resumen_pedido' %}" method="get" style="text-align: center;">
-      <button type="submit" style="background-color: green; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Finalizar pedido</button>
+      <button type="submit" style="background-color: green; color: white; padding: 10px 20px; border: none; border-radius: 5px;">
+        Finalizar pedido
+      </button>
     </form>
   {% else %}
-    <p style="text-align: center; color: red;"><strong>❌ Los pedidos están cerrados por ahora. Vuelve más adelante.</strong></p>
+    <p style="text-align: center; color: red;">
+      <strong>❌ Los pedidos están cerrados por ahora. Vuelve más adelante.</strong>
+    </p>
   {% endif %}
 
 {% else %}

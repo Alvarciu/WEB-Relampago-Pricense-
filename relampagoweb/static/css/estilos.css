@@ -142,6 +142,10 @@ body {
   }
 }
 
+.swiper {
+  padding-bottom: 25px;
+}
+
 /* ==================================
    TARJETA DE PRODUCTO (CARRITO)
    ================================== */
@@ -543,3 +547,20 @@ body {
     flex: 1 1 100%;
   }
 }
+
+
+/* Por defecto: mostrar desktop, ocultar carrusel */
+.carrusel-mobile {
+  display: none;
+}
+
+.carrusel-desktop {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 10px 20px;
+}
+
+
+
+

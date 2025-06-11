@@ -39,6 +39,21 @@ from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 
 
+# views.py
+import uuid
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.shortcuts import render, redirect
+from .forms import PasswordResetRequestForm
+from django.utils.html import strip_tags
+
+from .models import Usuario  # O get_user_model()
+from email.mime.image import MIMEImage
+from django.conf import settings
+import os
+
+
+
 def es_admin(user):
     return user.is_authenticated and user.is_staff
 
@@ -188,6 +203,25 @@ def carrito_view(request):
 
     aplicar_descuento = request.session.get('aplicar_descuento', False)
 
+    num_solo = sum(1 for item in carrito if item.get('compra_tipo') == 'solo_camiseta')
+    if num_solo >= 2:
+        mostrar_descuento = True
+    else:
+        mostrar_descuento = False
+
+    
+    # Marcar qué camisetas reciben descuento (solo pares)
+    solo_idxs = [i for i, it in enumerate(carrito) if it.get('compra_tipo') == 'solo_camiseta']
+    # cuántas camisetas (de esos) tendrán descuento: pares completos
+    num_descuento = (len(solo_idxs) // 2) * 2 if aplicar_descuento else 0
+    # recorrer esos índices y marcar True solo para los primeros num_descuento
+    for pos, idx in enumerate(solo_idxs):
+        carrito[idx]['con_descuento'] = (pos < num_descuento)
+    # Las demás (no camisetas o sobrantes) quedan con con_descuento=False por defecto
+    for i, it in enumerate(carrito):
+        if it.get('compra_tipo') != 'solo_camiseta':
+            carrito[i]['con_descuento'] = False
+
     if aplicar_descuento:
         total = calcular_total_carrito(carrito)  # ✅ con descuento
         total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
@@ -205,6 +239,7 @@ def carrito_view(request):
         'ahorro': ahorro,
         'aplicar_descuento': aplicar_descuento,
         'posible_ahorro': posible_ahorro,
+        'mostrar_descuento': mostrar_descuento,
         'pedidos_abiertos': config.pedidos_abiertos,
     })
 
@@ -327,64 +362,18 @@ def confirmar_pedido_view(request):
             'compra_tipo': linea.compra_tipo
         })
 
-    if usar_descuento:
-        total = calcular_total_carrito(carrito_items)
-    else:
-        total = sum(Decimal(item['precio']) for item in carrito_items)
+
+    total = calcular_total_carrito(carrito_items)
+
+    print(f"Total del pedido: {total} €")
+
+    enviar_confirmacion_pedido(request.user, pedido)
 
     return render(request, 'pedido_confirmado.html', {
         'pedido': pedido,
         'total': total
     })
 
-
-# # Limpiar sesión
-# del request.session['carrito']
-# request.session.pop('usar_descuento', None)
-
-# # Calcular total con o sin descuento
-# carrito_items = []
-# for linea in pedido.lineas.all():
-#     carrito_items.append({
-#         'precio': float(linea.producto.precio),
-#         'tipo': linea.producto.tipo,
-#         'compra_tipo': 'solo_camiseta' if not linea.nombre_dorsal else 'completo'
-#     })
-
-# if usar_descuento:
-#     total = calcular_total_carrito(carrito_items)
-# else:
-#     total = sum(Decimal(item['precio']) for item in carrito_items)
-
-# # Preparar correo
-# asunto = f"Confirmación de tu pedido #{pedido.id} en Relámpago Pricense FC"
-# html_content = render_to_string('emails/confirmacion_pedido.html', {
-#     'pedido': pedido,
-#     'usuario': request.user,
-# })
-
-# email = EmailMultiAlternatives(
-#     subject=asunto,
-#     body="Gracias por tu pedido. Consulta los detalles en la versión HTML.",
-#     from_email=settings.DEFAULT_FROM_EMAIL,
-#     to=[request.user.email]
-# )
-# email.attach_alternative(html_content, "text/html")
-
-# logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
-# if os.path.exists(logo_path):
-#     with open(logo_path, 'rb') as f:
-#         logo = MIMEImage(f.read())
-#         logo.add_header('Content-ID', '<logo_escudo>')
-#         logo.add_header('Content-Disposition', 'inline')
-#         email.attach(logo)
-
-# email.send()
-
-# return render(request, 'pedido_confirmado.html', {
-#     'pedido': pedido,
-#     'total': total
-# })
 
 
 
@@ -412,16 +401,36 @@ def pago_simulado_view(request):
 
 
 def enviar_confirmacion_pedido(usuario, pedido):
-    asunto = f"✅ Pedido #{pedido.id} confirmado - Relámpago Pricense FC"
-    remitente = settings.DEFAULT_FROM_EMAIL
-    destinatario = [usuario.email]
-    html_content = render_to_string("emails/confirmacion_pedido.html", {
-        "usuario": usuario,
-        "pedido": pedido,
+    subject = f"✅ Pedido #{pedido.id} confirmado - Relámpago Pricense FC"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    to = [usuario.email]
+
+    # Renderizamos el HTML de la confirmación
+    html_content = render_to_string('emails/confirmacion_pedido.html', {
+        'usuario': usuario,
+        'pedido': pedido,
     })
-    mensaje = EmailMultiAlternatives(asunto, "", remitente, destinatario)
+
+    # Creamos el mensaje multi-parte
+    mensaje = EmailMultiAlternatives(
+        subject=subject,
+        body="Gracias por tu pedido en Relámpago Pricense FC.",  # texto plano opcional
+        from_email=from_email,
+        to=to,
+    )
     mensaje.attach_alternative(html_content, "text/html")
-    mensaje.send()
+
+    # Adjuntamos el escudo para que funcione <img src="cid:logo_escudo">
+    logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
+    if os.path.exists(logo_path):
+        with open(logo_path, 'rb') as f:
+            img = MIMEImage(f.read())
+            img.add_header('Content-ID', '<logo_escudo>')
+            img.add_header('Content-Disposition', 'inline', filename='escudo.png')
+            mensaje.attach(img)
+
+    # Enviamos
+    mensaje.send(fail_silently=False)
 
 
 def calcular_total_carrito(carrito):
@@ -441,7 +450,11 @@ def calcular_total_carrito(carrito):
     pares = num_camisetas // 2
     sueltas = num_camisetas % 2
 
-    total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
+    if num_camisetas == 1:
+        total = Decimal('22.00')  # Si solo hay una camiseta, precio fijo
+    else:
+        total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
+
 
     return total
 
@@ -570,18 +583,6 @@ def panel_pedidos_view(request):
     })
 
 
-# views.py
-import uuid
-from django.contrib.auth import get_user_model
-from django.core.mail import send_mail
-from django.shortcuts import render, redirect
-from .forms import PasswordResetRequestForm
-from django.utils.html import strip_tags
-
-from .models import Usuario  # O get_user_model()
-from email.mime.image import MIMEImage
-from django.conf import settings
-import os
 
 
 

@@ -11,6 +11,7 @@ html, body {
     background-color: #eae0c8;
 }
 
+
 /* === CONTENEDOR GENERAL PARA AUTENTICACIÓN === */
 .auth-container {
     display: flex;
