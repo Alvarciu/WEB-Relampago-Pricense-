@@ -10,19 +10,29 @@
       text-align: center;
     }
     .titulo-seccion {
+      margin-top: auto;
       font-size: 24px;
       margin-bottom: 20px;
     }
     .grid-productos {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 20px;
-      padding: 10px 20px;
+      /* columnas de mínimo 300px, y si cabe más de una se estiran equitativamente */
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      /* centrar todo el grid dentro de su contenedor */
+      justify-content: center;
+      gap: 30px;              /* separación mayor */
+      max-width: 1200px;      /* como mucho 1200px de ancho total */
+      margin: 0 auto;         /* centrar el contenedor */
+      padding: 10px 20px;     /* conserva tu padding horizontal */
     }
+
     .card-producto {
       background: white;
       padding: 15px;
       border-radius: 12px;
+      max-width: 400px;
+      width: 100%;
+      margin: 0 auto; /* centrado */
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       text-align: center;
       position: relative;
