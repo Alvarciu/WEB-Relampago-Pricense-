@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
     .seccion-productos {
-      padding: 30px 15px;
+      padding: 10px 10px;
       text-align: center;
     }
     .titulo-seccion {
@@ -25,6 +25,7 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       text-align: center;
+      position: relative;
     }
     .card-producto img {
       width: 100%;
@@ -59,23 +60,52 @@
       display: grid;
     }
     /* Sólo en móviles (≤576px): mostrar carrusel, ocultar rejilla */
-    @media (max-width: 576px) {
-      .carrusel-mobile {
-        display: block;
-      }
-      .carrusel-desktop {
-        display: none;
-      }
-      .swiper-slide {
-        display: flex;
-        justify-content: center;
-      }
-      .card-producto {
-        width: 90%;
-        max-width: 300px;
-        margin: 0 auto;
-      }
-    }
+@media (max-width: 576px) {
+  .carrusel-mobile {
+    display: block;
+  }
+  .carrusel-desktop {
+    display: none;
+  }
+
+  .seccion-productos {
+    padding-top: 15px;    /* antes 30px */
+    padding-bottom: 15px; /* antes 30px */
+  }
+
+  .titulo-seccion {
+    margin-top: auto;
+    margin-bottom: 10px;  /* antes 20px */
+  }
+
+  .swiper {
+    padding-bottom: 10px; /* antes 30px */
+    margin-bottom: auto;   /* espacio tras los dots */
+  }
+
+  .swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .card-producto {
+    width: 95%;          /* ocupa casi todo el ancho real */
+    max-width: 350px;
+    display: block;
+    margin: 0 auto;       /* centrado */
+    padding: 12px;        /* algo más estrecho */
+  }
+
+  .swiper-pagination {
+    padding: auto;
+    position: relative;
+    margin-top: 10px; /* antes 20px */
+    margin-bottom: auto;
+    
+  }
+}
+
   </style>
 {% endblock %}
 
@@ -111,7 +141,7 @@
       {% endfor %}
     </div>
   </section>
-
+<hr>
   <!-- SECCIÓN SUDADERAS -->
   <section class="seccion-productos">
     <h2 class="titulo-seccion">Sudaderas</h2>
@@ -129,9 +159,8 @@
           </div>
         {% endfor %}
       </div>
-      <div class="swiper-pagination"></div>
     </div>
-
+  <div class="swiper-pagination"></div>
     <div class="grid-productos carrusel-desktop">
       {% for producto in sudaderas %}
         <div class="card-producto">
