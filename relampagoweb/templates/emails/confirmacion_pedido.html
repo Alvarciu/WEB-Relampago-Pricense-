@@ -109,7 +109,17 @@
               -
             {% endif %}
           </td>
-          <td>{{ item.producto.precio }} €</td>
+          <td>
+            {% if item.compra_tipo == 'solo_camiseta' %}
+              {% if pedido.usar_descuento %}
+                20.00 €
+              {% else %}
+                22.00 €
+              {% endif %}
+            {% else %}
+            {{ item.producto.precio }} €</td>
+            {% endif %}
+          </td>
         </tr>
         {% endfor %}
       </tbody>

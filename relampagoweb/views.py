@@ -327,10 +327,10 @@ def confirmar_pedido_view(request):
             'compra_tipo': linea.compra_tipo
         })
 
-    if usar_descuento:
-        total = calcular_total_carrito(carrito_items)
-    else:
-        total = sum(Decimal(item['precio']) for item in carrito_items)
+
+    total = calcular_total_carrito(carrito_items)
+
+    print(f"Total del pedido: {total} €")
 
     enviar_confirmacion_pedido(request.user, pedido)
 
@@ -399,6 +399,7 @@ def calcular_total_carrito(carrito):
         total = Decimal('22.00')  # Si solo hay una camiseta, precio fijo
     else:
         total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
+
 
     return total
 
