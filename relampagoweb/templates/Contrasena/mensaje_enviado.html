@@ -2,20 +2,12 @@
 {% load static %}
 
 {% block title %}Correo Enviado{% endblock %}
-
 {% block content %}
-<div class="auth-container">
-  <div class="auth-image"></div>
+  <h1>Correo Enviado</h1>
+  <p class="subtext" style="margin-bottom: 25px; color: #f1c40f;">
+    Revise su correo electrónico para restablecer su contraseña.
+  </p>
 
-  <div class="auth-form">
-    <div class="logo-container">
-      <img src="{% static 'res/img/image.png' %}" alt="Logo Be Rural">
-    </div>
-
-    <h1>Correo Enviado</h1>
-    <p>Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.</p>
-
-    <a href="{% url 'login' %}" class="btn">Volver al inicio de sesión</a>
-  </div>
-</div>
+  <a href="{% url 'login' %}" class="btn" style="text-align: center;">Volver al inicio de sesión</a>
 {% endblock %}
+
