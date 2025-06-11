@@ -332,59 +332,13 @@ def confirmar_pedido_view(request):
     else:
         total = sum(Decimal(item['precio']) for item in carrito_items)
 
+    enviar_confirmacion_pedido(request.user, pedido)
+
     return render(request, 'pedido_confirmado.html', {
         'pedido': pedido,
         'total': total
     })
 
-
-# # Limpiar sesión
-# del request.session['carrito']
-# request.session.pop('usar_descuento', None)
-
-# # Calcular total con o sin descuento
-# carrito_items = []
-# for linea in pedido.lineas.all():
-#     carrito_items.append({
-#         'precio': float(linea.producto.precio),
-#         'tipo': linea.producto.tipo,
-#         'compra_tipo': 'solo_camiseta' if not linea.nombre_dorsal else 'completo'
-#     })
-
-# if usar_descuento:
-#     total = calcular_total_carrito(carrito_items)
-# else:
-#     total = sum(Decimal(item['precio']) for item in carrito_items)
-
-# # Preparar correo
-# asunto = f"Confirmación de tu pedido #{pedido.id} en Relámpago Pricense FC"
-# html_content = render_to_string('emails/confirmacion_pedido.html', {
-#     'pedido': pedido,
-#     'usuario': request.user,
-# })
-
-# email = EmailMultiAlternatives(
-#     subject=asunto,
-#     body="Gracias por tu pedido. Consulta los detalles en la versión HTML.",
-#     from_email=settings.DEFAULT_FROM_EMAIL,
-#     to=[request.user.email]
-# )
-# email.attach_alternative(html_content, "text/html")
-
-# logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
-# if os.path.exists(logo_path):
-#     with open(logo_path, 'rb') as f:
-#         logo = MIMEImage(f.read())
-#         logo.add_header('Content-ID', '<logo_escudo>')
-#         logo.add_header('Content-Disposition', 'inline')
-#         email.attach(logo)
-
-# email.send()
-
-# return render(request, 'pedido_confirmado.html', {
-#     'pedido': pedido,
-#     'total': total
-# })
 
 
 
@@ -441,7 +395,10 @@ def calcular_total_carrito(carrito):
     pares = num_camisetas // 2
     sueltas = num_camisetas % 2
 
-    total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
+    if num_camisetas == 1:
+        total = Decimal('22.00')  # Si solo hay una camiseta, precio fijo
+    else:
+        total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
 
     return total
 
