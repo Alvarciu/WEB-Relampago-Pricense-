@@ -72,7 +72,7 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="email-container">
     <img src="cid:logo_escudo" alt="Escudo del club" class="logo">
 
     <h2>¡Gracias por tu pedido, {{ usuario.name }}!</h2>
@@ -104,7 +104,9 @@
           <td>{{ item.talla }}</td>
           <td>
             {% if item.nombre_dorsal %}
-              {{ item.nombre_dorsal }} ({{ item.numero_dorsal }})
+              {{ item.nombre_dorsal }} 
+            {% elif item.numero_dorsal %}
+               {{ item.numero_dorsal }}
             {% else %}
               -
             {% endif %}

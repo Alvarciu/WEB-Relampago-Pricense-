@@ -188,6 +188,12 @@ def carrito_view(request):
 
     aplicar_descuento = request.session.get('aplicar_descuento', False)
 
+    num_solo = sum(1 for item in carrito if item.get('compra_tipo') == 'solo_camiseta')
+    if num_solo >= 2:
+        mostrar_descuento = True
+    else:
+        mostrar_descuento = False
+
     if aplicar_descuento:
         total = calcular_total_carrito(carrito)  # ✅ con descuento
         total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
@@ -205,6 +211,7 @@ def carrito_view(request):
         'ahorro': ahorro,
         'aplicar_descuento': aplicar_descuento,
         'posible_ahorro': posible_ahorro,
+        'mostrar_descuento': mostrar_descuento,
         'pedidos_abiertos': config.pedidos_abiertos,
     })
 
