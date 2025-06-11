@@ -48,9 +48,11 @@
       {% endif %}
     </div>
 
-    <div class="form-group">
-      <label for="id_password1">Contraseña:</label>
-      {{ form.password1 }}
+<div class="form-group password-wrapper">
+  <label for="id_password1">Contraseña:</label>
+  {{ form.password1 }}
+  <i class="fa-solid fa-eye toggle-password" onclick="togglePassword('id_password1', this)"></i>
+
       {% if form.password1.errors or form.non_field_errors %}
         <div style="color:red; font-size: 14px;">
           {% for error in form.password1.errors %}
@@ -62,7 +64,6 @@
         </div>
       {% endif %}
 
-      <!-- Requisitos JS -->
       <div id="password-requisitos" style="display: none; color: red; font-size: 14px; margin-top: 10px;">
         Las contraseñas deben cumplir con los siguientes requisitos:
         <ul id="lista-requisitos" style="margin-top: 5px; padding-left: 20px;">
@@ -73,9 +74,10 @@
       </div>
     </div>
 
-    <div class="form-group">
-      <label for="id_password2">Repite la contraseña:</label>
-      {{ form.password2 }}
+<div class="form-group password-wrapper">
+  <label for="id_password1">Contraseña:</label>
+  {{ form.password2 }}
+  <i class="fa-solid fa-eye toggle-password" onclick="togglePassword('id_password2', this)"></i>
       {% if form.password2.errors %}
         <div style="color:red; font-size: 14px;">{{ form.password2.errors.0 }}</div>
       {% endif %}
@@ -90,9 +92,20 @@
 
 <a href="{% url 'login' %}" class="link">¿Ya tienes cuenta? Inicia sesión</a>
 
+<style>
+  .toggle-password {
+    position: absolute;
+    top: 38px;
+    right: 10px;
+    cursor: pointer;
+    color: #888;
+  }
+</style>
+
 <script>
   window.addEventListener("DOMContentLoaded", () => {
-   const tieneErroresPaso2 = ({% if form.email.errors or form.password1.errors or form.password2.errors %}true{% else %}false{% endif %});    if (tieneErroresPaso2 === true) {
+    const tieneErroresPaso2 = ({% if form.email.errors or form.password1.errors or form.password2.errors %}true{% else %}false{% endif %});
+    if (tieneErroresPaso2 === true) {
       document.getElementById('paso1').style.display = 'none';
       document.getElementById('paso2').style.display = 'block';
       document.getElementById("paso_actual").value = "2";
@@ -105,17 +118,20 @@
       const value = campoPassword.value;
       requisitos.style.display = "block";
 
-      // Requisito: mínimo 8 caracteres
       document.getElementById("min-length").style.color = value.length >= 8 ? "green" : "red";
-
-      // Requisito: no totalmente numérica
       document.getElementById("not-numeric").style.color = /^\d+$/.test(value) ? "red" : "green";
-
-      // Requisito: no común
       const comunes = ["password", "123456", "qwerty", "abc123"];
       document.getElementById("no-common").style.color = comunes.includes(value.toLowerCase()) ? "red" : "green";
     });
   });
+
+  function togglePassword(inputId, icon) {
+    const input = document.getElementById(inputId);
+    const isPassword = input.type === "password";
+    input.type = isPassword ? "text" : "password";
+    icon.classList.toggle("fa-eye");
+    icon.classList.toggle("fa-eye-slash");
+  }
 
   function mostrarPaso2() {
     const nombre = document.getElementById('id_name').value.trim();
