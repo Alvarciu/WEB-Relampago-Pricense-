@@ -554,23 +554,38 @@ def alternar_pedidos_view(request):
     config.pedidos_abiertos = not config.pedidos_abiertos
     config.save()
 
+    # Solo si acabamos de abrir los pedidos
     if config.pedidos_abiertos:
-        usuarios = get_user_model().objects.all()
-        mensajes = []
+        usuarios = get_user_model().objects.filter(email__isnull=False)
+        asunto = "🟢 ¡Se han abierto los pedidos!"
+        tienda_url = request.build_absolute_uri(reverse('tienda'))
+
         for usuario in usuarios:
-            if usuario.email:
-                asunto = "🟢 ¡Se han abierto los pedidos!"
-                mensaje = (
-                    f"Hola {usuario.name},\n\n"
-                    f"Ya puedes hacer tu pedido en Relámpago Pricense FC desde nuestra tienda online.\n"
-                    f"No pierdas la oportunidad de conseguir tu camiseta personalizada.\n\n"
-                    f"👉 Entra ya en: http://127.0.0.1:8000/tienda/\n\n"
-                    f"¡Gracias por tu apoyo!\n"
-                )
-                mensajes.append((asunto, mensaje, settings.DEFAULT_FROM_EMAIL, [usuario.email]))
-        send_mass_mail(mensajes, fail_silently=True)
+            html_content = render_to_string('emails/pedidos_abiertos.html', {
+                'usuario': usuario,
+                'tienda_url': tienda_url,
+            })
+
+            email = EmailMultiAlternatives(
+                subject=asunto,
+                body="Ve nuestra tienda online para más información.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[usuario.email]
+            )
+            email.attach_alternative(html_content, "text/html")
+
+            # Adjuntar escudo inline
+            escudo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
+            if os.path.exists(escudo_path):
+                with open(escudo_path, 'rb') as f:
+                    logo = MIMEImage(f.read())
+                    logo.add_header('Content-ID', '<logo_escudo>')
+                    email.attach(logo)
+
+            email.send()
 
     return redirect('lista_pedidos')
+
 
 
 @user_passes_test(es_admin)
