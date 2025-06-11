@@ -16,14 +16,12 @@
     }
     .grid-productos {
       display: grid;
-      /* columnas de mínimo 300px, y si cabe más de una se estiran equitativamente */
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      /* centrar todo el grid dentro de su contenedor */
       justify-content: center;
-      gap: 30px;              /* separación mayor */
-      max-width: 1200px;      /* como mucho 1200px de ancho total */
-      margin: 0 auto;         /* centrar el contenedor */
-      padding: 10px 20px;     /* conserva tu padding horizontal */
+      gap: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 10px 20px;
     }
 
     .card-producto {
@@ -32,10 +30,11 @@
       border-radius: 12px;
       max-width: 400px;
       width: 100%;
-      margin: 0 auto; /* centrado */
+      margin: 0 auto;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       text-align: center;
       position: relative;
+      transition: transform 0.5s ease, opacity 0.3s ease;
     }
     .card-producto img {
       width: 100%;
@@ -61,16 +60,15 @@
     .swiper {
       padding-bottom: 30px;
     }
-    /* Ocultar carrusel por defecto */
     .carrusel-mobile {
       display: none;
     }
-    /* Mostrar rejilla por defecto */
     .carrusel-desktop {
       display: grid;
     }
+
     /* Sólo en móviles (≤576px): mostrar carrusel, ocultar rejilla */
-@media (max-width: 576px) {
+    @media (max-width: 576px) {
   .carrusel-mobile {
     display: block;
   }
@@ -79,42 +77,57 @@
   }
 
   .seccion-productos {
-    padding-top: 15px;    /* antes 30px */
-    padding-bottom: 15px; /* antes 30px */
+    padding-top: 15px;
+    padding-bottom: 15px;
   }
 
   .titulo-seccion {
     margin-top: auto;
-    margin-bottom: 10px;  /* antes 20px */
+    margin-bottom: 10px;
   }
 
   .swiper {
-    padding-bottom: 10px; /* antes 30px */
-    margin-bottom: auto;   /* espacio tras los dots */
+    padding-bottom: 0;
+    margin-bottom: 0;
   }
 
   .swiper-slide {
     display: flex;
+    width: 100px;
     justify-content: center;
     align-items: flex-start;
   }
 
+  /* 1) Estado “no activa”: baja 20px y semitransparente */
+  .swiper-slide .card-producto {
+    transform: translateY(20px);
+    opacity: 0.8;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  /* 2) Sólo la slide activa (is-centered) vuelve a tope y opaca */
+  .swiper-slide.is-centered .card-producto {
+    transform: translateY(0);
+    opacity: 1;
+    z-index: 2;
+  }
+
   .card-producto {
-    width: 95%;          /* ocupa casi todo el ancho real */
+    width: 95%;
     max-width: 350px;
     display: block;
-    margin: 0 auto;       /* centrado */
-    padding: 12px;        /* algo más estrecho */
+    margin: 0 auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding: 12px;
   }
 
   .swiper-pagination {
-    padding: auto;
     position: relative;
-    margin-top: 10px; /* antes 20px */
-    margin-bottom: auto;
-    
-  }
+    margin-top: 25px;
+    padding: auto;
 }
+
 
   </style>
 {% endblock %}
@@ -151,7 +164,7 @@
       {% endfor %}
     </div>
   </section>
-<hr>
+  <hr>
   <!-- SECCIÓN SUDADERAS -->
   <section class="seccion-productos">
     <h2 class="titulo-seccion">Sudaderas</h2>
@@ -169,8 +182,9 @@
           </div>
         {% endfor %}
       </div>
+      <div class="swiper-pagination"></div>
     </div>
-  <div class="swiper-pagination"></div>
+
     <div class="grid-productos carrusel-desktop">
       {% for producto in sudaderas %}
         <div class="card-producto">
@@ -191,32 +205,53 @@
     let equipSwiper = null;
     let sudaderasSwiper = null;
 
+    // función genérica que añade .is-centered al slide activo
+    function initCenteredSwiper(selector) {
+      return new Swiper(selector, {
+        initialSlide: 0,           // si quieres arrancar en otro slide, pon aquí su índice
+        slidesPerView: 1.2,
+        spaceBetween: 15,
+        centeredSlides: true,
+        autoHeight: true,          // ajusta la altura al contenido de cada slide
+        pagination: {
+          el: selector + ' .swiper-pagination',
+          clickable: true,
+          // renderizamos cada bullet con su número correcto en aria-label
+          renderBullet: function(index, className) {
+            return '<span class="' + className + '"' +
+                       ' role="button"' +
+                       ' tabindex="0"' +
+                       ' aria-label="Ir a la diapositiva ' + (index + 1) + '">' +
+                   '</span>';
+          }
+        },
+        a11y: {
+          enabled: true,
+          // mensaje accesible para cada bullet ({{index}} es 1-based)
+          paginationBulletMessage: 'Ir a la diapositiva {{index}}'
+        },
+        on: {
+          init() {
+            this.slides.forEach(s => s.classList.remove('is-centered'));
+            this.slides[this.activeIndex].classList.add('is-centered');
+          },
+          slideChangeTransitionEnd() {
+            this.slides.forEach(s => s.classList.remove('is-centered'));
+            this.slides[this.activeIndex].classList.add('is-centered');
+          }
+        }
+      });
+    }
+
     function updateSwipers() {
       const isMobile = window.innerWidth <= 576;
 
       if (isMobile) {
         if (!equipSwiper) {
-          equipSwiper = new Swiper('.equipaciones-swiper', {
-            slidesPerView: 1.2,
-            spaceBetween: 15,
-            centeredSlides: true,
-            pagination: {
-              el: '.equipaciones-swiper .swiper-pagination',
-              clickable: true
-            }
-          });
+          equipSwiper = initCenteredSwiper('.equipaciones-swiper');
         }
         if (!sudaderasSwiper) {
-          sudaderasSwiper = new Swiper('.sudaderas-swiper', {
-            slidesPerView: 1.2,
-            spaceBetween: 15,
-            centeredSlides: true,
-
-            pagination: {
-              el: '.sudaderas-swiper .swiper-pagination',
-              clickable: true
-            }
-          });
+          sudaderasSwiper = initCenteredSwiper('.sudaderas-swiper');
         }
       } else {
         if (equipSwiper) {
