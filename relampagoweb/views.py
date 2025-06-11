@@ -39,6 +39,21 @@ from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 
 
+# views.py
+import uuid
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.shortcuts import render, redirect
+from .forms import PasswordResetRequestForm
+from django.utils.html import strip_tags
+
+from .models import Usuario  # O get_user_model()
+from email.mime.image import MIMEImage
+from django.conf import settings
+import os
+
+
+
 def es_admin(user):
     return user.is_authenticated and user.is_staff
 
@@ -193,6 +208,19 @@ def carrito_view(request):
         mostrar_descuento = True
     else:
         mostrar_descuento = False
+
+    
+    # Marcar qué camisetas reciben descuento (solo pares)
+    solo_idxs = [i for i, it in enumerate(carrito) if it.get('compra_tipo') == 'solo_camiseta']
+    # cuántas camisetas (de esos) tendrán descuento: pares completos
+    num_descuento = (len(solo_idxs) // 2) * 2 if aplicar_descuento else 0
+    # recorrer esos índices y marcar True solo para los primeros num_descuento
+    for pos, idx in enumerate(solo_idxs):
+        carrito[idx]['con_descuento'] = (pos < num_descuento)
+    # Las demás (no camisetas o sobrantes) quedan con con_descuento=False por defecto
+    for i, it in enumerate(carrito):
+        if it.get('compra_tipo') != 'solo_camiseta':
+            carrito[i]['con_descuento'] = False
 
     if aplicar_descuento:
         total = calcular_total_carrito(carrito)  # ✅ con descuento
@@ -373,16 +401,36 @@ def pago_simulado_view(request):
 
 
 def enviar_confirmacion_pedido(usuario, pedido):
-    asunto = f"✅ Pedido #{pedido.id} confirmado - Relámpago Pricense FC"
-    remitente = settings.DEFAULT_FROM_EMAIL
-    destinatario = [usuario.email]
-    html_content = render_to_string("emails/confirmacion_pedido.html", {
-        "usuario": usuario,
-        "pedido": pedido,
+    subject = f"✅ Pedido #{pedido.id} confirmado - Relámpago Pricense FC"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    to = [usuario.email]
+
+    # Renderizamos el HTML de la confirmación
+    html_content = render_to_string('emails/confirmacion_pedido.html', {
+        'usuario': usuario,
+        'pedido': pedido,
     })
-    mensaje = EmailMultiAlternatives(asunto, "", remitente, destinatario)
+
+    # Creamos el mensaje multi-parte
+    mensaje = EmailMultiAlternatives(
+        subject=subject,
+        body="Gracias por tu pedido en Relámpago Pricense FC.",  # texto plano opcional
+        from_email=from_email,
+        to=to,
+    )
     mensaje.attach_alternative(html_content, "text/html")
-    mensaje.send()
+
+    # Adjuntamos el escudo para que funcione <img src="cid:logo_escudo">
+    logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
+    if os.path.exists(logo_path):
+        with open(logo_path, 'rb') as f:
+            img = MIMEImage(f.read())
+            img.add_header('Content-ID', '<logo_escudo>')
+            img.add_header('Content-Disposition', 'inline', filename='escudo.png')
+            mensaje.attach(img)
+
+    # Enviamos
+    mensaje.send(fail_silently=False)
 
 
 def calcular_total_carrito(carrito):
@@ -535,18 +583,6 @@ def panel_pedidos_view(request):
     })
 
 
-# views.py
-import uuid
-from django.contrib.auth import get_user_model
-from django.core.mail import send_mail
-from django.shortcuts import render, redirect
-from .forms import PasswordResetRequestForm
-from django.utils.html import strip_tags
-
-from .models import Usuario  # O get_user_model()
-from email.mime.image import MIMEImage
-from django.conf import settings
-import os
 
 
 

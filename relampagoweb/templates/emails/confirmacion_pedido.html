@@ -94,6 +94,7 @@
           <th>Producto</th>
           <th>Talla</th>
           <th>Dorsal</th>
+          <th>Número</th>
           <th>Precio</th>
         </tr>
       </thead>
@@ -103,27 +104,33 @@
           <td>{{ item.producto.nombre }}</td>
           <td>{{ item.talla }}</td>
           <td>
-            {% if item.nombre_dorsal %}
-              {{ item.nombre_dorsal }} 
-            {% elif item.numero_dorsal %}
-               {{ item.numero_dorsal }}
-            {% else %}
-              -
-            {% endif %}
+              {% if item.nombre_dorsal %}
+                {{ item.nombre_dorsal }} 
+              {% else %}
+                -
+              {% endif %}
+          </td>
+          <td>
+              {% if item.numero_dorsal %}
+                ({{ item.numero_dorsal }})
+              {% else %}
+                -
+              {% endif %}
           </td>
           <td>
             {% if item.compra_tipo == 'solo_camiseta' %}
-              {% if pedido.usar_descuento %}
-                20.00 €
-              {% else %}
-                22.00 €
-              {% endif %}
+            {% if item.con_descuento %}
+              20.00 €
             {% else %}
-            {{ item.producto.precio }} €</td>
+              22.00 €
             {% endif %}
+          {% else %}
+            {{ item.producto.precio }} €
+          {% endif %}
+        {% endfor %}
           </td>
         </tr>
-        {% endfor %}
+    
       </tbody>
     </table>
 
