@@ -110,9 +110,14 @@ class Pedido(models.Model):
             else:
                 total += linea.producto.precio
 
-        if self.usar_descuento:
+
+        if len(camisetas) ==  1:
+            # Si solo hay una camiseta, se aplica el precio normal
+            total += Decimal('22.00')
+        elif self.usar_descuento:
             pares = len(camisetas) // 2
             sueltas = len(camisetas) % 2
+        
             total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
         else:
             total += sum(linea.producto.precio for linea in camisetas)

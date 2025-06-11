@@ -10,6 +10,8 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.conf import settings
 from django.contrib import messages
+from django.http import Http404
+
 
 # Django - Autenticación y permisos
 from django.contrib.auth import login, authenticate, logout, get_user_model
@@ -35,6 +37,21 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
+
+
+# views.py
+import uuid
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.shortcuts import render, redirect
+from .forms import PasswordResetRequestForm
+from django.utils.html import strip_tags
+
+from .models import Usuario  # O get_user_model()
+from email.mime.image import MIMEImage
+from django.conf import settings
+import os
+
 
 
 def es_admin(user):
@@ -73,9 +90,15 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+from django.http import JsonResponse
+from .models import Usuario
+
+def verificar_email(request):
+    email = request.GET.get('email')
+    existe = Usuario.objects.filter(email=email).exists()
+    return JsonResponse({'exists': existe})
+
 # ====== FIN DE SESION Y REGISTRO ======
-
-
 
 
 # TIENDA Y PRODUCTOS
@@ -180,6 +203,25 @@ def carrito_view(request):
 
     aplicar_descuento = request.session.get('aplicar_descuento', False)
 
+    num_solo = sum(1 for item in carrito if item.get('compra_tipo') == 'solo_camiseta')
+    if num_solo >= 2:
+        mostrar_descuento = True
+    else:
+        mostrar_descuento = False
+
+    
+    # Marcar qué camisetas reciben descuento (solo pares)
+    solo_idxs = [i for i, it in enumerate(carrito) if it.get('compra_tipo') == 'solo_camiseta']
+    # cuántas camisetas (de esos) tendrán descuento: pares completos
+    num_descuento = (len(solo_idxs) // 2) * 2 if aplicar_descuento else 0
+    # recorrer esos índices y marcar True solo para los primeros num_descuento
+    for pos, idx in enumerate(solo_idxs):
+        carrito[idx]['con_descuento'] = (pos < num_descuento)
+    # Las demás (no camisetas o sobrantes) quedan con con_descuento=False por defecto
+    for i, it in enumerate(carrito):
+        if it.get('compra_tipo') != 'solo_camiseta':
+            carrito[i]['con_descuento'] = False
+
     if aplicar_descuento:
         total = calcular_total_carrito(carrito)  # ✅ con descuento
         total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
@@ -197,6 +239,7 @@ def carrito_view(request):
         'ahorro': ahorro,
         'aplicar_descuento': aplicar_descuento,
         'posible_ahorro': posible_ahorro,
+        'mostrar_descuento': mostrar_descuento,
         'pedidos_abiertos': config.pedidos_abiertos,
     })
 
@@ -319,64 +362,18 @@ def confirmar_pedido_view(request):
             'compra_tipo': linea.compra_tipo
         })
 
-    if usar_descuento:
-        total = calcular_total_carrito(carrito_items)
-    else:
-        total = sum(Decimal(item['precio']) for item in carrito_items)
+
+    total = calcular_total_carrito(carrito_items)
+
+    print(f"Total del pedido: {total} €")
+
+    enviar_confirmacion_pedido(request.user, pedido)
 
     return render(request, 'pedido_confirmado.html', {
         'pedido': pedido,
         'total': total
     })
 
-
-# # Limpiar sesión
-# del request.session['carrito']
-# request.session.pop('usar_descuento', None)
-
-# # Calcular total con o sin descuento
-# carrito_items = []
-# for linea in pedido.lineas.all():
-#     carrito_items.append({
-#         'precio': float(linea.producto.precio),
-#         'tipo': linea.producto.tipo,
-#         'compra_tipo': 'solo_camiseta' if not linea.nombre_dorsal else 'completo'
-#     })
-
-# if usar_descuento:
-#     total = calcular_total_carrito(carrito_items)
-# else:
-#     total = sum(Decimal(item['precio']) for item in carrito_items)
-
-# # Preparar correo
-# asunto = f"Confirmación de tu pedido #{pedido.id} en Relámpago Pricense FC"
-# html_content = render_to_string('emails/confirmacion_pedido.html', {
-#     'pedido': pedido,
-#     'usuario': request.user,
-# })
-
-# email = EmailMultiAlternatives(
-#     subject=asunto,
-#     body="Gracias por tu pedido. Consulta los detalles en la versión HTML.",
-#     from_email=settings.DEFAULT_FROM_EMAIL,
-#     to=[request.user.email]
-# )
-# email.attach_alternative(html_content, "text/html")
-
-# logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
-# if os.path.exists(logo_path):
-#     with open(logo_path, 'rb') as f:
-#         logo = MIMEImage(f.read())
-#         logo.add_header('Content-ID', '<logo_escudo>')
-#         logo.add_header('Content-Disposition', 'inline')
-#         email.attach(logo)
-
-# email.send()
-
-# return render(request, 'pedido_confirmado.html', {
-#     'pedido': pedido,
-#     'total': total
-# })
 
 
 
@@ -404,16 +401,36 @@ def pago_simulado_view(request):
 
 
 def enviar_confirmacion_pedido(usuario, pedido):
-    asunto = f"✅ Pedido #{pedido.id} confirmado - Relámpago Pricense FC"
-    remitente = settings.DEFAULT_FROM_EMAIL
-    destinatario = [usuario.email]
-    html_content = render_to_string("emails/confirmacion_pedido.html", {
-        "usuario": usuario,
-        "pedido": pedido,
+    subject = f"✅ Pedido #{pedido.id} confirmado - Relámpago Pricense FC"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    to = [usuario.email]
+
+    # Renderizamos el HTML de la confirmación
+    html_content = render_to_string('emails/confirmacion_pedido.html', {
+        'usuario': usuario,
+        'pedido': pedido,
     })
-    mensaje = EmailMultiAlternatives(asunto, "", remitente, destinatario)
+
+    # Creamos el mensaje multi-parte
+    mensaje = EmailMultiAlternatives(
+        subject=subject,
+        body="Gracias por tu pedido en Relámpago Pricense FC.",  # texto plano opcional
+        from_email=from_email,
+        to=to,
+    )
     mensaje.attach_alternative(html_content, "text/html")
-    mensaje.send()
+
+    # Adjuntamos el escudo para que funcione <img src="cid:logo_escudo">
+    logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
+    if os.path.exists(logo_path):
+        with open(logo_path, 'rb') as f:
+            img = MIMEImage(f.read())
+            img.add_header('Content-ID', '<logo_escudo>')
+            img.add_header('Content-Disposition', 'inline', filename='escudo.png')
+            mensaje.attach(img)
+
+    # Enviamos
+    mensaje.send(fail_silently=False)
 
 
 def calcular_total_carrito(carrito):
@@ -433,7 +450,11 @@ def calcular_total_carrito(carrito):
     pares = num_camisetas // 2
     sueltas = num_camisetas % 2
 
-    total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
+    if num_camisetas == 1:
+        total = Decimal('22.00')  # Si solo hay una camiseta, precio fijo
+    else:
+        total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
+
 
     return total
 
@@ -479,6 +500,7 @@ def exportar_pedidos_excel(request):
                 'Nombre': pedido.usuario.name,
                 'Email': pedido.usuario.email,
                 'Producto': linea.producto.nombre,
+                'Tipo': 'Camiseta' if linea.compra_tipo == 'solo_camiseta' else linea.producto.tipo,
                 'Talla': linea.talla,
                 'Nombre dorsal': linea.nombre_dorsal or '',
                 'Dorsal': linea.numero_dorsal or '',
@@ -562,54 +584,74 @@ def panel_pedidos_view(request):
 
 
 
-# ✔⃣ Vista personalizada que sobrescribe el envio del email
-class CustomPasswordResetView(SuccessMessageMixin, PasswordResetView):
-    template_name = 'contraseña/password_reset_form.html'
-    email_template_name = 'emails/password_reset_email.html'  # ← ✅ usa solo esta
-    subject_template_name = 'emails/password_reset_subject.txt'
-    success_url = '/password_reset/done/'
-    success_message = "Si el correo existe, se ha enviado el enlace de recuperación."
 
 
 
-    def form_valid(self, form):
-        """
-        Sobrescribimos el método para enviar el correo con estilo HTML usando EmailMultiAlternatives,
-        como ya haces en tus pedidos.
-        """
-        print("🔧 Se está usando CustomPasswordResetView ✅")
-        email = form.cleaned_data["email"]
-        usuario_modelo = get_user_model()
-        usuarios = usuario_modelo._default_manager.filter(email__iexact=email, is_active=True)
-        for user in usuarios:
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            reset_url = self.request.build_absolute_uri(
-                reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token})
-            )
-            enviar_email_recuperacion_contraseña(user, reset_url)
 
-        return super().form_valid(form)
+reset_tokens = {}  # Diccionario para almacenar tokens de restablecimiento de contraseña
+
+def solicitar_reset_password(request):
+    if request.method == "POST":
+        form = PasswordResetRequestForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            try:
+                user = Usuario.objects.get(email=email)
+                token = str(uuid.uuid4())
+                reset_tokens[token] = user.id  # ⚠️ Sustituir por modelo/token seguro en producción
+
+                # Generar enlace
+                enlace = request.build_absolute_uri(f"/reset-password/{token}/")
+
+                # Renderizar plantilla HTML
+                html_content = render_to_string("emails/password_reset_email.html", {
+                    "user": user,
+                    "enlace": enlace
+                })
+                text_content = strip_tags(html_content)
+
+                # Enviar email
+                msg = EmailMultiAlternatives(
+                    subject="🔐 Recuperación de contraseña",
+                    body=text_content,
+                    from_email="noreply@berural.com",
+                    to=[email]
+                )
+                msg.attach_alternative(html_content, "text/html")
+                # Ruta absoluta al logo
+                logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
+                with open(logo_path, 'rb') as f:
+                    logo = MIMEImage(f.read())
+                    logo.add_header('Content-ID', '<logo_escudo>')
+                    msg.attach(logo)
+                msg.send()
+
+                return render(request, "Contrasena/mensaje_enviado.html")
+            except Usuario.DoesNotExist:
+                form.add_error('email', 'No existe un usuario con ese correo.')
+    else:
+        form = PasswordResetRequestForm()
+    return render(request, "Contrasena/solicitar_reset_password.html", {"form": form})
 
 
-def enviar_email_recuperacion_contraseña(usuario, reset_url):
-    asunto = "🔐 Recupera tu contraseña - Relámpago Pricense FC"
-    remitente = settings.DEFAULT_FROM_EMAIL
-    destinatario = [usuario.email]
+# views.py
+from .forms import CambiarPasswordForm
 
-    html_content = render_to_string("emails/password_reset_email.html", {
-        "reset_url": reset_url,
-        "usuario": usuario,
-    })
+def resetear_password(request, token):
+    user_id = reset_tokens.get(token)
+    if not user_id:
+        raise Http404("Token no válido o expirado")
 
-    mensaje = EmailMultiAlternatives(asunto, "", remitente, destinatario)
-    mensaje.attach_alternative(html_content, "text/html")
+    usuario = Usuario.objects.get(id=user_id)
 
-    logo_path = os.path.join(settings.BASE_DIR, 'relampagoweb', 'static', 'img', 'escudo.png')
-    if os.path.exists(logo_path):
-        with open(logo_path, 'rb') as f:
-            image = MIMEImage(f.read())
-            image.add_header('Content-ID', '<logo_escudo>')
-            mensaje.attach(image)
+    if request.method == "POST":
+        form = CambiarPasswordForm(request.POST)
+        if form.is_valid():
+            usuario.set_password(form.cleaned_data['password'])
+            usuario.save()
+            del reset_tokens[token]
+            return redirect("login")
+    else:
+        form = CambiarPasswordForm()
 
-    mensaje.send()
+    return render(request, "Contrasena/password_reset.html", {"form": form})

@@ -1,42 +1,271 @@
 {% extends "base.html" %}
 {% load static %}
+
+{% block extra_head %}
+  <!-- Swiper CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <style>
+    .seccion-productos {
+      padding: 10px 10px;
+      text-align: center;
+    }
+    .titulo-seccion {
+      margin-top: auto;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .grid-productos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      justify-content: center;
+      gap: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 10px 20px;
+    }
+
+    .card-producto {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 100%;
+      margin: 0 auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      position: relative;
+      transition: transform 0.5s ease, opacity 0.3s ease;
+    }
+    .card-producto img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+    .precio {
+      color: #007bff;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .btn-ver {
+      display: inline-block;
+      background: #111;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      margin-top: 10px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .swiper {
+      padding-bottom: 30px;
+    }
+    .carrusel-mobile {
+      display: none;
+    }
+    .carrusel-desktop {
+      display: grid;
+    }
+
+    /* Sólo en móviles (≤576px): mostrar carrusel, ocultar rejilla */
+    @media (max-width: 576px) {
+  .carrusel-mobile {
+    display: block;
+  }
+  .carrusel-desktop {
+    display: none;
+  }
+
+  .seccion-productos {
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+
+  .titulo-seccion {
+    margin-top: auto;
+    margin-bottom: 10px;
+  }
+
+  .swiper {
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  .swiper-slide {
+    display: flex;
+    width: 100px;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  /* 1) Estado “no activa”: baja 20px y semitransparente */
+  .swiper-slide .card-producto {
+    transform: translateY(20px);
+    opacity: 0.8;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  /* 2) Sólo la slide activa (is-centered) vuelve a tope y opaca */
+  .swiper-slide.is-centered .card-producto {
+    transform: translateY(0);
+    opacity: 1;
+    z-index: 2;
+  }
+
+  .card-producto {
+    width: 95%;
+    max-width: 350px;
+    display: block;
+    margin: 0 auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding: 12px;
+  }
+
+  .swiper-pagination {
+    position: relative;
+    margin-top: 25px;
+    padding: auto;
+}
+
+
+  </style>
+{% endblock %}
+
 {% block content %}
+  <!-- SECCIÓN EQUIPACIONES COMPLETAS -->
+  <section class="seccion-productos">
+    <h2 class="titulo-seccion">Equipaciones completas</h2>
 
-
-<!-- SECCIÓN EQUIPACIONES COMPLETAS -->
-<section class="seccion-productos">
-  <h2 class="titulo-seccion">Equipaciones completas</h2>
-  <div class="grid-productos">
-    {% for producto in equipaciones %}
-      <div class="card-producto">
-        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
-        <h3>{{ producto.nombre }}</h3>
-        <p class="precio">{{ producto.precio }} €</p>
-        <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+    <div class="swiper carrusel-mobile equipaciones-swiper">
+      <div class="swiper-wrapper">
+        {% for producto in equipaciones %}
+          <div class="swiper-slide">
+            <div class="card-producto">
+              <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+              <h3>{{ producto.nombre }}</h3>
+              <p class="precio">{{ producto.precio }} €</p>
+              <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+            </div>
+          </div>
+        {% endfor %}
       </div>
-    {% empty %}
-      <p>No hay equipaciones disponibles.</p>
-    {% endfor %}
-  </div>
-</section>
+      <div class="swiper-pagination"></div>
+    </div>
 
-<!-- SECCIÓN SUDADERAS -->
-<section class="seccion-productos">
-  <h2 class="titulo-seccion">Sudaderas</h2>
-  <div class="grid-productos">
-    {% for producto in sudaderas %}
-      <div class="card-producto">
-        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
-        <h3>{{ producto.nombre }}</h3>
-        <p class="precio">{{ producto.precio }} €</p>
-        <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+    <div class="grid-productos carrusel-desktop">
+      {% for producto in equipaciones %}
+        <div class="card-producto">
+          <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+          <h3>{{ producto.nombre }}</h3>
+          <p class="precio">{{ producto.precio }} €</p>
+          <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+  <hr>
+  <!-- SECCIÓN SUDADERAS -->
+  <section class="seccion-productos">
+    <h2 class="titulo-seccion">Sudaderas</h2>
+
+    <div class="swiper carrusel-mobile sudaderas-swiper">
+      <div class="swiper-wrapper">
+        {% for producto in sudaderas %}
+          <div class="swiper-slide">
+            <div class="card-producto">
+              <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+              <h3>{{ producto.nombre }}</h3>
+              <p class="precio">{{ producto.precio }} €</p>
+              <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+            </div>
+          </div>
+        {% endfor %}
       </div>
-    {% empty %}
-      <p>No hay sudaderas disponibles.</p>
-    {% endfor %}
-  </div>
-</section>
+      <div class="swiper-pagination"></div>
+    </div>
 
+    <div class="grid-productos carrusel-desktop">
+      {% for producto in sudaderas %}
+        <div class="card-producto">
+          <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+          <h3>{{ producto.nombre }}</h3>
+          <p class="precio">{{ producto.precio }} €</p>
+          <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}
 
+{% block extra_js %}
+  <!-- Swiper JS -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script>
+    let equipSwiper = null;
+    let sudaderasSwiper = null;
 
-{% endblock %}
+    // función genérica que añade .is-centered al slide activo
+    function initCenteredSwiper(selector) {
+      return new Swiper(selector, {
+        initialSlide: 0,           // si quieres arrancar en otro slide, pon aquí su índice
+        slidesPerView: 1.2,
+        spaceBetween: 15,
+        centeredSlides: true,
+        autoHeight: true,          // ajusta la altura al contenido de cada slide
+        pagination: {
+          el: selector + ' .swiper-pagination',
+          clickable: true,
+          // renderizamos cada bullet con su número correcto en aria-label
+          renderBullet: function(index, className) {
+            return '<span class="' + className + '"' +
+                       ' role="button"' +
+                       ' tabindex="0"' +
+                       ' aria-label="Ir a la diapositiva ' + (index + 1) + '">' +
+                   '</span>';
+          }
+        },
+        a11y: {
+          enabled: true,
+          // mensaje accesible para cada bullet ({{index}} es 1-based)
+          paginationBulletMessage: 'Ir a la diapositiva {{index}}'
+        },
+        on: {
+          init() {
+            this.slides.forEach(s => s.classList.remove('is-centered'));
+            this.slides[this.activeIndex].classList.add('is-centered');
+          },
+          slideChangeTransitionEnd() {
+            this.slides.forEach(s => s.classList.remove('is-centered'));
+            this.slides[this.activeIndex].classList.add('is-centered');
+          }
+        }
+      });
+    }
+
+    function updateSwipers() {
+      const isMobile = window.innerWidth <= 576;
+
+      if (isMobile) {
+        if (!equipSwiper) {
+          equipSwiper = initCenteredSwiper('.equipaciones-swiper');
+        }
+        if (!sudaderasSwiper) {
+          sudaderasSwiper = initCenteredSwiper('.sudaderas-swiper');
+        }
+      } else {
+        if (equipSwiper) {
+          equipSwiper.destroy(true, true);
+          equipSwiper = null;
+        }
+        if (sudaderasSwiper) {
+          sudaderasSwiper.destroy(true, true);
+          sudaderasSwiper = null;
+        }
+      }
+    }
+
+    window.addEventListener('load', updateSwipers);
+    window.addEventListener('resize', updateSwipers);
+  </script>
+{% endblock %}

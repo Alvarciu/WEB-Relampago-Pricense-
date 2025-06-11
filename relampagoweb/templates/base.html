@@ -3,6 +3,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>Relámpago Pricense FC</title>
 
   <!-- Bootstrap, fuentes, icons -->
@@ -10,6 +12,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+  <link rel="icon" href="{% static 'img/escudo.png' %}" type="image/png">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
@@ -17,93 +20,94 @@
       font-family: 'Inter', sans-serif;
     }
   </style>
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
+  {% block layout %}
+    <!-- Header -->
+    <header style="background-color: #000; color: #facc15; display: flex; align-items: center; gap: 10px; padding: 10px 20px;">
+      <img src="{% static 'img/escudo.png' %}" alt="Escudo" width="40">
+      <h1 class="m-0" style="font-size: 1.4rem;">Relámpago Pricense FC</h1>
+    </header>
 
-{% block layout %}
-  <!-- Header -->
-  <header style="background-color: #000; color: #facc15; display: flex; align-items: center; gap: 10px; padding: 10px 20px;">
-    <img src="{% static 'img/escudo.png' %}" alt="Escudo" width="40">
-    <h1 class="m-0" style="font-size: 1.4rem;">Relámpago Pricense FC</h1>
-  </header>
-
-  <!-- Navbar -->
-  <nav class="navbar px-4 py-2 mb-0" style="background-color: #d6d6d6; border-radius: 6px;">
-    <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap">
-      {% if user.is_authenticated %}
-        <div class="d-flex flex-wrap align-items-center gap-2">
-          <span class="me-2">Bienvenido {{ user.name }}</span>
-          <span>|</span>
-          <a href="{% url 'tienda' %}" class="text-decoration-none text-dark">Tienda</a>
-          <span>|</span>
-          <a href="{% url 'carrito' %}" class="text-decoration-none text-dark">Carrito</a>
-          {% if user.is_staff %}
+    <!-- Navbar -->
+    <nav class="navbar px-4 py-2 mb-0" style="background-color: #d6d6d6; border-radius: 6px;">
+      <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap">
+        {% if user.is_authenticated %}
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="me-2">Bienvenido {{ user.name }}</span>
             <span>|</span>
-            <a href="{% url 'panel_pedidos' %}" class="text-decoration-none text-dark">📋 Panel de pedidos</a>
-          {% endif %}
-        </div>
-        <div>
-          <a href="#" class="text-danger fs-5" title="Cerrar sesión" data-bs-toggle="modal" data-bs-target="#logoutModal">
-            <i class="bi bi-box-arrow-right"></i>
-          </a>
-        </div>
-      {% else %}
-        <div class="d-flex flex-wrap align-items-center gap-2">
-          <a href="{% url 'login' %}" class="text-decoration-none text-dark">Iniciar sesión</a>
-          <span>|</span>
-          <a href="{% url 'registro' %}" class="text-decoration-none text-dark">Registrarse</a>
-        </div>
-      {% endif %}
-    </div>
-  </nav>
+            <a href="{% url 'tienda' %}" class="text-decoration-none text-dark">Tienda</a>
+            <span>|</span>
+            <a href="{% url 'carrito' %}" class="text-decoration-none text-dark">Carrito</a>
+            {% if user.is_staff %}
+              <span>|</span>
+              <a href="{% url 'lista_pedidos' %}" class="text-decoration-none text-dark">📋 Panel de pedidos</a>
+            {% endif %}
+          </div>
+          <div>
+            <a href="#" class="text-danger fs-5" title="Cerrar sesión" data-bs-toggle="modal" data-bs-target="#logoutModal">
+              <i class="bi bi-box-arrow-right"></i>
+            </a>
+          </div>
+        {% else %}
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="{% url 'login' %}" class="text-decoration-none text-dark">Iniciar sesión</a>
+            <span>|</span>
+            <a href="{% url 'registro' %}" class="text-decoration-none text-dark">Registrarse</a>
+          </div>
+        {% endif %}
+      </div>
+    </nav>
 
-  <hr>
+    <hr>
 
-  <!-- Alerta de pedidos -->
-  {% if config and not config.pedidos_abiertos %}
-    <div class="alerta-pedidos">
-      <div class="alerta-texto">🚨 Pedidos cerrados 🚨</div>
-    </div>
-  {% endif %}
-{% endblock %}
+    <!-- Alerta de pedidos -->
+    {% if config and not config.pedidos_abiertos %}
+      <div class="alerta-pedidos">
+        <div class="alerta-texto">🚨 Pedidos cerrados 🚨</div>
+      </div>
+    {% endif %}
+  {% endblock %}
 
-<!-- Contenido principal -->
-{% block content %}{% endblock %}
+  <!-- Contenido principal -->
+  {% block content %}{% endblock %}
 
-<!-- MODAL DE CIERRE DE SESIÓN -->
-<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="border-radius: 12px; border: none;">
-      <div class="modal-body text-center p-4">
-        <h5 class="mb-3 fw-semibold">¿Estás seguro de que quieres cerrar sesión?</h5>
-        <div class="d-flex justify-content-center gap-3 mt-4">
-          <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
-          <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger px-4">Cerrar sesión</button>
-          </form>
+  <!-- MODAL DE CIERRE DE SESIÓN -->
+  <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border-radius: 12px; border: none;">
+        <div class="modal-body text-center p-4">
+          <h5 class="mb-3 fw-semibold">¿Estás seguro de que quieres cerrar sesión?</h5>
+          <div class="d-flex justify-content-center gap-3 mt-4">
+            <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger px-4">Cerrar sesión</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- SweetAlert para mensajes flash -->
-{% if messages %}
-  <script>
-    {% for message in messages %}
-      Swal.fire({
-        icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% else %}info{% endif %}",
-        title: "{{ message|escapejs }}",
-        showConfirmButton: false,
-        timer: 3000,
-        toast: true,
-        position: 'top-end'
-      });
-    {% endfor %}
-  </script>
-{% endif %}
+  <!-- SweetAlert para mensajes flash -->
+  {% if messages %}
+    <script>
+      {% for message in messages %}
+        Swal.fire({
+          icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% else %}info{% endif %}",
+          title: "{{ message|escapejs }}",
+          showConfirmButton: false,
+          timer: 3000,
+          toast: true,
+          position: 'top-end'
+        });
+      {% endfor %}
+    </script>
+  {% endif %}
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  {% block extra_js %}{% endblock %}
 </body>
 </html>
