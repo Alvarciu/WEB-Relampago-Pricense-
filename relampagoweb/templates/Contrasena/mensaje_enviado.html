@@ -1,0 +1,13 @@
+{% extends "base_inicio.html" %}
+{% load static %}
+
+{% block title %}Correo Enviado{% endblock %}
+{% block content %}
+  <h1>Correo Enviado</h1>
+  <p class="subtext" style="margin-bottom: 25px; color: #f1c40f;">
+    Revise su correo electrónico para restablecer su contraseña.
+  </p>
+
+  <a href="{% url 'login' %}" class="btn" style="text-align: center;">Volver al inicio de sesión</a>
+{% endblock %}
+

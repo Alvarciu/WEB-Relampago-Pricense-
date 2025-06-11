@@ -116,7 +116,13 @@
           <strong>{{ linea.producto.nombre }}</strong>
           <p>Talla: {{ linea.talla }}</p>
           {% if linea.nombre_dorsal %}
-            <p>Dorsal: {{ linea.nombre_dorsal }} {{ linea.numero_dorsal }}</p>
+            <p>Dorsal: {{ linea.nombre_dorsal }} </p>
+          {% endif %}
+          {% if linea.numero_dorsal %}
+            <p>Número: {{ linea.numero_dorsal }}</p>
+          {% endif %}
+          {% if linea.producto.tipo == "Equipación" %}
+            <p>Tipo: {{ linea.compra_tipo }}</p>
           {% endif %}
         </div>
       </div>

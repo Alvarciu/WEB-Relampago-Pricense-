@@ -2,12 +2,15 @@
 venv/
 .venv
 
+venv311/
+
 
 # Archivos de base de datos (SQLite)
 db.sqlite3
 
 # Archivos temporales / caché de Python
 __pycache__/
+*.pyc
 *.py[cod]
 *.sqlite3
 

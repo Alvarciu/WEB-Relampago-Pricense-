@@ -1,167 +1,189 @@
-{% extends "base.html" %}
-{% load static %}
-
-{% block layout %}{% endblock %}
+{% extends "base_inicio.html" %}
+{% block title %}Registro de Usuario{% endblock %}
 
 {% block content %}
-<style>
-  html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-    box-sizing: border-box;
-  }
+<h1>Registro</h1>
+<p>Crea tu cuenta para comenzar</p>
 
-  *, *::before, *::after {
-    box-sizing: inherit;
-  }
+<form method="POST" id="registroForm">
+  {% csrf_token %}
 
-  body {
-    background-image: url("{% static 'img/fondoIglesia.jpeg' %}");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-
-  .auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    padding: 20px;
-    background-color: rgba(0, 0, 0, 0.4);
-  }
-
-  .auth-box {
-    display: flex;
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 16px;
-    overflow: hidden;
-    max-width: 900px;
-    width: 100%;
-    color: white;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-  }
-
-  .auth-image {
-    background-image: url("{% static 'img/escudo.png' %}");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    flex: 1;
-    min-height: 250px;
-  }
-
-  .auth-form {
-    flex: 1;
-    padding: 40px 30px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .auth-form h2 {
-    margin-bottom: 10px;
-    font-size: 24px;
-  }
-
-  .auth-form p {
-    font-size: 14px;
-    margin-bottom: 20px;
-  }
-
-  .auth-form form {
-    margin: 0 !important;
-  }
-
-  .auth-form label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-  }
-
-  .auth-form input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 10px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-  }
-
-  .auth-form .errorlist {
-    color: #ff7070;
-    font-size: 14px;
-    margin-top: -5px;
-    margin-bottom: 10px;
-  }
-
-  .auth-form button[type="submit"] {
-    background-color: #f1c40f;
-    color: black;
-    font-weight: bold;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 10px;
-    width: 100%;
-  }
-
-  .auth-form button:hover {
-    background-color: #d4ac0d;
-  }
-
-  .auth-form a {
-    color: #1a73e8;
-    text-decoration: none;
-    font-size: 14px;
-    display: block;
-    margin-top: 12px;
-    text-align: center;
-  }
-
-  @media (max-width: 768px) {
-    .auth-box {
-      flex-direction: column;
-    }
-    .auth-image {
-      display: none;
-    }
-  }
-</style>
-
-<div class="auth-container">
-  <div class="auth-box">
-    <div class="auth-image"></div>
-    <div class="auth-form">
-      <h2>Registro</h2>
-      <p>Crea tu cuenta para comenzar</p>
-
-      <form method="post" novalidate>
-        {% csrf_token %}
-
-        {% for field in form %}
-          <div>
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.errors %}
-              <div class="errorlist">
-                {{ field.errors|striptags }}
-              </div>
-            {% endif %}
-          </div>
-        {% endfor %}
-
-        <button type="submit">Registrarse</button>
-      </form>
-
-      <a href="{% url 'login' %}">¿Ya tienes cuenta? Inicia sesión</a>
+  <div id="paso1">
+    <div class="form-group">
+      <label for="id_name">Nombre:</label>
+      {{ form.name }}
+      {% if form.name.errors %}
+        <div style="color:red; font-size: 14px;">{{ form.name.errors.0 }}</div>
+      {% endif %}
     </div>
+    <div class="form-group">
+      <label for="id_apellidos">Apellidos:</label>
+      {{ form.apellidos }}
+      {% if form.apellidos.errors %}
+        <div style="color:red; font-size: 14px;">{{ form.apellidos.errors.0 }}</div>
+      {% endif %}
+    </div>
+    <div class="form-group">
+      <label for="id_telefono">Teléfono:</label>
+      {{ form.telefono }}
+      {% if form.telefono.errors %}
+        <div style="color:red; font-size: 14px;">{{ form.telefono.errors.0 }}</div>
+      {% endif %}
+    </div>
+    <button type="button" class="btn" onclick="mostrarPaso2()">Siguiente</button>
   </div>
-</div>
+
+  <div id="paso2" style="display: none;">
+    <div style="text-align: left; margin-bottom: 15px;">
+      <button type="button" onclick="volverPaso1()" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+        <i class="fas fa-arrow-left"></i> Volver
+      </button>
+    </div>
+
+    <div class="form-group">
+      <label for="id_email">Correo electrónico:</label>
+      {{ form.email }}
+      {% if form.email.errors %}
+        <div style="color:red; font-size: 14px;">{{ form.email.errors.0 }}</div>
+      {% endif %}
+    </div>
+
+    <div class="form-group">
+      <label for="id_password1">Contraseña:</label>
+      {{ form.password1 }}
+      {% if form.password1.errors or form.non_field_errors %}
+        <div style="color:red; font-size: 14px;">
+          {% for error in form.password1.errors %}
+            <div>{{ error }}</div>
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Requisitos JS -->
+      <div id="password-requisitos" style="display: none; color: red; font-size: 14px; margin-top: 10px;">
+        Las contraseñas deben cumplir con los siguientes requisitos:
+        <ul id="lista-requisitos" style="margin-top: 5px; padding-left: 20px;">
+          <li id="min-length">Mínimo 8 caracteres</li>
+          <li id="no-common">No debe ser demasiado común</li>
+          <li id="not-numeric">No debe ser totalmente numérica</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="id_password2">Repite la contraseña:</label>
+      {{ form.password2 }}
+      {% if form.password2.errors %}
+        <div style="color:red; font-size: 14px;">{{ form.password2.errors.0 }}</div>
+      {% endif %}
+    </div>
+
+    <input type="hidden" id="paso_actual" value="2">
+    <button type="submit" class="btn">Registrarse</button>
+  </div>
+
+  <div id="error-message" style="color: red; font-weight: bold; margin-top: 15px; text-align: center;"></div>
+</form>
+
+<a href="{% url 'login' %}" class="link">¿Ya tienes cuenta? Inicia sesión</a>
+
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+   const tieneErroresPaso2 = ({% if form.email.errors or form.password1.errors or form.password2.errors %}true{% else %}false{% endif %});    if (tieneErroresPaso2 === true) {
+      document.getElementById('paso1').style.display = 'none';
+      document.getElementById('paso2').style.display = 'block';
+      document.getElementById("paso_actual").value = "2";
+    }
+
+    const campoPassword = document.getElementById("id_password1");
+    const requisitos = document.getElementById("password-requisitos");
+
+    campoPassword.addEventListener("input", () => {
+      const value = campoPassword.value;
+      requisitos.style.display = "block";
+
+      // Requisito: mínimo 8 caracteres
+      document.getElementById("min-length").style.color = value.length >= 8 ? "green" : "red";
+
+      // Requisito: no totalmente numérica
+      document.getElementById("not-numeric").style.color = /^\d+$/.test(value) ? "red" : "green";
+
+      // Requisito: no común
+      const comunes = ["password", "123456", "qwerty", "abc123"];
+      document.getElementById("no-common").style.color = comunes.includes(value.toLowerCase()) ? "red" : "green";
+    });
+  });
+
+  function mostrarPaso2() {
+    const nombre = document.getElementById('id_name').value.trim();
+    const apellidos = document.getElementById('id_apellidos').value.trim();
+    const telefono = document.getElementById('id_telefono').value.trim();
+    const errorDiv = document.getElementById('error-message');
+
+    errorDiv.innerText = "";
+
+    const camposFaltantes = [];
+    if (!nombre) camposFaltantes.push("Nombre");
+    if (!apellidos) camposFaltantes.push("Apellidos");
+    if (!telefono) camposFaltantes.push("Teléfono");
+
+    if (camposFaltantes.length > 0) {
+      const mensaje = camposFaltantes.length === 1
+        ? `Falta por rellenar el campo: ${camposFaltantes[0]}.`
+        : `Faltan por rellenar los campos: ${camposFaltantes.join(" y ")}.`;
+
+      errorDiv.innerText = mensaje;
+      document.getElementById('paso2').style.display = 'none';
+      document.getElementById('paso1').scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    document.getElementById('paso1').style.display = 'none';
+    document.getElementById('paso2').style.display = 'block';
+  }
+
+  function volverPaso1() {
+    document.getElementById('paso2').style.display = 'none';
+    document.getElementById('paso1').style.display = 'block';
+  }
+
+  document.getElementById("registroForm").addEventListener("submit", function (e) {
+    const email = document.getElementById("id_email").value.trim();
+    const password = document.getElementById("id_password1").value;
+    const password2 = document.getElementById("id_password2").value;
+    const errorDiv = document.getElementById("error-message");
+
+    errorDiv.innerText = "";
+
+    if (!email || !password || !password2) {
+      e.preventDefault();
+      errorDiv.innerText = "Falta rellenar todos los campos del segundo paso.";
+      document.getElementById("paso_actual").value = "2";
+      return;
+    }
+
+    if (password !== password2) {
+      e.preventDefault();
+      errorDiv.innerText = "Las contraseñas no coinciden.";
+      document.getElementById("paso_actual").value = "2";
+      return;
+    }
+
+    fetch(`/verificar-email/?email=${encodeURIComponent(email)}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.exists) {
+          e.preventDefault();
+          errorDiv.innerText = "Este correo electrónico ya está registrado.";
+        }
+      })
+      .catch(() => {
+        e.preventDefault();
+        errorDiv.innerText = "Error al verificar el correo. Intenta de nuevo.";
+      });
+  });
+</script>
 {% endblock %}
