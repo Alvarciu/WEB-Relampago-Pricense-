@@ -1,42 +1,194 @@
 {% extends "base.html" %}
 {% load static %}
+
+{% block extra_head %}
+  <!-- Swiper CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <style>
+    .seccion-productos {
+      padding: 30px 15px;
+      text-align: center;
+    }
+    .titulo-seccion {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .grid-productos {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 10px 20px;
+    }
+    .card-producto {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .card-producto img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+    .precio {
+      color: #007bff;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .btn-ver {
+      display: inline-block;
+      background: #111;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      margin-top: 10px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .swiper {
+      padding-bottom: 30px;
+    }
+    /* Ocultar carrusel por defecto */
+    .carrusel-mobile {
+      display: none;
+    }
+    /* Mostrar rejilla por defecto */
+    .carrusel-desktop {
+      display: grid;
+    }
+    /* Sólo en móviles (≤576px): mostrar carrusel, ocultar rejilla */
+    @media (max-width: 576px) {
+      .carrusel-mobile {
+        display: block;
+      }
+      .carrusel-desktop {
+        display: none;
+      }
+      .swiper-slide {
+        display: flex;
+        justify-content: center;
+      }
+      .card-producto {
+        width: 90%;
+        max-width: 300px;
+        margin: 0 auto;
+      }
+    }
+  </style>
+{% endblock %}
+
 {% block content %}
+  <!-- SECCIÓN EQUIPACIONES COMPLETAS -->
+  <section class="seccion-productos">
+    <h2 class="titulo-seccion">Equipaciones completas</h2>
 
-
-<!-- SECCIÓN EQUIPACIONES COMPLETAS -->
-<section class="seccion-productos">
-  <h2 class="titulo-seccion">Equipaciones completas</h2>
-  <div class="grid-productos">
-    {% for producto in equipaciones %}
-      <div class="card-producto">
-        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
-        <h3>{{ producto.nombre }}</h3>
-        <p class="precio">{{ producto.precio }} €</p>
-        <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+    <div class="swiper carrusel-mobile equipaciones-swiper">
+      <div class="swiper-wrapper">
+        {% for producto in equipaciones %}
+          <div class="swiper-slide">
+            <div class="card-producto">
+              <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+              <h3>{{ producto.nombre }}</h3>
+              <p class="precio">{{ producto.precio }} €</p>
+              <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+            </div>
+          </div>
+        {% endfor %}
       </div>
-    {% empty %}
-      <p>No hay equipaciones disponibles.</p>
-    {% endfor %}
-  </div>
-</section>
+      <div class="swiper-pagination"></div>
+    </div>
 
-<!-- SECCIÓN SUDADERAS -->
-<section class="seccion-productos">
-  <h2 class="titulo-seccion">Sudaderas</h2>
-  <div class="grid-productos">
-    {% for producto in sudaderas %}
-      <div class="card-producto">
-        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
-        <h3>{{ producto.nombre }}</h3>
-        <p class="precio">{{ producto.precio }} €</p>
-        <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+    <div class="grid-productos carrusel-desktop">
+      {% for producto in equipaciones %}
+        <div class="card-producto">
+          <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+          <h3>{{ producto.nombre }}</h3>
+          <p class="precio">{{ producto.precio }} €</p>
+          <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- SECCIÓN SUDADERAS -->
+  <section class="seccion-productos">
+    <h2 class="titulo-seccion">Sudaderas</h2>
+
+    <div class="swiper carrusel-mobile sudaderas-swiper">
+      <div class="swiper-wrapper">
+        {% for producto in sudaderas %}
+          <div class="swiper-slide">
+            <div class="card-producto">
+              <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+              <h3>{{ producto.nombre }}</h3>
+              <p class="precio">{{ producto.precio }} €</p>
+              <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+            </div>
+          </div>
+        {% endfor %}
       </div>
-    {% empty %}
-      <p>No hay sudaderas disponibles.</p>
-    {% endfor %}
-  </div>
-</section>
+      <div class="swiper-pagination"></div>
+    </div>
 
+    <div class="grid-productos carrusel-desktop">
+      {% for producto in sudaderas %}
+        <div class="card-producto">
+          <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+          <h3>{{ producto.nombre }}</h3>
+          <p class="precio">{{ producto.precio }} €</p>
+          <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}
 
+{% block extra_js %}
+  <!-- Swiper JS -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script>
+    let equipSwiper = null;
+    let sudaderasSwiper = null;
 
-{% endblock %}
+    function updateSwipers() {
+      const isMobile = window.innerWidth <= 576;
+
+      if (isMobile) {
+        if (!equipSwiper) {
+          equipSwiper = new Swiper('.equipaciones-swiper', {
+            slidesPerView: 1.2,
+            spaceBetween: 15,
+            pagination: {
+              el: '.equipaciones-swiper .swiper-pagination',
+              clickable: true
+            }
+          });
+        }
+        if (!sudaderasSwiper) {
+          sudaderasSwiper = new Swiper('.sudaderas-swiper', {
+            slidesPerView: 1.2,
+            spaceBetween: 15,
+            pagination: {
+              el: '.sudaderas-swiper .swiper-pagination',
+              clickable: true
+            }
+          });
+        }
+      } else {
+        if (equipSwiper) {
+          equipSwiper.destroy(true, true);
+          equipSwiper = null;
+        }
+        if (sudaderasSwiper) {
+          sudaderasSwiper.destroy(true, true);
+          sudaderasSwiper = null;
+        }
+      }
+    }
+
+    window.addEventListener('load', updateSwipers);
+    window.addEventListener('resize', updateSwipers);
+  </script>
+{% endblock %}
