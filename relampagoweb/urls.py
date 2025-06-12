@@ -7,7 +7,7 @@ from django.urls import reverse
 
 urlpatterns = [
     # Inicio y autenticación
-    path('', login_required(inicio_view), name='inicio'),
+    path('', inicio_view, name='inicio'),
     path('registro/', registro_view, name='registro'),
     path('accounts/login/', login_view , name='login'),
     path('logout/', logout_view, name='logout'),

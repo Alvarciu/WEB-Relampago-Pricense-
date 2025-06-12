@@ -1,12 +1,17 @@
-
 {% extends "base.html" %}
-
 {% block content %}
-<h2>Bienvenido, {{ user.name }}</h2>
-<p>¡Explora la tienda o consulta tus pedidos!</p>
+  <div class="container py-5 text-center">
+    {% if user.is_authenticated %}
+      <h2 class="display-5">¡Bienvenido, {{ user.name }}!</h2>
+      <p class="lead">Explora la tienda o consulta tus pedidos.</p>
+    {% else %}
+      <h2 class="display-5">¡Bienvenido!</h2>
+      <p class="lead">
+        Puedes recorrer todo el catálogo sin iniciar sesión.  
+        Si quieres comprar o llevar un control de tus pedidos, 
+        <a href="{% url 'login' %}">inicia sesión</a> o 
+        <a href="{% url 'registro' %}">regístrate</a>.
+      </p>
+    {% endif %}
+  </div>
 {% endblock %}
-{% if user.is_authenticated %}
-  Bienvenido, {{ user.name }} | <a href="{% url 'logout' %}">Cerrar sesión</a>
-{% else %}
-  <a href="{% url 'login' %}">Iniciar sesión</a> | <a href="{% url 'registro' %}">Registrarse</a>
-{% endif %}
