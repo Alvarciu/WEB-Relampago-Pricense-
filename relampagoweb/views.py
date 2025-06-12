@@ -52,7 +52,8 @@ from email.mime.image import MIMEImage
 from django.conf import settings
 import os
 
-
+from django.shortcuts import render
+from .models import Jugador
 
 
 def es_admin(user):
@@ -62,8 +63,17 @@ def index(request):
     return HttpResponse('Hello, world')
 
 # INICIO DE SESION Y REGISTRO
+
+from django.shortcuts import render
+from .models import Jugador
+
 def inicio_view(request):
-    return render(request, 'Inicio.html')
+    jugadores = Jugador.objects.all()
+    return render(request, 'inicio.html', {
+        'jugadores': jugadores,
+        # demás contexto…
+    })
+
 
 def registro_view(request):
     translation.activate('es')
