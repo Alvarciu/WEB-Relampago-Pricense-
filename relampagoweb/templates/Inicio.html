@@ -1,17 +1,181 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+  <!-- CSS específico para Historia y Equipo -->
+  <style>
+    /* Historia del club */
+    .historia-card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .historia-card h5 {
+      font-weight: 600;
+      margin-bottom: .75rem;
+    }
+
+    /* Jugadores */
+    .equipo-card .jugador-img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .equipo-card .card-title,
+    .equipo-card .card-text {
+      font-weight: bold;
+    }
+
+
+      /* Sólo en móviles (≤576px): mostrar carrusel, ocultar rejilla */
+    @media (max-width: 576px) {
+  .carrusel-mobile {
+    display: block;
+  }
+  .carrusel-desktop {
+    display: none;
+  }
+
+  .seccion-productos {
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+
+  .titulo-seccion {
+    margin-top: auto;
+    margin-bottom: 10px;
+  }
+
+  .swiper {
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  .swiper-slide {
+    display: flex;
+    width: 100px;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  /* 1) Estado “no activa”: baja 20px y semitransparente */
+  .swiper-slide .card-producto {
+    transform: translateY(20px);
+    opacity: 0.8;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  /* 2) Sólo la slide activa (is-centered) vuelve a tope y opaca */
+  .swiper-slide.is-centered .card-producto {
+    transform: translateY(0);
+    opacity: 1;
+    z-index: 2;
+  }
+
+  .historia-card {
+    width: 95%;
+    max-width: 350px;
+    display: block;
+    margin: 0 auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding: 12px;
+  }
+
+
+  .card-producto {
+    width: 95%;
+    max-width: 350px;
+    display: block;
+    margin: 0 auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding: 12px;
+  }
+
+  .swiper-pagination {
+    position: relative;
+    margin-top: 25px;
+    padding: auto;
+}
+    }
+  </style>
+{% endblock %}
+
 {% block content %}
-  <div class="container py-5 text-center">
+  <!-- Hero / Bienvenida -->
+  <section class="container py-5 text-center">
     {% if user.is_authenticated %}
-      <h2 class="display-5">¡Bienvenido, {{ user.name }}!</h2>
-      <p class="lead">Explora la tienda o consulta tus pedidos.</p>
+      <h2 class="display-4">¡Bienvenido, {{ user.name }}!</h2>
+      <p class="lead">Explora nuestra tienda o consulta tus últimos pedidos.</p>
     {% else %}
-      <h2 class="display-5">¡Bienvenido!</h2>
+      <h2 class="display-4">¡Bienvenido a Relámpago Pricense FC!</h2>
       <p class="lead">
-        Puedes recorrer todo el catálogo sin iniciar sesión.  
-        Si quieres comprar o llevar un control de tus pedidos, 
-        <a href="{% url 'login' %}">inicia sesión</a> o 
-        <a href="{% url 'registro' %}">regístrate</a>.
+        Descubre nuestra equipación oficial –  
+        <a href="{% url 'login' %}">Inicia sesión</a> o  
+        <a href="{% url 'registro' %}">Regístrate</a> para comprar.
       </p>
     {% endif %}
-  </div>
+  </section>
+
+  <!-- Historia del club -->
+  <section class="container mb-5">
+    <h3 class="titulo-seccion text-center mb-4">Historia del club</h3>
+
+    <!-- Desktop y tablet: filas de 3 -->
+    <div class="row gx-4">
+      <div class="col-md-4">
+        <div class="historia-card">
+          <h5>Fundación</h5>
+          <p>El Relámpago Pricense FC se fundó en 1965 con la ilusión de crear un proyecto deportivo arraigado en nuestra localidad. Aunque el equipo desapareció durante unos años, ahora hemos vuelto con la maxima ilusión!!!.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="historia-card">
+          <h5>Equipo Actualmente</h5>
+          <p>Desde la temporada pasado, año donde el equipo volvióa surgir nos encontramos compitiendo en la Liga Local Diputacion Aficionado de futbol sala en el Grupo Bronce. Esta temporada nos dejaremos la vida por luchar por ese tan esperado ascenso al Grupo Plata.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="historia-card">
+          <h5>Actividades Importantes</h5>
+          <p>Aparte de competir en las competiciones conquenses, tambien somos organizadores del Torneo de Futbol Sala de Priego, ya levamos dos ediciones a nuestra espaldas y este año esperamos veros a todos los dias 8 y 9 de Agosto en el IES Diego Jesús Jiménez para presenciar la III edicion de nuestro torneo.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección Quiénes Somos / Equipo -->
+  <section class="container seccion-equipo py-5">
+    <h3 class="titulo-seccion">Nuestro Equipo</h3>
+    <p class="text-center mb-4">Conoce a las leyendas detrás del relámpago.</p>
+    <div class="row gx-4 gy-4">
+      {% for jugador in jugadores %}
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="card equipo-card h-100 text-center">
+            <img 
+              src="{{ jugador.foto.url }}" 
+              alt="{{ jugador.nombre }}" 
+              class="jugador-img"
+            >
+            <div class="card-body">
+              <h5 class="card-title">{{ jugador.nombre }}</h5>
+              <p class="card-text">{{ jugador.posicion }}</p>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Llamada a la acción -->
+  <section class="container text-center py-5">
+    <a href="{% url 'tienda' %}" class="btn btn-lg btn-outline-primary">
+      Ir a la tienda ⚡
+    </a>
+  </section>
 {% endblock %}

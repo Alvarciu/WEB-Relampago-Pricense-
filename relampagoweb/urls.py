@@ -4,6 +4,9 @@ from django.shortcuts import render
 from .views import *
 from django.contrib.auth import views as auth_views
 from django.urls import reverse
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 urlpatterns = [
     # Inicio y autenticación
@@ -39,4 +42,7 @@ urlpatterns = [
 
     path("solicitar-reset-password/", solicitar_reset_password, name="solicitar-reset-password"),
     path("reset-password/<str:token>/", resetear_password, name="reset-password"),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+
