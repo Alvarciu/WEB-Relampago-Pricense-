@@ -94,7 +94,9 @@
 <table id="tabla-pedidos">
   <thead>
     <tr>
-      <th>ID</th>
+      <th>ID:
+  <input id="buscador-id" type="text" placeholder="Introduce el ID del pedido…" style="max-width: 260px;">
+</th>
       <th class="sortable">Usuario <span class="filtro-icono">🔽</span></th>
       <th>Email</th>
       <th>Telefono</th>
@@ -128,7 +130,6 @@
     {% endfor %}
   </tbody>
 </table>
-
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
@@ -141,6 +142,7 @@
         v1.localeCompare(v2);
     };
 
+    // --- Ordenar columnas (código original) ---
     document.querySelectorAll("th.sortable").forEach(th => {
       th.addEventListener("click", () => {
         const table = th.closest("table");
@@ -153,7 +155,18 @@
         rows.forEach(row => tbody.appendChild(row));
       });
     });
+
+    // --- Buscador por ID (nuevo) ---
+    const buscador = document.getElementById('buscador-id');
+    buscador.addEventListener('input', function () {
+      const filtro = this.value.trim().toLowerCase();
+      document.querySelectorAll('#tabla-pedidos tbody tr').forEach(row => {
+        const id = row.children[0].textContent.trim().toLowerCase();
+        row.style.display = id.includes(filtro) ? '' : 'none';
+      });
+    });
   });
 </script>
+
 
 {% endblock %}
