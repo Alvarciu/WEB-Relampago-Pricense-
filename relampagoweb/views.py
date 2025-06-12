@@ -122,6 +122,8 @@ def detalle_producto_view(request, producto_id):
     return render(request, 'detalle_producto.html', {'producto': producto})
 
 
+
+# ACCIONES DEL CARRITO
 @login_required
 def añadir_al_carrito_view(request, producto_id):
     """
@@ -353,7 +355,7 @@ def confirmar_pedido_view(request):
     carrito_items = []
     for linea in pedido.lineas.all():
         if linea.compra_tipo == 'solo_camiseta':
-            precio_real = 22.00
+            precio_real = producto.precio_camiseta_sola
         else:
             precio_real = float(linea.producto.precio)
 

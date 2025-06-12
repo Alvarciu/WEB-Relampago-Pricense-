@@ -79,14 +79,34 @@ class Producto(models.Model):
     tipo = models.CharField(max_length=20, choices=TIPO_PRODUCTO)
     descripcion = models.TextField(blank=True)
     imagen = models.ImageField(upload_to='productos/')
-    precio = models.DecimalField(max_digits=6, decimal_places=2)
+    precio = models.DecimalField(max_digits=6, decimal_places=2)    
     
-    
-    costo_camiseta_sola = models.DecimalField(
+    precio_camiseta_sola = models.DecimalField(
         max_digits=6, decimal_places=2,
         null=True, blank=True,
         help_text="Coste unitario de la camiseta suelta (si procede)"
     )
+
+    precio_camiseta_descuento = models.DecimalField(
+        max_digits=6, decimal_places=2,
+        null=True, blank=True,
+        help_text="Coste unitario de la camiseta suelta con descuento (si procede)"
+    )
+
+    coste_provedor= models.DecimalField(
+        max_digits=6, decimal_places=2,
+        null=False, blank=True,
+        help_text="Precio que pagamos al proveedor por el producto, usar para equipaciones completas y sudaderas",
+        default=Decimal('35.00')
+    )
+
+    coste_provedor_camiseta = models.DecimalField(
+        max_digits=6, decimal_places=2,
+        null=True, blank=True,
+        help_text="Precio que pagamos al proveedor por la equipación solo camiseta",
+        default=Decimal('22.00')
+    )
+
 
 
     def __str__(self):

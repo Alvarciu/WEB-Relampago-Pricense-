@@ -145,7 +145,7 @@
               <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
               <h3>{{ producto.nombre }}</h3>
               {% for camiseta in camisetas %}
-                <p class="precio">Camisetas desde:{{ camiseta.costo_camiseta_sola }} €</p>
+                <p class="precio">Camisetas desde:{{ camiseta.precio_camiseta_sola }} €</p>
               {% endfor %}
               <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
             </div>
@@ -160,7 +160,7 @@
         <div class="card-producto">
           <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
           <h3>{{ producto.nombre }}</h3>
-                <p class="precio">Camisetas desde: {{ producto.costo_camiseta_sola }} €</p>
+                <p class="precio">Camisetas desde: {{ producto.precio_camiseta_sola }} €</p>
           <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
         </div>
       {% endfor %}
