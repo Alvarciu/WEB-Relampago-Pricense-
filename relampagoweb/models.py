@@ -80,6 +80,14 @@ class Producto(models.Model):
     descripcion = models.TextField(blank=True)
     imagen = models.ImageField(upload_to='productos/')
     precio = models.DecimalField(max_digits=6, decimal_places=2)
+    
+    
+    costo_camiseta_sola = models.DecimalField(
+        max_digits=6, decimal_places=2,
+        null=True, blank=True,
+        help_text="Coste unitario de la camiseta suelta (si procede)"
+    )
+
 
     def __str__(self):
         return self.nombre
@@ -137,6 +145,17 @@ class LineaPedido(models.Model):
     nombre_dorsal = models.CharField(max_length=100, blank=True, null=True)
     numero_dorsal = models.PositiveIntegerField(blank=True, null=True)
     compra_tipo = models.CharField(max_length=20, blank=True, null=True)  # <- AÑADIDO
+
+    precio_unitario = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+    costo_unitario  = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+
+    @property
+    def subtotal(self):
+        return self.precio_unitario
+
+    @property
+    def subcosto(self):
+        return self.costo_unitario
 
     def __str__(self):
         return f"{self.producto.nombre} x1"

@@ -46,7 +46,7 @@ admin.site.register(Usuario, UsuarioAdmin)
 class LineaPedidoInline(admin.TabularInline):
     model = LineaPedido
     extra = 0
-    readonly_fields = ['producto', 'talla', 'nombre_dorsal', 'numero_dorsal', 'compra_tipo']
+    readonly_fields = ['producto', 'talla', 'nombre_dorsal', 'numero_dorsal', 'compra_tipo', 'precio_unitario', 'costo_unitario']
     can_delete = False
 
 class PedidoAdmin(admin.ModelAdmin):
