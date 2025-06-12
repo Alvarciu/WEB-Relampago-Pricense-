@@ -29,7 +29,8 @@
     {% endfor %}
   </ul>
 
-  <p><strong>Total:</strong> {{ total }} €</p>
+  <h2><strong>Total:</strong> {{ pedido.total }} €</h2>
+  <p>Recuerda que tu pedido está en estado <strong>NO PAGADO</strong>. Por favor, realiza la transferencia bancaria para completar el proceso.</p>
 
   <a href="{% url 'tienda' %}" style="display:inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Volver a la tienda</a>
 </div>
