@@ -125,12 +125,12 @@
           <td>
             {% if item.compra_tipo == 'solo_camiseta' %}
               {% if item.con_descuento %}
-                20.00 €
+                {{ item.producto.precio_camiseta_descuento|floatformat:2 }} €
               {% else %}
-                22.00 €
+                {{ item.producto.precio_camiseta_sola|floatformat:2 }} €
               {% endif %}
             {% else %}
-              {{ item.producto.precio }} €
+              {{ item.producto.precio|floatformat:2 }} €
             {% endif %}
           </td>
         </tr>
