@@ -19,6 +19,14 @@
     body {
       font-family: 'Inter', sans-serif;
     }
+
+    .navbar-toggler {
+      border: none;
+    }
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='black' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    }
+
   </style>
   {% block extra_head %}{% endblock %}
 </head>
@@ -31,34 +39,37 @@
     </header>
 
     <!-- Navbar -->
-    <nav class="navbar px-4 py-2 mb-0" style="background-color: #d6d6d6; border-radius: 6px;">
-      <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap">
-        {% if user.is_authenticated %}
-          <div class="d-flex flex-wrap align-items-center gap-2">
-            <span class="me-2">Bienvenido {{ user.name }}</span>
-            <span>|</span>
-            <a href="{% url 'tienda' %}" class="text-decoration-none text-dark">Tienda</a>
-            <span>|</span>
-            <a href="{% url 'carrito' %}" class="text-decoration-none text-dark">Carrito</a>
-            {% if user.is_staff %}
-              <span>|</span>
-              <a href="{% url 'lista_pedidos' %}" class="text-decoration-none text-dark">📋 Panel de pedidos</a>
-            {% endif %}
-          </div>
-          <div>
-            <a href="#" class="text-danger fs-5" title="Cerrar sesión" data-bs-toggle="modal" data-bs-target="#logoutModal">
-              <i class="bi bi-box-arrow-right"></i>
-            </a>
-          </div>
-        {% else %}
-          <div class="d-flex flex-wrap align-items-center gap-2">
-            <a href="{% url 'login' %}" class="text-decoration-none text-dark">Iniciar sesión</a>
-            <span>|</span>
-            <a href="{% url 'registro' %}" class="text-decoration-none text-dark">Registrarse</a>
-          </div>
-        {% endif %}
-      </div>
-    </nav>
+    <nav class="navbar navbar-expand-lg px-4 py-2 mb-0" style="background-color: #d6d6d6; border-radius: 6px;">
+  <div class="container-fluid">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarOpciones" aria-controls="navbarOpciones" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarOpciones">
+      {% if user.is_authenticated %}
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><span class="nav-link">Bienvenido {{ user.name }}</span></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'tienda' %}">Tienda</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'carrito' %}">Carrito</a></li>
+          {% if user.is_staff %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'lista_pedidos' %}">📋 Panel de pedidos</a></li>
+          {% endif %}
+        </ul>
+        <div class="d-flex">
+          <a href="#" class="text-danger fs-5 nav-link" title="Cerrar sesión" data-bs-toggle="modal" data-bs-target="#logoutModal">
+            <i class="bi bi-box-arrow-right"></i>
+          </a>
+        </div>
+      {% else %}
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Iniciar sesión</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'registro' %}">Registrarse</a></li>
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+  </nav>
+
 
     <hr>
 

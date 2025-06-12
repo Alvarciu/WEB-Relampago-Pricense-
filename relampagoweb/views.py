@@ -54,6 +54,7 @@ import os
 
 
 
+
 def es_admin(user):
     return user.is_authenticated and user.is_staff
 
@@ -62,7 +63,7 @@ def index(request):
 
 # INICIO DE SESION Y REGISTRO
 def inicio_view(request):
-    return render(request, 'inicio.html')
+    return render(request, 'Inicio.html')
 
 def registro_view(request):
     translation.activate('es')
@@ -74,7 +75,7 @@ def registro_view(request):
             return redirect('inicio')
     else:
         form = RegistroForm()
-    return render(request, 'registro.html', {'form': form})
+    return render(request, 'Registro.html', {'form': form})
 
 def login_view(request):
     if request.method == 'POST':
@@ -108,7 +109,7 @@ def tienda_view(request):
     sudaderas = productos.filter(tipo='Sudadera')
     equipaciones = productos.filter(tipo='Equipación')
     config = get_configuracion()
-    return render(request, 'tienda.html', {
+    return render(request, 'Tienda.html', {
         'camisetas': camisetas,
         'sudaderas': sudaderas,
         'equipaciones': equipaciones,

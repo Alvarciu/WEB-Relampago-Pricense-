@@ -100,8 +100,8 @@
     <div class="bank-info">
       <p><strong>Datos de la transferencia:</strong></p>
       <p>Realiza la transferencia por el importe <strong>{{ pedido.total }} €</strong> a la cuenta:</p>
-      <p><strong>IBAN:</strong> ES00 0000 0000 0000 0000 0000</p>
-      <p><strong>BIC/SWIFT:</strong> BCOEESMMXXX</p>
+      <p><strong>IBAN:</strong> ES92 0073 0100 5608 2893 3739</p>
+      <p><strong>BIC/SWIFT:</strong> OPENESMMXXX</p>
       <p>Por favor, en la descripción de la transferencia indica: <br><em>"Pago pedido #{{ pedido.id }}"</em>.</p>
     </div>
 
@@ -122,7 +122,17 @@
           <td>{{ item.talla }}</td>
           <td>{% if item.nombre_dorsal %}{{ item.nombre_dorsal }}{% else %}-{% endif %}</td>
           <td>{% if item.numero_dorsal %}{{ item.numero_dorsal }}{% else %}-{% endif %}</td>
-          <td>{% if item.compra_tipo == 'solo_camiseta' %}{% if item.con_descuento %}20.00 €{% else %}22.00 €{% endif %}{% else %}{{ item.producto.precio }} €{% endif %}</td>
+          <td>
+            {% if item.compra_tipo == 'solo_camiseta' %}
+              {% if item.con_descuento %}
+                20.00 €
+              {% else %}
+                22.00 €
+              {% endif %}
+            {% else %}
+              {{ item.producto.precio }} €
+            {% endif %}
+          </td>
         </tr>
         {% endfor %}
       </tbody>

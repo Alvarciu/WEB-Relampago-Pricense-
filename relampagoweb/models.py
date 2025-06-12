@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
 import shortuuid
-
+from decimal import Decimal
 
 ### --- MODELO DE USUARIO --- ###
 
@@ -96,33 +96,35 @@ class Pedido(models.Model):
     id = models.CharField(primary_key=True, max_length=22, default=shortuuid.uuid, editable=False)
     usar_descuento = models.BooleanField(default=False)
 
-    #lo que significa que se comporta como un atributo normal, pero en realidad es un cálculo que se realiza cuando lo accedes.
+    from decimal import Decimal
+
     @property
     def total(self):
-        from decimal import Decimal
+        PRECIO_CAMISETA_NORMAL   = Decimal('22.00')
+        PRECIO_CAMISETA_DESC     = Decimal('20.00')
 
         total = Decimal('0.00')
-        camisetas = []
+        num_camisetas = 0
 
+        # 1. Separar camisetas del resto de líneas
         for linea in self.lineas.all():
             if linea.compra_tipo == 'solo_camiseta':
-                camisetas.append(linea)
+                num_camisetas += 1
             else:
                 total += linea.producto.precio
 
+        # 2. Calcular subtotal de camisetas
+        if num_camisetas:
+            # Cuando hay descuento, solo cuentan los pares;
+            # si no hay descuento, 'pares' será 0 y todas pagarán precio normal
+            pares   = (num_camisetas // 2) if self.usar_descuento else 0
+            sueltas = num_camisetas - (pares * 2)
 
-        if len(camisetas) ==  1:
-            # Si solo hay una camiseta, se aplica el precio normal
-            total += Decimal('22.00')
-        elif self.usar_descuento:
-            pares = len(camisetas) // 2
-            sueltas = len(camisetas) % 2
-        
-            total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
-        else:
-            total += sum(linea.producto.precio for linea in camisetas)
+            total += (pares * 2) * PRECIO_CAMISETA_DESC
+            total += sueltas * PRECIO_CAMISETA_NORMAL
 
         return total
+
     def __str__(self):
         return f"Pedido {self.id} de {self.usuario.email}"
 

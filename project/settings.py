@@ -28,9 +28,9 @@ SECRET_KEY = 'django-insecure-pzf!=rjq%q$prpepp_eu-b_aj_l$ao2*!uqz2z!53b%r-lzvjw
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['berural.onrender.com','localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'relampagopricensefc.com', 'www.relampagopricensefc.com']
+CSRF_TRUSTED_ORIGINS = ['https://relampagopricensefc.com', 'https://www.relampagopricensefc.com']
 
-# CSRF_TRUSTED_ORIGINS = ['https://berural.onrender.com']
 
 
 # Application definition
