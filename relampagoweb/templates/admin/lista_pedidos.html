@@ -72,6 +72,22 @@
   .detalle-link:hover {
     text-decoration: underline;
   }
+
+    /* En móviles: menos padding + fuente un pelín menor */
+  @media (max-width: 576px) {
+    #tabla-pedidos th,
+    #tabla-pedidos td {
+      padding: 6px;
+      font-size: 13px;
+    }
+
+    /* El input de búsqueda ocupa todo el ancho */
+    #buscador-id {
+      width: 100%;
+      max-width: none;   /* anula tu max-width inline si lo pusiste */
+    }
+  }
+
 </style>
 
 <h2>Pedidos registrados</h2>
@@ -90,7 +106,7 @@
     📦 Exportar pedidos a Excel
   </a>
 </p>
-
+<div class="table-responsive">
 <table id="tabla-pedidos">
   <thead>
     <tr>
@@ -130,6 +146,7 @@
     {% endfor %}
   </tbody>
 </table>
+</div>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
