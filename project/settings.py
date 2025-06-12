@@ -158,3 +158,5 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'relampagopricense@gmail.com'
 EMAIL_HOST_PASSWORD = 'wbvh pqeb dioh mjpo'
 DEFAULT_FROM_EMAIL = 'Relámpago Pricense FC <relampagopricense@gmail.com>'
+
+

@@ -1,11 +1,11 @@
 from django.contrib import admin
 from . import models
-from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 from .models import *
 from django.contrib import admin
 from .models import Producto
+from .models import Jugador
 
 # Register your models here.
 admin.site.register(Producto)
@@ -72,3 +72,19 @@ class PedidoAdmin(admin.ModelAdmin):
 
 admin.site.register(Pedido, PedidoAdmin)
 admin.site.register(LineaPedido)
+
+
+@admin.register(Jugador)
+class JugadorAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'posicion',)        # Columnas que se muestran
+    list_filter = ('posicion',)                   # Filtros laterales
+    search_fields = ('nombre', 'posicion',)       # Campo(s) buscables
+    ordering = ('nombre',)                        # Orden por defecto
+    readonly_fields = ()                          # Campos de solo lectura si los tuvieras
+
+    fieldsets = (
+        (None, {
+            'fields': ('nombre', 'posicion', 'foto',)
+        }),
+       
+    )

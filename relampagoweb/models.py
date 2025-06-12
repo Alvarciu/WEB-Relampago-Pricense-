@@ -199,3 +199,16 @@ class Configuracion(models.Model):
 def get_configuracion():
     config, created = Configuracion.objects.get_or_create(id=1)
     return config
+
+
+class Jugador(models.Model):
+    nombre = models.CharField(max_length=100)
+    posicion = models.CharField(max_length=50)
+    foto = models.ImageField(upload_to='jugadores/')
+    orden = models.PositiveIntegerField(default=0, help_text="Orden en la galería")
+
+    class Meta:
+        ordering = ['orden']
+
+    def __str__(self):
+        return f"{self.nombre} ({self.posicion})"
