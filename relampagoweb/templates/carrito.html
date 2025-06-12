@@ -1,112 +1,72 @@
-{% extends "base.html" %}
-{% block content %}
-<h2 style="text-align: center;">Tu carrito</h2>
+  {% extends "base.html" %}
+  {% block content %}
+  <h2 style="text-align: center;">Tu carrito</h2>
 
-<style>
-  .carrito-item {
-    animation: fadeIn 0.5s ease-in;
-    transition: transform 0.2s, box-shadow 0.2s;
-    margin: 20px auto;
-    padding: 20px;
-    max-width: 700px;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+  <style>
+    .carrito-item {
+      animation: fadeIn 0.5s ease-in;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin: 20px auto;
+      padding: 20px;
+      max-width: 700px;
+      background-color: #f9f9f9;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      position: relative;
+    }
+
+    .carrito-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .carrito-img {
+      flex: 0 0 150px;
+    }
+
+    .carrito-info {
+      flex: 1;
+      text-align: left;
+    }
+
+    .carrito-info form {
+      margin-bottom: 10px;
+    }
+
+    .precio-carrito {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #e67e22;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .carrito-acciones {
     display: flex;
-    gap: 20px;
-    align-items: center;
-    position: relative;
-  }
-
-  .carrito-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  }
-
-  .carrito-img {
-    flex: 0 0 150px;
-  }
-
-  .carrito-info {
-    flex: 1;
-    text-align: left;
-  }
-
-  .carrito-info form {
-    margin-bottom: 10px;
-  }
-
-  .precio-carrito {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
     position: absolute;
     bottom: 20px;
     right: 20px;
-    font-weight: bold;
-    font-size: 1.1rem;
-    color: #e67e22;
   }
 
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .carrito-acciones {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-}
-
-/* Botón reutilizable */
-.btn-quitar {
-  background-color: #f1c40f;
-  color: black;
-  font-weight: bold;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-}
-
-/* En móvil: reorganizar y alinear */
-/* Solo en pantallas pequeñas reorganizamos */
-@media (max-width: 600px) {
-  .carrito-item {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .carrito-img {
-    margin-bottom: 10px;
-  }
-
-  .carrito-info {
-    text-align: center;
-  }
-
-  .precio-carrito {
-    position: static !important;
-    font-size: 1.2rem;
-    margin-bottom: 5px;
-  }
-
-  .acciones-mobile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    margin-top: 10px;
-  }
-
+  /* Botón reutilizable */
   .btn-quitar {
     background-color: #f1c40f;
     color: black;
@@ -115,164 +75,213 @@
     border: none;
     border-radius: 5px;
   }
-}
 
-
-</style>
-
-{% if carrito %}
-  <ul style="list-style: none; padding: 0;">
-    {% for item in carrito %}
-      <li class="carrito-item">
-        <div class="carrito-img">
-          <img src="{{ item.imagen_url }}" width="150">
-        </div>
-        <div class="carrito-info">
-          <form action="{% url 'editar_item_carrito' forloop.counter0 %}" method="post">
-            {% csrf_token %}
-
-            {% if item.tipo == "Equipación" %}
-              {% if item.compra_tipo == "solo_camiseta" %}
-                <h5><strong>Camiseta Oficial</strong></h5><br>
-              {% elif item.compra_tipo == "completo" %}
-                <h5><strong>{{ item.nombre }}</strong></h5><br>
-              {% endif %}
-            {% else %}
-              <h5><strong>{{ item.nombre }}</strong></h5><br>
-            {% endif %}
-
-            <label><strong>Talla:</strong> {{ item.talla }}</label><br>
-
-          {% if item.nombre_dorsal or item.numero_dorsal %}
-            {% if item.nombre_dorsal %}
-              <label><strong>Nombre:</strong> {{ item.nombre_dorsal }}</label><br>
-            {% else %}
-              <label><strong>Nombre:</strong> Este artículo no tiene nombre personalizado</label><br>
-            {% endif %}
-
-            {% if item.numero_dorsal %}
-              <label><strong>Número:</strong> {{ item.numero_dorsal }}</label><br>
-            {% else %}
-              <label><strong>Número:</strong> Este artículo no tiene número personalizado</label><br>
-            {% endif %}
-          {% else %}
-            <label><strong>Personalización:</strong> Este artículo no está personalizado</label><br>
-          {% endif %}
-
-          </form>
-          <div class="acciones-mobile">
-        <div class="precio-carrito">
-          Precio: {{ item.precio|floatformat:2 }} €
-        </div>
-        <form action="{% url 'eliminar_del_carrito' forloop.counter0 %}" method="post">
-          {% csrf_token %}
-          <button type="submit" class="btn-quitar">
-            ❌ Quitar
-          </button>
-        </form>
-      </div>
-
-          </form>
-          </div>
-        </div>
-
-      </li>
-    {% endfor %}
-  </ul>
-
-
-
-   <p style="text-align: center; font-size: 1.2em;">
-    <strong>Total del carrito:</strong>  € {{ total|floatformat:2 }} 
-  </p>
-  <form action="{% url 'vaciar_carrito' %}" method="post" style="text-align: center;">
-    {% csrf_token %}
-    <button type="submit" style="background-color: red; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Vaciar carrito</button>
-  </form>
-
-
-  <br>
- 
-  <style>
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 60px;
-      height: 34px;
-      margin-left: 10px;
+  /* En móvil: reorganizar y alinear */
+  /* Solo en pantallas pequeñas reorganizamos */
+  @media (max-width: 600px) {
+    .carrito-item {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
     }
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
+
+    .carrito-img {
+      margin-bottom: 10px;
     }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #ccc;
-      transition: .4s;
-      border-radius: 34px;
+
+    .carrito-info {
+      text-align: center;
     }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 26px; width: 26px;
-      left: 4px; bottom: 4px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
+
+    .precio-carrito {
+      position: static !important;
+      font-size: 1.2rem;
+      margin-bottom: 5px;
     }
-    input:checked + .slider {
-      background-color: rgb(249,178,52);
+
+    .acciones-mobile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      margin-top: 10px;
     }
-    input:checked + .slider:before {
-      transform: translateX(26px);
+
+    .btn-quitar {
+      background-color: #f1c40f;
+      color: black;
+      font-weight: bold;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
     }
+  }
+
+
   </style>
 
-{% if mostrar_descuento %}
-    <form method="get" style="text-align: center; margin: 20px 0;">
-      <label for="aplicar_descuento" style="font-size: 1.1em;">¿Aplicar descuento por pack?</label>
-      <label class="switch">
-        <input
-          type="checkbox"
-          name="aplicar_descuento"
-          value="1"
-          {% if aplicar_descuento %}checked{% endif %}
-          onchange="this.form.submit()"
-        >
-        <span class="slider round"></span>
-      </label>
-    </form>
+  {% if carrito %}
+    <ul style="list-style: none; padding: 0;">
+      {% for item in carrito %}
+        <li class="carrito-item">
+          <div class="carrito-img">
+            <img src="{{ item.imagen_url }}" width="150">
+          </div>
+          <div class="carrito-info">
+            <form action="{% url 'editar_item_carrito' forloop.counter0 %}" method="post">
+              {% csrf_token %}
+
+              {% if item.tipo == "Equipación" %}
+                {% if item.compra_tipo == "solo_camiseta" %}
+                  <h5><strong>Camiseta Oficial</strong></h5><br>
+                {% elif item.compra_tipo == "completo" %}
+                  <h5><strong>{{ item.nombre }}</strong></h5><br>
+                {% endif %}
+              {% else %}
+                <h5><strong>{{ item.nombre }}</strong></h5><br>
+              {% endif %}
+
+              <label><strong>Talla:</strong> {{ item.talla }}</label><br>
+
+            {% if item.nombre_dorsal or item.numero_dorsal %}
+              {% if item.nombre_dorsal %}
+                <label><strong>Nombre:</strong> {{ item.nombre_dorsal }}</label><br>
+              {% else %}
+                <label><strong>Nombre:</strong> Este artículo no tiene nombre personalizado</label><br>
+              {% endif %}
+
+              {% if item.numero_dorsal %}
+                <label><strong>Número:</strong> {{ item.numero_dorsal }}</label><br>
+              {% else %}
+                <label><strong>Número:</strong> Este artículo no tiene número personalizado</label><br>
+              {% endif %}
+            {% else %}
+              <label><strong>Personalización:</strong> Este artículo no está personalizado</label><br>
+            {% endif %}
+
+            </form>
+            <div class="acciones-mobile">
+          <div class="precio-carrito">
+            {% if item.compra_tipo == 'solo_camiseta' %}
+              {% if item.con_descuento %}
+                Precio: {{ item.precio_descuento|floatformat:2 }} €
+              {% else %}
+                Precio: {{ item.precio|floatformat:2 }} €
+              {% endif %}
+            {% else %}
+              Precio: {{ item.precio|floatformat:2 }} €
+            {% endif %}
+          </div>
+
+          <form action="{% url 'eliminar_del_carrito' forloop.counter0 %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn-quitar">
+              ❌ Quitar
+            </button>
+          </form>
+        </div>
+
+            </form>
+            </div>
+          </div>
+
+        </li>
+      {% endfor %}
+    </ul>
+
+
 
     <p style="text-align: center; font-size: 1.2em;">
-      <strong>Total: {{ total|floatformat:2 }} €</strong><br>
-      {% if ahorro > 0 %}
-        <span style="color: green;">💸 ¡Te estás ahorrando {{ ahorro|floatformat:2 }} €!</span>
-      {% elif posible_ahorro > 0 %}
-        <span style="color: orange;">💡 Podrías ahorrar {{ posible_ahorro|floatformat:2 }} € si aplicas el descuento por cantidad.</span>
-      {% endif %}
+      <strong>Total del carrito:</strong>  € {{ total|floatformat:2 }} 
     </p>
-  {% endif %}
-
-  {% if pedidos_abiertos %}
-    <form action="{% url 'resumen_pedido' %}" method="get" style="text-align: center;">
-      <button type="submit" style="background-color: green; color: white; padding: 10px 20px; border: none; border-radius: 5px;">
-        Finalizar pedido
-      </button>
+    <form action="{% url 'vaciar_carrito' %}" method="post" style="text-align: center;">
+      {% csrf_token %}
+      <button type="submit" style="background-color: red; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Vaciar carrito</button>
     </form>
+
+
+    <br>
+  
+    <style>
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+        margin-left: 10px;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px; width: 26px;
+        left: 4px; bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: rgb(249,178,52);
+      }
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+    </style>
+
+  {% if mostrar_descuento %}
+      <form method="get" style="text-align: center; margin: 20px 0;">
+        <label for="aplicar_descuento" style="font-size: 1.1em;">¿Aplicar descuento por pack?</label>
+        <label class="switch">
+          <input
+            type="checkbox"
+            name="aplicar_descuento"
+            value="1"
+            {% if aplicar_descuento %}checked{% endif %}
+            onchange="this.form.submit()"
+          >
+          <span class="slider round"></span>
+        </label>
+      </form>
+
+      <p style="text-align: center; font-size: 1.2em;">
+        <strong>Total: {{ total|floatformat:2 }} €</strong><br>
+        {% if ahorro > 0 %}
+          <span style="color: green;">💸 ¡Te estás ahorrando {{ ahorro|floatformat:2 }} €!</span>
+        {% elif posible_ahorro > 0 %}
+          <span style="color: orange;">💡 Podrías ahorrar {{ posible_ahorro|floatformat:2 }} € si aplicas el descuento por cantidad.</span>
+        {% endif %}
+      </p>
+    {% endif %}
+
+    {% if pedidos_abiertos %}
+      <form action="{% url 'resumen_pedido' %}" method="get" style="text-align: center;">
+        <button type="submit" style="background-color: green; color: white; padding: 10px 20px; border: none; border-radius: 5px;">
+          Finalizar pedido
+        </button>
+      </form>
+    {% else %}
+      <p style="text-align: center; color: red;">
+        <strong>❌ Los pedidos están cerrados por ahora. Vuelve más adelante.</strong>
+      </p>
+    {% endif %}
+
   {% else %}
-    <p style="text-align: center; color: red;">
-      <strong>❌ Los pedidos están cerrados por ahora. Vuelve más adelante.</strong>
-    </p>
+    <p style="text-align: center;">Tu carrito está vacío.</p>
   {% endif %}
 
-{% else %}
-  <p style="text-align: center;">Tu carrito está vacío.</p>
-{% endif %}
-
-<div style="text-align: center; margin-top: 20px;">
-  <a href="{% url 'tienda' %}">← Volver a la tienda</a>
-</div>
-{% endblock %}
+  <div style="text-align: center; margin-top: 20px;">
+    <a href="{% url 'tienda' %}">← Volver a la tienda</a>
+  </div>
+  {% endblock %}

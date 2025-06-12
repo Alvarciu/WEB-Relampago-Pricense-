@@ -123,71 +123,127 @@ def detalle_producto_view(request, producto_id):
 
 
 
-# ACCIONES DEL CARRITO
+# # ACCIONES DEL CARRITO
+# @login_required
+# def añadir_al_carrito_view(request, producto_id):
+#     """
+#     - Si el producto es de tipo 'Equipación', leemos 'compra_tipo' (solo_camiseta o completo).
+#       • solo_camiseta -> precio fijo 22.00 € y no se guardan dorsales.
+#       • completo      -> precio = producto.precio y se guardan dorsales.
+#     - Para camisetas/sudaderas, comportamiento normal: precio = producto.precio.
+#     """
+#     if request.method == 'POST':
+#         producto = get_object_or_404(Producto, id=producto_id)
+#         carrito = request.session.get('carrito', [])
+
+#         # Siempre pedimos la talla
+#         talla = request.POST.get('talla')
+
+#         # Inicializar valores por defecto
+#         precio_item = float(producto.precio)
+#         nombre_dorsal = ''
+#         numero_dorsal = None
+
+#         # Si es equipación, miramos la opción de compra
+#         if producto.tipo == 'Equipación':
+#             compra_tipo = request.POST.get('compra_tipo', 'solo_camiseta')
+#             if compra_tipo == 'solo_camiseta':
+#                 precio_item = 22.00
+#                 nombre_dorsal = request.POST.get('nombre_dorsal', '') or ''
+#                 numero_dorsal_raw = request.POST.get('numero_dorsal')
+#                 numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
+#             else:
+#                 # Equipación completa: tomamos precio original y dorsales
+#                 precio_item = float(producto.precio)
+#                 nombre_dorsal = request.POST.get('nombre_dorsal', '') or ''
+#                 numero_dorsal_raw = request.POST.get('numero_dorsal')
+#                 numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
+#         else:
+#             # No es equipación: precio estándar
+#             precio_item = float(producto.precio)
+
+#         # Construimos el ítem que se guardará en sesión
+#         tipo_real = (
+#         'Camiseta' if producto.tipo == 'Equipación' and request.POST.get('compra_tipo') == 'solo_camiseta'
+#         else producto.tipo
+#         )
+        
+#         item = {
+#         'producto_id': producto.id,
+#         'nombre': producto.nombre,
+#         'precio': precio_item,
+#         'talla': talla,
+#         'tipo': tipo_real,  # 👈 usamos el tipo real ajustado
+#         'compra_tipo': request.POST.get('compra_tipo') if producto.tipo == 'Equipación' else None,
+#         'nombre_dorsal': nombre_dorsal,
+#         'numero_dorsal': numero_dorsal,
+#         }
+
+#         carrito.append(item)
+#         request.session['carrito'] = carrito
+
+#         return redirect(reverse('detalle_producto', args=[producto.id]) + '?añadido=ok')
+
+#     # Si no es POST, redirigimos de nuevo a la página de detalle
+#     return redirect('detalle_producto', producto_id)
+
 @login_required
 def añadir_al_carrito_view(request, producto_id):
-    """
-    - Si el producto es de tipo 'Equipación', leemos 'compra_tipo' (solo_camiseta o completo).
-      • solo_camiseta -> precio fijo 22.00 € y no se guardan dorsales.
-      • completo      -> precio = producto.precio y se guardan dorsales.
-    - Para camisetas/sudaderas, comportamiento normal: precio = producto.precio.
-    """
-    if request.method == 'POST':
-        producto = get_object_or_404(Producto, id=producto_id)
-        carrito = request.session.get('carrito', [])
+    if request.method != 'POST':
+        return redirect('detalle_producto', producto_id)
 
-        # Siempre pedimos la talla
-        talla = request.POST.get('talla')
+    producto = get_object_or_404(Producto, id=producto_id)
+    carrito  = request.session.get('carrito', [])
 
-        # Inicializar valores por defecto
+    # Talla y tipo de compra (solo para Equipación)
+    talla       = request.POST.get('talla')
+    compra_tipo = None
+    if producto.tipo == 'Equipación':
+        compra_tipo = request.POST.get('compra_tipo', 'solo_camiseta')
+
+    # ── Precio unitario según modelo ──
+    if compra_tipo == 'solo_camiseta' and producto.precio_camiseta_sola:
+        precio_item = float(producto.precio_camiseta_sola)
+    else:
         precio_item = float(producto.precio)
-        nombre_dorsal = ''
-        numero_dorsal = None
 
-        # Si es equipación, miramos la opción de compra
-        if producto.tipo == 'Equipación':
-            compra_tipo = request.POST.get('compra_tipo', 'solo_camiseta')
-            if compra_tipo == 'solo_camiseta':
-                precio_item = 22.00
-                nombre_dorsal = request.POST.get('nombre_dorsal', '') or ''
-                numero_dorsal_raw = request.POST.get('numero_dorsal')
-                numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
-            else:
-                # Equipación completa: tomamos precio original y dorsales
-                precio_item = float(producto.precio)
-                nombre_dorsal = request.POST.get('nombre_dorsal', '') or ''
-                numero_dorsal_raw = request.POST.get('numero_dorsal')
-                numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
-        else:
-            # No es equipación: precio estándar
-            precio_item = float(producto.precio)
+    # ── Precio con descuento (para la lógica de pares) ──
+    if producto.precio_camiseta_descuento:
+        precio_desc = float(producto.precio_camiseta_descuento)
+    else:
+        precio_desc = precio_item
 
-        # Construimos el ítem que se guardará en sesión
-        tipo_real = (
-        'Camiseta' if producto.tipo == 'Equipación' and request.POST.get('compra_tipo') == 'solo_camiseta'
-        else producto.tipo
-        )
-        
-        item = {
-        'producto_id': producto.id,
-        'nombre': producto.nombre,
-        'precio': precio_item,
-        'talla': talla,
-        'tipo': tipo_real,  # 👈 usamos el tipo real ajustado
-        'compra_tipo': request.POST.get('compra_tipo') if producto.tipo == 'Equipación' else None,
-        'nombre_dorsal': nombre_dorsal,
-        'numero_dorsal': numero_dorsal,
-        }
+    # ── Dorsales ──
+    nombre_dorsal     = request.POST.get('nombre_dorsal', '') or ''
+    numero_dorsal_raw = request.POST.get('numero_dorsal')
+    numero_dorsal     = int(numero_dorsal_raw) if numero_dorsal_raw else None
 
-        carrito.append(item)
-        request.session['carrito'] = carrito
+    # ── Tipo real para mostrar (Camiseta vs Equipación/Sudadera) ──
+    tipo_real = 'Camiseta' if compra_tipo == 'solo_camiseta' else producto.tipo
 
-        return redirect(reverse('detalle_producto', args=[producto.id]) + '?añadido=ok')
+    # ── Construcción del ítem ──
+    item = {
+        'producto_id'        : producto.id,
+        'nombre'             : producto.nombre,
+        'precio'             : precio_item,
+        'precio_descuento'   : precio_desc,
+        'talla'              : talla,
+        'tipo'               : tipo_real,
+        'compra_tipo'        : compra_tipo,
+        'nombre_dorsal'      : nombre_dorsal,
+        'numero_dorsal'      : numero_dorsal,
+    }
 
-    # Si no es POST, redirigimos de nuevo a la página de detalle
-    return redirect('detalle_producto', producto_id)
+    carrito.append(item)
+    request.session['carrito'] = carrito
 
-# - Ver carrito
+    return redirect(reverse('detalle_producto', args=[producto.id]) + '?añadido=ok')
+
+
+from decimal import Decimal
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+
 @login_required
 def carrito_view(request):
     raw_carrito = request.session.get('carrito', [])
@@ -195,46 +251,64 @@ def carrito_view(request):
     for item in raw_carrito:
         producto = Producto.objects.get(id=item['producto_id'])
         item['imagen_url'] = producto.imagen.url
-        # NO sobreescribimos item['tipo'] aquí para respetar el 'tipo_real' guardado en sesión
         carrito.append(item)
 
+    # toggle de descuento
     if request.method == "GET":
         if 'aplicar_descuento' in request.GET:
             request.session['aplicar_descuento'] = request.GET.get('aplicar_descuento') == '1'
         elif 'aplicar_descuento' not in request.GET:
-            request.session['aplicar_descuento'] = False  # se apagó el toggle
+            request.session['aplicar_descuento'] = False
 
     aplicar_descuento = request.session.get('aplicar_descuento', False)
 
-    num_solo = sum(1 for item in carrito if item.get('compra_tipo') == 'solo_camiseta')
-    if num_solo >= 2:
-        mostrar_descuento = True
-    else:
-        mostrar_descuento = False
-
-    
-    # Marcar qué camisetas reciben descuento (solo pares)
+    # ¿Hay suficientes camisetas para ofrecer descuento?
     solo_idxs = [i for i, it in enumerate(carrito) if it.get('compra_tipo') == 'solo_camiseta']
-    # cuántas camisetas (de esos) tendrán descuento: pares completos
+    mostrar_descuento = len(solo_idxs) >= 2
+
+    # Marcar pares con descuento
     num_descuento = (len(solo_idxs) // 2) * 2 if aplicar_descuento else 0
-    # recorrer esos índices y marcar True solo para los primeros num_descuento
     for pos, idx in enumerate(solo_idxs):
         carrito[idx]['con_descuento'] = (pos < num_descuento)
-    # Las demás (no camisetas o sobrantes) quedan con con_descuento=False por defecto
     for i, it in enumerate(carrito):
         if it.get('compra_tipo') != 'solo_camiseta':
             carrito[i]['con_descuento'] = False
 
-    if aplicar_descuento:
-        total = calcular_total_carrito(carrito)  # ✅ con descuento
+    # ── Cálculo de totales ──
+    if aplicar_descuento and mostrar_descuento:
+        # total con descuento en los pares
+        total = sum(
+            Decimal(item['precio_descuento']) if item.get('con_descuento')
+            else Decimal(item['precio'])
+            for item in carrito
+        )
         total_sin_descuento = sum(Decimal(item['precio']) for item in carrito)
         ahorro = total_sin_descuento - total
-        posible_ahorro = 0
-    else:
-        total = sum(Decimal(item['precio']) for item in carrito)  # ✅ sin descuento
-        ahorro = 0
-        posible_ahorro = total - calcular_total_carrito(carrito)
+        posible_ahorro = Decimal('0.00')
 
+    else:
+        # subtotal sin aplicar nada
+        subtotal = sum(Decimal(item['precio']) for item in carrito)
+        total    = subtotal
+        ahorro   = Decimal('0.00')
+
+        # calculamos cuánto costaría con el descuento aplicado
+        hipotético = sum(
+            (
+                Decimal(item['precio_descuento'])
+                if idx < (len(solo_idxs)//2)*2 else Decimal(item['precio'])
+            )
+            if item.get('compra_tipo') == 'solo_camiseta'
+            else Decimal(item['precio'])
+            for idx, item in enumerate(carrito)
+        )
+        # Si el subtotal es mayor que el hipotético, calculamos el ahorro
+        
+        # AHORA sí restamos correctamente para que salga positivo
+        posible_ahorro = subtotal - hipotético
+
+
+    print(f"posible_ahorro: {posible_ahorro} €")    
     config = get_configuracion()
     return render(request, 'carrito.html', {
         'carrito': carrito,
@@ -434,30 +508,44 @@ def enviar_confirmacion_pedido(usuario, pedido):
 
     # Enviamos
     mensaje.send(fail_silently=False)
-
+from decimal import Decimal
 
 def calcular_total_carrito(carrito):
-    
-    from decimal import Decimal
-
+    """
+    Calcula el total del carrito aplicando:
+      - Para artículos con compra_tipo != 'solo_camiseta', suma su precio normal.
+      - Para las camisetas ('solo_camiseta'):
+          • Se agrupan en parejas; cada unidad de la pareja usa 'precio_descuento'.
+          • Si sobra una camiseta, esa unidad usa 'precio'.
+    Se espera que cada item tenga, al menos, las claves:
+      - 'precio'            (string o número)
+      - 'precio_descuento'  (string o número), opcional; si falta se usa 'precio'
+      - 'compra_tipo'       (string), para distinguir camisetas sueltas
+    """
     total = Decimal('0.00')
-    camisetas = []
 
-    for item in carrito:
-        if item.get('compra_tipo') == 'solo_camiseta':
-            camisetas.append(item)
+    # Separamos camisetas del resto
+    camisetas = [it for it in carrito if it.get('compra_tipo') == 'solo_camiseta']
+    otros     = [it for it in carrito if it.get('compra_tipo') != 'solo_camiseta']
+
+    # 1) Sumamos los demás productos al precio normal
+    for item in otros:
+        total += Decimal(item['precio'])
+
+    # 2) Procesamos camisetas sueltas en parejas y sobras
+    n = len(camisetas)
+    if n == 0:
+        return total
+
+    pares = (n // 2) * 2   # número de camisetas que entran en parejas
+    # iteramos camisetas en el orden que vengan
+    for idx, item in enumerate(camisetas):
+        precio_base = Decimal(item['precio'])
+        precio_dto  = Decimal(item.get('precio_descuento', precio_base))
+        if idx < pares:
+            total += precio_dto
         else:
-            total += Decimal(item['precio'])
-
-    num_camisetas = len(camisetas)
-    pares = num_camisetas // 2
-    sueltas = num_camisetas % 2
-
-    if num_camisetas == 1:
-        total = Decimal('22.00')  # Si solo hay una camiseta, precio fijo
-    else:
-        total += Decimal(pares * 2) * Decimal('20.00') + Decimal(sueltas) * Decimal('22.00')
-
+            total += precio_base
 
     return total
 

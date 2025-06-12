@@ -38,7 +38,7 @@
     <div class="tipo-producto-buttons">
       <label class="option-button">
         <input type="radio" name="compra_tipo" value="solo_camiseta" autocomplete="off" checked>
-        <span>Solo camiseta<br> ({{producto.costo_camiseta_sola|floatformat:2}} €)</span>
+        <span>Solo camiseta<br> ({{producto.precio_camiseta_sola|floatformat:2}} €)</span>
       </label>
       <label class="option-button">
         <input type="radio" name="compra_tipo" value="completo" autocomplete="off">
@@ -46,7 +46,7 @@
       </label>
     </div>
     <p class="current-price">
-      Precio actual: <span class="price-value" id="precio-actual">{{ producto.costo_camiseta_sola|floatformat:2 }}</span> €
+      Precio actual: <span class="price-value" id="precio-actual">{{ producto.precio_camiseta_sola|floatformat:2 }}</span> €
     </p>
     {% else %}
     <p class="current-price">
