@@ -127,7 +127,7 @@
     margin-top: 25px;
     padding: auto;
 }
-
+    }
 
   </style>
 {% endblock %}
@@ -135,7 +135,7 @@
 {% block content %}
   <!-- SECCIÓN EQUIPACIONES COMPLETAS -->
   <section class="seccion-productos">
-    <h2 class="titulo-seccion">Equipaciones completas</h2>
+    <h2 class="titulo-seccion">Camisetas y Equipaciones </h2>
 
     <div class="swiper carrusel-mobile equipaciones-swiper">
       <div class="swiper-wrapper">
@@ -144,7 +144,9 @@
             <div class="card-producto">
               <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
               <h3>{{ producto.nombre }}</h3>
-              <p class="precio">{{ producto.precio }} €</p>
+              {% for camiseta in camisetas %}
+                <p class="precio">Camisetas desde:{{ camiseta.precio }} €</p>
+              {% endfor %}
               <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
             </div>
           </div>

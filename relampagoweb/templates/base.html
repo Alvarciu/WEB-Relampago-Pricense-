@@ -19,14 +19,10 @@
     body {
       font-family: 'Inter', sans-serif;
     }
-
-    .navbar-toggler {
-      border: none;
-    }
+    .navbar-toggler { border: none; }
     .navbar-toggler-icon {
       background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='black' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
     }
-
   </style>
   {% block extra_head %}{% endblock %}
 </head>
@@ -38,38 +34,48 @@
       <h1 class="m-0" style="font-size: 1.4rem;">Relámpago Pricense FC</h1>
     </header>
 
-    <!-- Navbar -->
+    <!-- Navbar (única parte modificada) -->
     <nav class="navbar navbar-expand-lg px-4 py-2 mb-0" style="background-color: #d6d6d6; border-radius: 6px;">
-  <div class="container-fluid">
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarOpciones" aria-controls="navbarOpciones" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarOpciones"
+                aria-controls="navbarOpciones" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-    <div class="collapse navbar-collapse" id="navbarOpciones">
-      {% if user.is_authenticated %}
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><span class="nav-link">Bienvenido {{ user.name }}</span></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'tienda' %}">Tienda</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'carrito' %}">Carrito</a></li>
-          {% if user.is_staff %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'lista_pedidos' %}">📋 Panel de pedidos</a></li>
-          {% endif %}
-        </ul>
-        <div class="d-flex">
-          <a href="#" class="text-danger fs-5 nav-link" title="Cerrar sesión" data-bs-toggle="modal" data-bs-target="#logoutModal">
-            <i class="bi bi-box-arrow-right"></i>
-          </a>
+        <div class="collapse navbar-collapse" id="navbarOpciones">
+          <!-- Enlaces visibles para todos -->
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link" href="{% url 'inicio' %}">Inicio</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'tienda' %}">Tienda</a></li>
+
+            {% if user.is_authenticated %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'carrito' %}">Carrito</a></li>
+              {% if user.is_staff %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'lista_pedidos' %}">📋 Panel de pedidos</a></li>
+              {% endif %}
+            {% endif %}
+          </ul>
+
+          <!-- Bloque de usuario a la derecha -->
+          <ul class="navbar-nav mb-2 mb-lg-0">
+            {% if user.is_authenticated %}
+              <li class="nav-item">
+                <span class="navbar-text me-2">Hola, {{ user.name }}</span>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="text-danger fs-5 nav-link" title="Cerrar sesión"
+                   data-bs-toggle="modal" data-bs-target="#logoutModal">
+                  <i class="bi bi-box-arrow-right"></i>
+                </a>
+              </li>
+            {% else %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Iniciar sesión</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'registro' %}">Registrarse</a></li>
+            {% endif %}
+          </ul>
         </div>
-      {% else %}
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Iniciar sesión</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'registro' %}">Registrarse</a></li>
-        </ul>
-      {% endif %}
-    </div>
-  </div>
-  </nav>
-
+      </div>
+    </nav>
 
     <hr>
 
