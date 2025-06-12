@@ -98,7 +98,13 @@
       {% if item.nombre_dorsal %}
         <p><strong>Dorsal:</strong> {{ item.nombre_dorsal }} {{ item.numero_dorsal }}</p>
       {% endif %}
-      <p><strong>Precio:</strong> {{ item.precio }} €</p>
+      <p><strong>Precio:</strong>
+  {% if item.compra_tipo == 'solo_camiseta' and item.con_descuento %}
+    {{ item.precio_descuento|floatformat:2 }} €
+  {% else %}
+    {{ item.precio|floatformat:2 }} €
+  {% endif %}
+</p>
     </div>
   </div>
   {% endfor %}

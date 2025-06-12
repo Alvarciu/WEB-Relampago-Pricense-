@@ -79,7 +79,35 @@ class Producto(models.Model):
     tipo = models.CharField(max_length=20, choices=TIPO_PRODUCTO)
     descripcion = models.TextField(blank=True)
     imagen = models.ImageField(upload_to='productos/')
-    precio = models.DecimalField(max_digits=6, decimal_places=2)
+    precio = models.DecimalField(max_digits=6, decimal_places=2)    
+    
+    precio_camiseta_sola = models.DecimalField(
+        max_digits=6, decimal_places=2,
+        null=True, blank=True,
+        help_text="Coste unitario de la camiseta suelta (si procede)"
+    )
+
+    precio_camiseta_descuento = models.DecimalField(
+        max_digits=6, decimal_places=2,
+        null=True, blank=True,
+        help_text="Coste unitario de la camiseta suelta con descuento (si procede)"
+    )
+
+    coste_provedor= models.DecimalField(
+        max_digits=6, decimal_places=2,
+        null=False, blank=True,
+        help_text="Precio que pagamos al proveedor por el producto, usar para equipaciones completas y sudaderas",
+        default=Decimal('35.00')
+    )
+
+    coste_provedor_camiseta = models.DecimalField(
+        max_digits=6, decimal_places=2,
+        null=True, blank=True,
+        help_text="Precio que pagamos al proveedor por la equipación solo camiseta",
+        default=Decimal('22.00')
+    )
+
+
 
     def __str__(self):
         return self.nombre
@@ -137,6 +165,17 @@ class LineaPedido(models.Model):
     nombre_dorsal = models.CharField(max_length=100, blank=True, null=True)
     numero_dorsal = models.PositiveIntegerField(blank=True, null=True)
     compra_tipo = models.CharField(max_length=20, blank=True, null=True)  # <- AÑADIDO
+
+    precio_unitario = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+    costo_unitario  = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+
+    @property
+    def subtotal(self):
+        return self.precio_unitario
+
+    @property
+    def subcosto(self):
+        return self.costo_unitario
 
     def __str__(self):
         return f"{self.producto.nombre} x1"
