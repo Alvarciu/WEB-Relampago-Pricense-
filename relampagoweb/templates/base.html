@@ -34,7 +34,7 @@
       <h1 class="m-0" style="font-size: 1.4rem;">Relámpago Pricense FC</h1>
     </header>
 
-    <!-- Navbar (única parte modificada) -->
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg px-4 py-2 mb-0" style="background-color: #d6d6d6; border-radius: 6px;">
       <div class="container-fluid">
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarOpciones"
@@ -43,6 +43,11 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarOpciones">
+          <!-- Mensaje de bienvenida a la izquierda -->
+          {% if user.is_authenticated %}
+            <span class="navbar-text me-4">Hola, {{ user.name }}</span>
+          {% endif %}
+
           <!-- Enlaces visibles para todos -->
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item"><a class="nav-link" href="{% url 'inicio' %}">Inicio</a></li>
@@ -60,9 +65,6 @@
           <ul class="navbar-nav mb-2 mb-lg-0">
             {% if user.is_authenticated %}
               <li class="nav-item">
-                <span class="navbar-text me-2">Hola, {{ user.name }}</span>
-              </li>
-              <li class="nav-item">
                 <a href="#" class="text-danger fs-5 nav-link" title="Cerrar sesión"
                    data-bs-toggle="modal" data-bs-target="#logoutModal">
                   <i class="bi bi-box-arrow-right"></i>
@@ -79,7 +81,7 @@
 
     <hr>
 
-    <!-- Alerta de pedidos -->
+    <!-- Alerta de pedidos cerrados -->
     {% if config and not config.pedidos_abiertos %}
       <div class="alerta-pedidos">
         <div class="alerta-texto">🚨 Pedidos cerrados 🚨</div>
@@ -115,10 +117,10 @@
         Swal.fire({
           icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% else %}info{% endif %}",
           title: "{{ message|escapejs }}",
-          showConfirmButton: false,
-          timer: 3000,
           toast: true,
-          position: 'top-end'
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000
         });
       {% endfor %}
     </script>
