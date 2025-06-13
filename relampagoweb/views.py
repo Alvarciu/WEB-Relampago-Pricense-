@@ -69,7 +69,7 @@ from .models import Jugador
 
 def inicio_view(request):
     jugadores = Jugador.objects.all()
-    return render(request, 'inicio.html', {
+    return render(request, 'Inicio.html', {
         'jugadores': jugadores,
         # demás contexto…
     })
@@ -85,7 +85,7 @@ def registro_view(request):
             return redirect('inicio')
     else:
         form = RegistroForm()
-    return render(request, 'Registro.html', {'form': form})
+    return render(request, 'registro.html', {'form': form})
 
 def login_view(request):
     if request.method == 'POST':
