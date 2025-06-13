@@ -422,13 +422,21 @@ def confirmar_pedido_view(request):
         numero_dorsal_raw = item.get('numero_dorsal')
         numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
 
+        precio_unitario = Decimal(item['precio'])
+        if item.get('compra_tipo') == 'solo_camiseta':
+            costo_unitario = producto.coste_provedor_camiseta
+        else:
+            costo_unitario = producto.coste_provedor
+
         LineaPedido.objects.create(
             pedido=pedido,
             producto=producto,
             talla=item['talla'],
             nombre_dorsal=item.get('nombre_dorsal') or '',
             numero_dorsal=numero_dorsal,
-            compra_tipo=item.get('compra_tipo')
+            compra_tipo=item.get('compra_tipo'),
+            precio_unitario=precio_unitario,
+            costo_unitario=costo_unitario,
         )
 
     # Limpiar sesión
@@ -474,12 +482,23 @@ def pago_simulado_view(request):
         producto = Producto.objects.get(id=item['producto_id'])
         numero_dorsal_raw = item.get('numero_dorsal')
         numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
+        # ─── NUEVO ────
+        precio_unitario = Decimal(item['precio'])
+        if item.get('compra_tipo') == 'solo_camiseta':
+            costo_unitario = producto.coste_provedor_camiseta
+        else:
+            costo_unitario = producto.coste_provedor
+        # ─────────────
+
         LineaPedido.objects.create(
             pedido=pedido,
             producto=producto,
             talla=item['talla'],
             nombre_dorsal=item.get('nombre_dorsal') or '',
-            numero_dorsal=numero_dorsal
+            numero_dorsal=numero_dorsal,
+            precio_unitario=precio_unitario,
+            costo_unitario=costo_unitario,
+            compra_tipo=item.get('compra_tipo')
         )
     request.session.pop('resumen_pedido', None)
     request.session.pop('carrito', None)
@@ -612,16 +631,46 @@ def exportar_pedidos_excel(request):
     df.to_excel(response, index=False)
     return response
 
-
 @user_passes_test(es_admin)
 def lista_pedidos_view(request):
-    pedidos = Pedido.objects.all().order_by('-usuario__name')
+    # 1) Traer todos los pedidos
+    pedidos = Pedido.objects.prefetch_related('lineas__producto').order_by('-usuario__name')
+
+    # 2) Calcular ganancia línea a línea en Python y anexarla como atributo dinámico .ganancia_calc
+    for pedido in pedidos:
+        ganancia_pedido = Decimal('0.00')
+        for linea in pedido.lineas.all():
+            # precio de venta
+            if linea.compra_tipo == 'solo_camiseta':
+                precio_venta = Decimal(linea.producto.precio_camiseta_sola or linea.producto.precio)
+                costo = Decimal(linea.producto.coste_provedor_camiseta)
+            else:
+                precio_venta = Decimal(linea.producto.precio)
+                costo = Decimal(linea.producto.coste_provedor)
+            ganancia_pedido += (precio_venta - costo)
+        pedido.ganancia_calc = ganancia_pedido
+
+    # 3) Calcular ganancia total de todas las líneas de pedidos PAGADOS
+    ganancias_totales = Decimal('0.00')
+    lineas_pagadas = LineaPedido.objects.filter(pedido__pagado=True).select_related('producto')
+    for linea in lineas_pagadas:
+        if linea.compra_tipo == 'solo_camiseta':
+            precio_venta = Decimal(linea.producto.precio_camiseta_sola or linea.producto.precio)
+            costo = Decimal(linea.producto.coste_provedor_camiseta)
+        else:
+            precio_venta = Decimal(linea.producto.precio)
+            costo = Decimal(linea.producto.coste_provedor)
+        ganancias_totales += (precio_venta - costo)
+
+    # 4) Configuración de pedidos abiertos/cerrados
     config = get_configuracion()
+
+    # 5) Renderizar con el atributo .ganancia_calc ya disponible en cada pedido
     return render(request, 'admin/lista_pedidos.html', {
         'pedidos': pedidos,
-        'config': config
+        'config': config,
+        'ganancias_totales': ganancias_totales,
     })
-
 
 @user_passes_test(es_admin)
 def cambiar_estado_pedido(request, pedido_id):
@@ -771,3 +820,4 @@ def resetear_password(request, token):
         form = CambiarPasswordForm()
 
     return render(request, "Contrasena/password_reset.html", {"form": form})
+
