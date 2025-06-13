@@ -1,190 +1,148 @@
 {% extends "base.html" %}
-{% load static %}
+
+{% block title %}Historia y Equipo - Relámpago F.C.{% endblock %}
 
 {% block extra_head %}
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-  <style>
-    .historia-card {
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      padding: 1.5rem;
-      margin-bottom: 1rem;
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" integrity="sha384-+0n0xVW2eSR5O3z4z
+">
+
+<style>
+  .historia-card, .equipo-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 1.5rem;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .jugador-img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .equipo-card .card-title,
+  .equipo-card .card-text,
+  .historia-card h5 {
+    font-weight: bold;
+  }
+
+  .carrusel-mobile { display: none; }
+  .carrusel-desktop { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+
+  @media (min-width: 577px) {
+    .carrusel-desktop > .historia-card,
+    .carrusel-desktop > .equipo-card {
+      flex: 0 0 calc(33.333% - 1rem);
+    }
+  }
+
+  @media (max-width: 576px) {
+    .carrusel-mobile { display: block; }
+    .carrusel-desktop { display: none; }
+
+    .swiper-slide {
+      display: flex;
+      justify-content: center;
+    }
+
+    .swiper-slide .historia-card,
+    .swiper-slide .equipo-card {
+      transform: translateY(20px);
+      opacity: 0.8;
       transition: transform 0.3s ease, opacity 0.3s ease;
     }
-    .historia-card h5 {
-      font-weight: 600;
-      margin-bottom: .75rem;
-    }
-    .equipo-card .jugador-img {
-      width: 100%;
-      height: 280px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-    }
-    .equipo-card .card-title,
-    .equipo-card .card-text {
-      font-weight: bold;
-    }
-    .carrusel-mobile { display: none; }
-    .carrusel-desktop { display: block; }
 
-    @media (min-width: 577px) {
-      .carrusel-desktop {
-        display: flex !important;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        gap: 1.5rem;
-      }
-      .carrusel-desktop > .historia-card,
-      .carrusel-desktop > .card.equipo-card {
-        flex: 0 0 32%;
-      }
+    .swiper-slide.is-centered .historia-card,
+    .swiper-slide.is-centered .equipo-card {
+      transform: translateY(0);
+      opacity: 1;
+      z-index: 2;
     }
 
-    @media (max-width: 576px) {
-      .carrusel-mobile { display: block; }
-      .carrusel-desktop { display: none; }
-
-      .swiper-slide {
-        display: flex;
-        justify-content: center;
-      }
-
-      .swiper-slide .historia-card,
-      .swiper-slide .equipo-card {
-        width: 95%;
-        max-width: 350px;
-        margin: auto;
-        transform: translateY(20px);
-        opacity: 0.8;
-        transition: transform 0.3s ease, opacity 0.3s ease;
-      }
-
-      .swiper-slide.is-centered .historia-card,
-      .swiper-slide.is-centered .equipo-card {
-        transform: translateY(0);
-        opacity: 1;
-        z-index: 2;
-      }
-
-      .swiper-pagination {
-        margin-top: 20px;
-      }
+    .swiper-pagination {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
     }
-  </style>
+  }
+</style>
+
+
 {% endblock %}
 
 {% block content %}
-<section class="container py-5 text-center">
-  {% if user.is_authenticated %}
-    <h2 class="display-4">¡Bienvenido, {{ user.name }}!</h2>
-    <p class="lead">Explora nuestra tienda o consulta tus últimos pedidos.</p>
-  {% else %}
-    <h2 class="display-4">¡Bienvenido a Relámpago Pricense FC!</h2>
-    <p class="lead">
-      Descubre nuestra equipación oficial –  
-      <a href="{% url 'login' %}">Inicia sesión</a> o  
-      <a href="{% url 'registro' %}">Regístrate</a> para comprar.
-    </p>
-  {% endif %}
-</section>
-
-<!-- Historia del club -->
 <section class="container mb-5">
   <h3 class="titulo-seccion text-center mb-4">Historia del club</h3>
 
   <!-- Swiper móvil -->
   <div class="swiper historia-swiper carrusel-mobile">
     <div class="swiper-wrapper">
-      <div class="swiper-slide">
-        <div class="historia-card">
-          <h5>Fundación</h5>
-          <p>El Relámpago Pricense FC se fundó en 1965 con la ilusión de crear un proyecto deportivo arraigado en nuestra localidad. Aunque el equipo desapareció durante unos años, ahora hemos vuelto con la máxima ilusión.</p>
-        </div>
-      </div>
-      <div class="swiper-slide">
-        <div class="historia-card">
-          <h5>Equipo Actualmente</h5>
-          <p>Desde la temporada pasada, año donde el equipo volvió a surgir, competimos en la Liga Local Diputación Aficionado de fútbol sala (Grupo Bronce). Esta temporada luchamos por el ansiado ascenso al Grupo Plata.</p>
-        </div>
-      </div>
-      <div class="swiper-slide">
-        <div class="historia-card">
-          <h5>Actividades Importantes</h5>
-          <p>Además de competir, organizamos el Torneo de Fútbol Sala de Priego. Llevamos dos ediciones y este año os esperamos el 8 y 9 de agosto en el IES Diego Jesús Jiménez para la III edición.</p>
-        </div>
-      </div>
+      <div class="swiper-slide"><div class="historia-card"><h5>Fundación</h5><p>Texto...</p></div></div>
+      <div class="swiper-slide"><div class="historia-card"><h5>Equipo Actualmente</h5><p>Texto...</p></div></div>
+      <div class="swiper-slide"><div class="historia-card"><h5>Actividades Importantes</h5><p>Texto...</p></div></div>
     </div>
-    <div class="swiper-pagination"></div>
   </div>
+  <div class="swiper-pagination historia-pagination"></div>
 
-  <!-- Grid desktop/tablet -->
+  <!-- Grid desktop -->
   <div class="carrusel-desktop">
-    <div class="historia-card">
-      <h5>Fundación</h5>
-      <p>El Relámpago Pricense FC se fundó en 1965 con la ilusión de crear un proyecto deportivo arraigado en nuestra localidad. Aunque el equipo desapareció durante unos años, ahora hemos vuelto con la máxima ilusión.</p>
-    </div>
-    <div class="historia-card">
-      <h5>Equipo Actualmente</h5>
-      <p>Desde la temporada pasada, año donde el equipo volvió a surgir, competimos en la Liga Local Diputación Aficionado de fútbol sala (Grupo Bronce). Esta temporada luchamos por el ansiado ascenso al Grupo Plata.</p>
-    </div>
-    <div class="historia-card">
-      <h5>Actividades Importantes</h5>
-      <p>Además de competir, organizamos el Torneo de Fútbol Sala de Priego. Llevamos dos ediciones y este año os esperamos el 8 y 9 de agosto en el IES Diego Jesús Jiménez para la III edición.</p>
-    </div>
+    <div class="historia-card"><h5>Fundación</h5><p>Texto...</p></div>
+    <div class="historia-card"><h5>Equipo Actualmente</h5><p>Texto...</p></div>
+    <div class="historia-card"><h5>Actividades Importantes</h5><p>Texto...</p></div>
   </div>
 </section>
-
 
 <section class="container seccion-equipo py-5">
   <h3 class="titulo-seccion text-center mb-4">Nuestro Equipo</h3>
   <p class="text-center mb-4">Conoce a las leyendas detrás del relámpago.</p>
+
+  <!-- Swiper móvil -->
   <div class="swiper equipo-swiper carrusel-mobile">
     <div class="swiper-wrapper">
       {% for jugador in jugadores %}
-        <div class="swiper-slide">
-          <div class="card equipo-card h-100 text-center">
-            <img src="{{ jugador.foto.url }}" alt="{{ jugador.nombre }}" class="jugador-img">
-            <div class="card-body">
-              <h5 class="card-title">{{ jugador.nombre }}</h5>
-              <p class="card-text">{{ jugador.posicion }}</p>
-            </div>
+      <div class="swiper-slide">
+        <div class="card equipo-card h-100 text-center">
+          <img src="{{ jugador.foto.url }}" class="jugador-img" alt="{{ jugador.nombre }}">
+          <div class="card-body">
+            <h5 class="card-title">{{ jugador.nombre }}</h5>
+            <p class="card-text">{{ jugador.posicion }}</p>
           </div>
         </div>
+      </div>
       {% endfor %}
     </div>
-    <div class="swiper-pagination"></div>
   </div>
+  <div class="swiper-pagination equipo-pagination"></div>
+
+  <!-- Grid desktop -->
   <div class="carrusel-desktop">
     {% for jugador in jugadores %}
-      <div class="card equipo-card h-100 text-center">
-        <img src="{{ jugador.foto.url }}" alt="{{ jugador.nombre }}" class="jugador-img">
-        <div class="card-body">
-          <h5 class="card-title">{{ jugador.nombre }}</h5>
-          <p class="card-text">{{ jugador.posicion }}</p>
-        </div>
+    <div class="card equipo-card h-100 text-center">
+      <img src="{{ jugador.foto.url }}" class="jugador-img" alt="{{ jugador.nombre }}">
+      <div class="card-body">
+        <h5 class="card-title">{{ jugador.nombre }}</h5>
+        <p class="card-text">{{ jugador.posicion }}</p>
       </div>
+    </div>
     {% endfor %}
   </div>
-</section>
-
-<section class="container text-center py-5">
-  <a href="{% url 'tienda' %}" class="btn btn-lg btn-outline-primary">Ir a la tienda ⚡</a>
 </section>
 {% endblock %}
 
 {% block extra_swiper %}
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-  function initSwiper(selector) {
+  function initSwiper(selector, paginationSelector) {
     const container = document.querySelector(selector);
-    if (!container) return null;
-
-    const paginationEl = container.querySelector('.swiper-pagination');
-    const slides = container.querySelectorAll('.swiper-slide');
-    if (slides.length < 2) return null;
+    const pagination = document.querySelector(paginationSelector);
+    if (!container || !pagination) return;
 
     return new Swiper(container, {
       slidesPerView: 1.2,
@@ -192,7 +150,7 @@
       centeredSlides: true,
       autoHeight: true,
       pagination: {
-        el: paginationEl,
+        el: pagination,
         clickable: true
       },
       on: {
@@ -214,11 +172,11 @@
   function actualizarSwipers() {
     const esMovil = window.innerWidth <= 576;
     if (esMovil) {
-      if (!historiaSwiper) historiaSwiper = initSwiper('.historia-swiper');
-      if (!equipoSwiper) equipoSwiper = initSwiper('.equipo-swiper');
+      if (!historiaSwiper) historiaSwiper = initSwiper('.historia-swiper', '.historia-pagination');
+      if (!equipoSwiper) equipoSwiper = initSwiper('.equipo-swiper', '.equipo-pagination');
     } else {
-      if (historiaSwiper) { historiaSwiper.destroy(true, true); historiaSwiper = null; }
-      if (equipoSwiper)   { equipoSwiper.destroy(true, true);   equipoSwiper = null; }
+      historiaSwiper?.destroy(true, true); historiaSwiper = null;
+      equipoSwiper?.destroy(true, true);   equipoSwiper = null;
     }
   }
 
