@@ -32,9 +32,8 @@ urlpatterns = [
     path('resumen-pedido/', resumen_pedido_view, name='resumen_pedido'),
     path('confirmar-pedido/', confirmar_pedido_view, name='confirmar_pedido'),
     path('pago-simulado/', pago_simulado_view, name='pago_simulado'),
-    path('pedido/<str:pedido_id>/cambiar_estado/', cambiar_estado_pedido, name='cambiar_estado_pedido'),
-    path('mis-pedidos/', views.mis_pedidos_view, name='mis_pedidos'),
-    path('mis-pedidos/<str:pedido_id>/', views.detalle_mi_pedido_view, name='detalle_mi_pedido'),
+    path('mis-pedidos/', mis_pedidos_view, name='mis_pedidos'),
+    path('mis-pedidos/<str:pedido_id>/', detalle_mi_pedido_view, name='detalle_mi_pedido'),
 
     # Administración
     path('exportar-pedidos/', exportar_pedidos_excel , name='exportar_pedidos'),

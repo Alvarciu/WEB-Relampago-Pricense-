@@ -2,182 +2,191 @@
 {% load static %}
 
 {% block extra_head %}
-  <!-- Swiper CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-
   <style>
-    /* Contenedor principal */
-    .mis-pedidos-container {
-      padding: 2rem 1rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .mis-pedidos-container h2 {
+    .seccion-pedidos {
+      padding: 10px 10px;
       text-align: center;
-      margin-bottom: 1.5rem;
     }
-
-    /* Grid en desktop */
-    .pedidos-grid {
+    .titulo-seccion {
+      margin-top: auto;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .grid-pedidos {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-      gap: 1.5rem;
-    }
-
-    /* Card de pedido */
-    .pedido-card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      max-width: 360px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      justify-content: center;
+      gap: 30px;
+      max-width: 900px;
       margin: 0 auto;
+      padding: 10px 20px;
     }
-    .pedido-card img {
+    .card-pedido {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 100%;
+      margin: 0 auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      position: relative;
+      transition: transform 0.5s ease, opacity 0.3s ease;
+    }
+    .card-pedido img {
       width: 100%;
       height: auto;
-      aspect-ratio: 16/9;
       object-fit: contain;
-      background: #f8f8f8;
+      margin-bottom: 10px;
     }
-    .pedido-card-body {
-      padding: 1rem;
-      flex: 1;
-    }
-    .pedido-card-body h3 {
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
-    }
-    .pedido-card-body p {
-      font-size: 0.9rem;
-      margin: 0.25rem 0;
-      color: #555;
-    }
-    .pedido-card-footer {
-      padding: 0.75rem 1rem;
+    .titulo-pedido-card {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      margin-top: 0.7rem;
+      color: #222;
       text-align: center;
+      /* Para que no se salga el texto */
+      overflow-wrap: break-word;
+      word-break: break-all;
+      line-height: 1.2;
+      max-width: 90%;
+      margin-left: auto;
+      margin-right: auto;
     }
-    .pedido-card-footer .btn {
-      width: 100%;
+    .pedido-fecha {
+      font-size: 14px;
+      color: #444;
+      margin-bottom: 3px;
     }
-
-    /* Carrusel en móvil */
+    .pedido-total {
+      color: #007bff;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .btn-ver {
+      display: inline-block;
+      background: #1674fc;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      margin-top: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      border: none;
+      transition: background .2s;
+    }
+    .btn-ver:hover {
+      background: #0047a8;
+    }
+    /* Carrusel Swiper sólo en móvil */
+    .swiper {
+      padding-bottom: 30px;
+    }
     .carrusel-mobile { display: none; }
-    .carrusel-desktop { display: block; }
-
+    .carrusel-desktop { display: grid; }
     @media (max-width: 576px) {
       .carrusel-mobile { display: block; }
       .carrusel-desktop { display: none; }
-      .pedido-card {
-        max-width: 280px;
-      }
-      .pedido-card img {
-        height: auto;
-      }
-      .swiper {
-        padding-bottom: 1rem;
-      }
+      .seccion-pedidos { padding-top: 15px; padding-bottom: 15px; }
+      .titulo-seccion { margin-top: auto; margin-bottom: 10px; }
+      .swiper { padding-bottom: 0; margin-bottom: 0; }
       .swiper-slide {
-        display: flex;
-        justify-content: center;
+        display: flex; justify-content: center; align-items: flex-start;
+        width: 100%; box-sizing: border-box;
       }
+      .swiper-slide .card-pedido {
+        transform: translateY(20px);
+        opacity: 0.85;
+        transition: transform 0.3s, opacity 0.3s;
+      }
+      .swiper-slide.is-centered .card-pedido {
+        transform: translateY(0); opacity: 1; z-index: 2;
+      }
+      .card-pedido { width: 95%; max-width: 350px; display: block; margin: 0 auto; }
+      .swiper-pagination { position: relative; margin-top: 25px; }
     }
   </style>
 {% endblock %}
 
 {% block content %}
-  <section class="mis-pedidos-container">
-    <h2>Mis pedidos</h2>
+  <section class="seccion-pedidos">
+    <h2 class="titulo-seccion">Mis pedidos</h2>
 
-    {% if pedidos %}
-      <!-- Carrusel móvil -->
-      <div class="swiper carrusel-mobile pedidos-swiper">
-        <div class="swiper-wrapper">
-          {% for pedido in pedidos %}
-            <div class="swiper-slide">
-              <div class="pedido-card">
-                {% with pedido.lineas.first as linea %}
-                  <img src="{{ linea.producto.imagen.url }}" alt="{{ linea.producto.nombre }}">
-                {% endwith %}
-                <div class="pedido-card-body">
-                  <h3>Pedido #{{ pedido.id }}</h3>
-                  <p>Fecha: {{ pedido.fecha|date:"d/m/Y H:i" }}</p>
-                  <p>Total: {{ pedido.total|floatformat:2 }} €</p>
-                </div>
-                <div class="pedido-card-footer">
-                  <a href="{% url 'detalle_mi_pedido' pedido.id %}" class="btn btn-primary">
-                    Ver detalles
-                  </a>
-                </div>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-        <div class="swiper-pagination"></div>
-      </div>
-
-      <!-- Grid desktop/tablet -->
-      <div class="pedidos-grid carrusel-desktop">
+    <!-- Carrusel móvil -->
+    <div class="swiper carrusel-mobile pedidos-swiper">
+      <div class="swiper-wrapper">
         {% for pedido in pedidos %}
-          <div class="pedido-card">
-            {% with pedido.lineas.first as linea %}
-              <img src="{{ linea.producto.imagen.url }}" alt="{{ linea.producto.nombre }}">
-            {% endwith %}
-            <div class="pedido-card-body">
-              <h3>Pedido #{{ pedido.id }}</h3>
-              <p>Fecha: {{ pedido.fecha|date:"d/m/Y H:i" }}</p>
-              <p>Total: {{ pedido.total|floatformat:2 }} €</p>
-            </div>
-            <div class="pedido-card-footer">
-              <a href="{% url 'detalle_mi_pedido' pedido.id %}" class="btn btn-primary">
-                Ver detalles
-              </a>
+          <div class="swiper-slide">
+            <div class="card-pedido">
+              {% with linea=pedido.lineas.first %}
+                <img src="{{ linea.producto.imagen.url }}" alt="{{ linea.producto.nombre }}">
+              {% endwith %}
+              <div class="titulo-pedido-card">Pedido #{{ pedido.id }}</div>
+              <div class="pedido-fecha">Fecha: {{ pedido.fecha|date:"d/m/Y H:i" }}</div>
+              <div class="pedido-total">Total: {{ pedido.total }} €</div>
+              <a href="{% url 'detalle_mi_pedido' pedido.id %}" class="btn-ver">Ver detalles</a>
             </div>
           </div>
         {% endfor %}
       </div>
-    {% else %}
-      <p class="text-center">Aún no has realizado ningún pedido.</p>
-      <div class="text-center mt-3">
-        <a href="{% url 'tienda' %}" class="btn btn-outline-primary">Ir a la tienda</a>
-      </div>
-    {% endif %}
+      <div class="swiper-pagination"></div>
+    </div>
+
+    <!-- Grid desktop/tablet -->
+    <div class="grid-pedidos carrusel-desktop">
+      {% for pedido in pedidos %}
+        <div class="card-pedido">
+          {% with linea=pedido.lineas.first %}
+            <img src="{{ linea.producto.imagen.url }}" alt="{{ linea.producto.nombre }}">
+          {% endwith %}
+          <div class="titulo-pedido-card">Pedido #{{ pedido.id }}</div>
+          <div class="pedido-fecha">Fecha: {{ pedido.fecha|date:"d/m/Y H:i" }}</div>
+          <div class="pedido-total">Total: {{ pedido.total }} €</div>
+          <a href="{% url 'detalle_mi_pedido' pedido.id %}" class="btn-ver">Ver detalles</a>
+        </div>
+      {% endfor %}
+    </div>
   </section>
 {% endblock %}
 
-{% block extra_js %}
-  <!-- Swiper JS -->
-  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-  <script>
-    function initPedidosSwiper() {
-      return new Swiper('.pedidos-swiper', {
-        slidesPerView: 1.1,
-        spaceBetween: 15,
-        centeredSlides: true,
-        loop: true,
-        autoplay: {
-          delay: 5000,
+{% block extra_swiper %}
+<script>
+  let pedidosSwiper = null;
+  function initCenteredSwiper(selector) {
+    return new Swiper(selector, {
+      initialSlide: 0,
+      slidesPerView: 1.2,
+      spaceBetween: 15,
+      centeredSlides: true,
+      autoHeight: true,
+      pagination: {
+        el: selector + ' .swiper-pagination',
+        clickable: true
+      },
+      on: {
+        init() {
+          this.slides.forEach(s => s.classList.remove('is-centered'));
+          this.slides[this.activeIndex]?.classList.add('is-centered');
         },
-        pagination: {
-          el: '.pedidos-swiper .swiper-pagination',
-          clickable: true,
-        },
-      });
-    }
-
-    let pedidosSwiper = null;
-    function updatePedidosCarousel() {
-      if (window.innerWidth <= 576) {
-        if (!pedidosSwiper) pedidosSwiper = initPedidosSwiper();
-      } else if (pedidosSwiper) {
-        pedidosSwiper.destroy(true,true);
-        pedidosSwiper = null;
+        slideChangeTransitionEnd() {
+          this.slides.forEach(s => s.classList.remove('is-centered'));
+          this.slides[this.activeIndex]?.classList.add('is-centered');
+        }
       }
+    });
+  }
+  function updatePedidosSwiper() {
+    const isMobile = window.innerWidth <= 576;
+    if (isMobile) {
+      if (!pedidosSwiper && document.querySelector('.pedidos-swiper .swiper-slide:nth-child(2)')) {
+        pedidosSwiper = initCenteredSwiper('.pedidos-swiper');
+      }
+    } else if (pedidosSwiper) {
+      pedidosSwiper.destroy(true, true); pedidosSwiper = null;
     }
-
-    window.addEventListener('load',  updatePedidosCarousel);
-    window.addEventListener('resize', updatePedidosCarousel);
-  </script>
+  }
+  window.addEventListener('load', updatePedidosSwiper);
+  window.addEventListener('resize', updatePedidosSwiper);
+</script>
 {% endblock %}

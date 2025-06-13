@@ -845,13 +845,11 @@ def resetear_password(request, token):
 
     return render(request, "Contrasena/password_reset.html", {"form": form})
 
-
 @login_required
 def mis_pedidos_view(request):
-    pedidos = Pedido.objects.filter(usuario=request.user).order_by('-fecha')
-    return render(request, 'mis_pedidos.html', {
-        'pedidos': pedidos
-    })
+    pedidos = request.user.pedidos.all().order_by('-fecha')
+    return render(request, 'mis_pedidos.html', {'pedidos': pedidos})
+
 
 @login_required
 def detalle_mi_pedido_view(request, pedido_id):
