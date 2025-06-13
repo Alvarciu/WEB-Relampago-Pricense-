@@ -1,37 +1,79 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="text-align: center;">
-  <h2 style="color: green;">✅ Pedido confirmado</h2>
-  <p>¡Gracias por tu pedido, {{ user.first_name|default:user.name }}!</p>
-  <p>Hemos recibido tu pedido correctamente con el número <strong>#{{ pedido.id }}</strong>.</p>
-  <p>Te hemos enviado un correo de confirmación con todos los detalles.</p>
 
-  <h3>Resumen:</h3>
-  <ul style="list-style: none; padding: 0;">
-    {% for item in pedido.lineas.all %}
-      <li style="margin-bottom: 20px;">
-        <img src="{{ item.producto.imagen.url }}" width="100"><br>
-        <strong>{{ item.producto.nombre }}</strong> |
-        Talla: {{ item.talla }}<br>
+<style>
+  .resumen-pedido {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .card-item {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    padding: 15px;
+  }
+  .card-item img {
+    width: 100px;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+  .card-info {
+    flex: 1;
+  }
+  .card-info h4 {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+  }
+  .card-info p {
+    margin: 4px 0;
+    color: #555;
+    font-size: 0.95rem;
+  }
+  .card-info .precio {
+    font-weight: bold;
+    margin-top: 8px;
+    color: #e67e22;
+  }
+</style>
+
+<div class="resumen-pedido">
+  <h2 style="text-align:center; margin-bottom:20px;">✅ Pedido confirmado #{{ pedido.id }}</h2>
+
+  {% for item in pedido.lineas.all %}
+    <div class="card-item">
+      <img src="{{ item.producto.imagen.url }}" alt="{{ item.producto.nombre }}">
+      <div class="card-info">
+        <h4>{{ item.producto.nombre }}</h4>
+        <p><strong>Talla:</strong> {{ item.talla }}</p>
         {% if item.nombre_dorsal %}
-          Dorsal: {{ item.nombre_dorsal }} {{ item.numero_dorsal }}<br>
+          <p><strong>Nombre dorsal:</strong> {{ item.nombre_dorsal }}</p>
         {% endif %}
-        {% if item.compra_tipo == 'solo_camiseta' %}
-          {% if pedido.usar_descuento %}
-            Precio: 20.00 €<br>
-          {% else %}
-            Precio: 22.00 €<br>
-          {% endif %}
-        {% else %}
-          Precio: {{ item.producto.precio }} €<br>
+        {% if item.numero_dorsal %}
+          <p><strong>Número dorsal:</strong> {{ item.numero_dorsal }}</p>
         {% endif %}
-      </li>
-    {% endfor %}
-  </ul>
+        {% if not item.nombre_dorsal and not item.numero_dorsal %}
+          <p><strong>Personalización:</strong> –</p>
+        {% endif %}
+        <p class="precio">Precio: {{ item.precio_unitario|floatformat:2 }} €</p>
+      </div>
+    </div>
+  {% endfor %}
 
-  <h3><strong>Total:</strong> {{ pedido.total }} €</h3>
+    <h3><strong>Total:</strong> {{ pedido.total }} €</h3>
   <p>Recuerda que tu pedido está en estado <strong>NO PAGADO</strong>. Por favor, realiza la transferencia bancaria para completar el proceso.</p>
 
-  <a href="{% url 'tienda' %}" style="display:inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Volver a la tienda</a>
+
+  <div style="text-align:center; margin-top:30px;">
+    <a href="{% url 'tienda' %}"
+       style="display:inline-block; background:#3498db; color:#fff; padding:10px 20px; border-radius:5px; text-decoration:none;">
+      ← Volver a la tienda
+    </a>
+  </div>
 </div>
+
 {% endblock %}

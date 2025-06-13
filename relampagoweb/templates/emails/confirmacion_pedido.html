@@ -106,37 +106,42 @@
     </div>
 
     <table>
-      <thead>
-        <tr>
-          <th>Producto</th>
-          <th>Talla</th>
-          <th>Dorsal</th>
-          <th>Número</th>
-          <th>Precio</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in pedido.lineas.all %}
-        <tr>
-          <td>{{ item.producto.nombre }}</td>
-          <td>{{ item.talla }}</td>
-          <td>{% if item.nombre_dorsal %}{{ item.nombre_dorsal }}{% else %}-{% endif %}</td>
-          <td>{% if item.numero_dorsal %}{{ item.numero_dorsal }}{% else %}-{% endif %}</td>
-          <td>
-            {% if item.compra_tipo == 'solo_camiseta' %}
-              {% if item.con_descuento %}
-                {{ item.producto.precio_camiseta_descuento|floatformat:2 }} €
-              {% else %}
-                {{ item.producto.precio_camiseta_sola|floatformat:2 }} €
-              {% endif %}
-            {% else %}
-              {{ item.producto.precio|floatformat:2 }} €
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <thead>
+    <tr>
+      <th>Producto</th>
+      <th>Talla</th>
+      <th>Dorsal</th>
+      <th>Número</th>
+      <th>Precio</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for linea in pedido.lineas.all %}
+    <tr>
+      <td>{{ linea.producto.nombre }}</td>
+      <td>{{ linea.talla }}</td>
+      <td>
+        {% if linea.nombre_dorsal %}
+          {{ linea.nombre_dorsal }}
+        {% else %}
+          –
+        {% endif %}
+      </td>
+      <td>
+        {% if linea.numero_dorsal %}
+          {{ linea.numero_dorsal }}
+        {% else %}
+          –
+        {% endif %}
+      </td>
+      <td>
+        {{ linea.precio_unitario|floatformat:2 }} €
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
 
     <p class="total">Total: {{ pedido.total }} €</p>
 
