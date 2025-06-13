@@ -4,47 +4,98 @@
 {% block extra_head %}
 <style>
   .detalle-card {
-    background:#fff;
-    border-radius:12px;
-    box-shadow:0 4px 16px rgba(0,0,0,0.08);
-    overflow:hidden;
-    margin-top:1.5rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    overflow: hidden;
+    margin-top: 1.5rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
   }
   .detalle-card .card-body {
-    padding:1.5rem;
+    padding: 1.5rem;
   }
   .linea-item {
-    display:flex;
-    align-items:center;
-    gap:1rem;
-    margin-bottom:1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
   }
   .linea-item img {
-    width:64px; height:64px;
-    object-fit:cover;
-    border-radius:8px;
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #fafafa;
+    flex-shrink: 0;
   }
   .linea-info {
-    flex:1;
+    flex: 1;
+    text-align: left;
   }
   .linea-info strong {
-    display:block;
-    margin-bottom:.25rem;
+    display: block;
+    margin-bottom: .25rem;
   }
   .linea-importe {
-    font-weight:bold;
+    font-weight: bold;
+    min-width: 80px;
+    text-align: right;
   }
   .card-footer {
-    background:#f8f9fa;
-    padding:1rem 1.5rem;
-    text-align:right;
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    text-align: right;
+  }
+  @media (max-width: 600px) {
+    .detalle-card {
+      border-radius: 8px;
+      margin-top: 1rem;
+      max-width: 100%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .detalle-card .card-body {
+      padding: 1rem;
+    }
+    .linea-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.6rem;
+    }
+    .linea-item img {
+      width: 52px;
+      height: 52px;
+      margin-bottom: 0.3rem;
+    }
+    .linea-info {
+      text-align: left;
+      width: 100%;
+      font-size: 15px;
+    }
+    .linea-importe {
+      text-align: left;
+      min-width: unset;
+      width: 100%;
+      margin-top: 0.3rem;
+      font-size: 15px;
+    }
+    .card-footer {
+      padding: 0.8rem 1rem;
+      font-size: 16px;
+    }
+    h2 {
+      font-size: 22px !important;
+    }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="container py-5">
-  <h2>Pedido #{{ pedido.id }}</h2>
+<section class="container py-5" style="max-width: 750px;">
+  <h2 style="font-size: 26px;">Pedido #{{ pedido.id }}</h2>
   <small class="text-muted">Fecha: {{ pedido.fecha|date:"d/m/Y H:i" }}</small>
   <p class="mt-2">
     Estado:
@@ -79,7 +130,7 @@
       {% endfor %}
     </div>
     <div class="card-footer">
-      <h5>Total: {{ pedido.total|floatformat:2 }} €</h5>
+      <h5 style="font-size: 19px; margin: 0;">Total: {{ pedido.total|floatformat:2 }} €</h5>
     </div>
   </div>
 
