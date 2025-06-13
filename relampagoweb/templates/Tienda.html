@@ -2,8 +2,6 @@
 {% load static %}
 
 {% block extra_head %}
-  <!-- Swiper CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
     .seccion-productos {
       padding: 10px 10px;
@@ -67,73 +65,69 @@
       display: grid;
     }
 
-    /* Sólo en móviles (≤576px): mostrar carrusel, ocultar rejilla */
     @media (max-width: 576px) {
-  .carrusel-mobile {
-    display: block;
-  }
-  .carrusel-desktop {
-    display: none;
-  }
+      .carrusel-mobile {
+        display: block;
+      }
+      .carrusel-desktop {
+        display: none;
+      }
 
-  .seccion-productos {
-    padding-top: 15px;
-    padding-bottom: 15px;
-  }
+      .seccion-productos {
+        padding-top: 15px;
+        padding-bottom: 15px;
+      }
 
-  .titulo-seccion {
-    margin-top: auto;
-    margin-bottom: 10px;
-  }
+      .titulo-seccion {
+        margin-top: auto;
+        margin-bottom: 10px;
+      }
 
-  .swiper {
-    padding-bottom: 0;
-    margin-bottom: 0;
-  }
+      .swiper {
+        padding-bottom: 0;
+        margin-bottom: 0;
+      }
 
-  .swiper-slide {
-    display: flex;
-    width: 100px;
-    justify-content: center;
-    align-items: flex-start;
-  }
+      .swiper-slide {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        width: 100%;
+        box-sizing: border-box;
+      }
 
-  /* 1) Estado “no activa”: baja 20px y semitransparente */
-  .swiper-slide .card-producto {
-    transform: translateY(20px);
-    opacity: 0.8;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-  }
+      .swiper-slide .card-producto {
+        transform: translateY(20px);
+        opacity: 0.8;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+      }
 
-  /* 2) Sólo la slide activa (is-centered) vuelve a tope y opaca */
-  .swiper-slide.is-centered .card-producto {
-    transform: translateY(0);
-    opacity: 1;
-    z-index: 2;
-  }
+      .swiper-slide.is-centered .card-producto {
+        transform: translateY(0);
+        opacity: 1;
+        z-index: 2;
+      }
 
-  .card-producto {
-    width: 95%;
-    max-width: 350px;
-    display: block;
-    margin: 0 auto;
-    margin-top: auto;
-    margin-bottom: auto;
-    padding: 12px;
-  }
+      .card-producto {
+        width: 95%;
+        max-width: 350px;
+        display: block;
+        margin: 0 auto;
+        margin-top: auto;
+        margin-bottom: auto;
+        padding: 12px;
+      }
 
-  .swiper-pagination {
-    position: relative;
-    margin-top: 25px;
-    padding: auto;
-}
+      .swiper-pagination {
+        position: relative;
+        margin-top: 25px;
+        padding: auto;
+      }
     }
-
   </style>
 {% endblock %}
 
 {% block content %}
-  <!-- SECCIÓN EQUIPACIONES COMPLETAS -->
   <section class="seccion-productos">
     <h2 class="titulo-seccion">Camisetas y Equipaciones </h2>
 
@@ -144,9 +138,7 @@
             <div class="card-producto">
               <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
               <h3>{{ producto.nombre }}</h3>
-              {% for camiseta in camisetas %}
-                <p class="precio">Camisetas desde:{{ camiseta.precio_camiseta_sola }} €</p>
-              {% endfor %}
+              <p class="precio">Camisetas desde: {{ producto.precio_camiseta_sola }} €</p>
               <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
             </div>
           </div>
@@ -160,14 +152,15 @@
         <div class="card-producto">
           <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
           <h3>{{ producto.nombre }}</h3>
-                <p class="precio">Camisetas desde: {{ producto.precio_camiseta_sola }} €</p>
+          <p class="precio">Camisetas desde: {{ producto.precio_camiseta_sola }} €</p>
           <a href="{% url 'detalle_producto' producto.id %}" class="btn-ver">Ver producto</a>
         </div>
       {% endfor %}
     </div>
   </section>
+
   <hr>
-  <!-- SECCIÓN SUDADERAS -->
+
   <section class="seccion-productos">
     <h2 class="titulo-seccion">Sudaderas</h2>
 
@@ -200,74 +193,59 @@
   </section>
 {% endblock %}
 
-{% block extra_js %}
-  <!-- Swiper JS -->
-  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-  <script>
-    let equipSwiper = null;
-    let sudaderasSwiper = null;
+{% block extra_swiper %}
+<script>
+  let equipSwiper = null;
+  let sudaderasSwiper = null;
 
-    // función genérica que añade .is-centered al slide activo
-    function initCenteredSwiper(selector) {
-      return new Swiper(selector, {
-        initialSlide: 0,           // si quieres arrancar en otro slide, pon aquí su índice
-        slidesPerView: 1.2,
-        spaceBetween: 15,
-        centeredSlides: true,
-        autoHeight: true,          // ajusta la altura al contenido de cada slide
-        pagination: {
-          el: selector + ' .swiper-pagination',
-          clickable: true,
-          // renderizamos cada bullet con su número correcto en aria-label
-          renderBullet: function(index, className) {
-            return '<span class="' + className + '"' +
-                       ' role="button"' +
-                       ' tabindex="0"' +
-                       ' aria-label="Ir a la diapositiva ' + (index + 1) + '">' +
-                   '</span>';
-          }
+  function initCenteredSwiper(selector) {
+    return new Swiper(selector, {
+      initialSlide: 0,
+      slidesPerView: 1.2,
+      spaceBetween: 15,
+      centeredSlides: true,
+      autoHeight: true,
+      pagination: {
+        el: selector + ' .swiper-pagination',
+        clickable: true,
+        renderBullet: function(index, className) {
+          return '<span class="' + className + '" role="button" tabindex="0" aria-label="Ir a la diapositiva ' + (index + 1) + '"></span>';
+        }
+      },
+      a11y: {
+        enabled: true,
+        paginationBulletMessage: 'Ir a la diapositiva {{index}}'
+      },
+      on: {
+        init() {
+          this.slides.forEach(s => s.classList.remove('is-centered'));
+          this.slides[this.activeIndex]?.classList.add('is-centered');
         },
-        a11y: {
-          enabled: true,
-          // mensaje accesible para cada bullet ({{index}} es 1-based)
-          paginationBulletMessage: 'Ir a la diapositiva {{index}}'
-        },
-        on: {
-          init() {
-            this.slides.forEach(s => s.classList.remove('is-centered'));
-            this.slides[this.activeIndex].classList.add('is-centered');
-          },
-          slideChangeTransitionEnd() {
-            this.slides.forEach(s => s.classList.remove('is-centered'));
-            this.slides[this.activeIndex].classList.add('is-centered');
-          }
-        }
-      });
-    }
-
-    function updateSwipers() {
-      const isMobile = window.innerWidth <= 576;
-
-      if (isMobile) {
-        if (!equipSwiper) {
-          equipSwiper = initCenteredSwiper('.equipaciones-swiper');
-        }
-        if (!sudaderasSwiper) {
-          sudaderasSwiper = initCenteredSwiper('.sudaderas-swiper');
-        }
-      } else {
-        if (equipSwiper) {
-          equipSwiper.destroy(true, true);
-          equipSwiper = null;
-        }
-        if (sudaderasSwiper) {
-          sudaderasSwiper.destroy(true, true);
-          sudaderasSwiper = null;
+        slideChangeTransitionEnd() {
+          this.slides.forEach(s => s.classList.remove('is-centered'));
+          this.slides[this.activeIndex]?.classList.add('is-centered');
         }
       }
-    }
+    });
+  }
 
-    window.addEventListener('load', updateSwipers);
-    window.addEventListener('resize', updateSwipers);
-  </script>
+  function updateSwipers() {
+    const isMobile = window.innerWidth <= 576;
+
+    if (isMobile) {
+      if (!equipSwiper && document.querySelector('.equipaciones-swiper .swiper-slide:nth-child(2)')) {
+        equipSwiper = initCenteredSwiper('.equipaciones-swiper');
+      }
+      if (!sudaderasSwiper && document.querySelector('.sudaderas-swiper .swiper-slide:nth-child(2)')) {
+        sudaderasSwiper = initCenteredSwiper('.sudaderas-swiper');
+      }
+    } else {
+      if (equipSwiper) { equipSwiper.destroy(true, true); equipSwiper = null; }
+      if (sudaderasSwiper) { sudaderasSwiper.destroy(true, true); sudaderasSwiper = null; }
+    }
+  }
+
+  window.addEventListener('load', updateSwipers);
+  window.addEventListener('resize', updateSwipers);
+</script>
 {% endblock %}
