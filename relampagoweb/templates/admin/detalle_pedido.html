@@ -89,7 +89,6 @@
     text-decoration: underline;
   }
 </style>
-
 <div class="pedido-card">
   <div class="pedido-header">
     <h2>
@@ -104,26 +103,29 @@
       <p><strong>Usuario:</strong> {{ pedido.usuario.name }} ({{ pedido.usuario.email }})</p>
       <p><strong>Fecha:</strong> {{ pedido.fecha|date:"d/m/Y H:i" }}</p>
       <p><strong>Total:</strong> {{ pedido.total }} €</p>
+  <p><strong>Ganancia en este pedido:</strong> {{ pedido.ganancia_calc|default:0.00|floatformat:2 }} €</p>
     </div>
   </div>
 
   <h3>🛍️ Productos</h3>
   <div class="producto-listado">
-    {% for linea in pedido.lineas.all %}
+    {% for linea in lineas %}
       <div class="producto-item">
         <img src="{{ linea.producto.imagen.url }}" alt="{{ linea.producto.nombre }}">
         <div class="producto-detalles">
           <strong>{{ linea.producto.nombre }}</strong>
           <p>Talla: {{ linea.talla }}</p>
           {% if linea.nombre_dorsal %}
-            <p>Dorsal: {{ linea.nombre_dorsal }} </p>
+            <p><strong>Dorsal:</strong> {{ linea.nombre_dorsal }}</p>
           {% endif %}
           {% if linea.numero_dorsal %}
-            <p>Número: {{ linea.numero_dorsal }}</p>
+            <p><strong>Número:</strong> {{ linea.numero_dorsal }}</p>
           {% endif %}
           {% if linea.producto.tipo == "Equipación" %}
-            <p>Tipo: {{ linea.compra_tipo }}</p>
+            <p><strong>Tipo:</strong> {{ linea.compra_tipo }}</p>
           {% endif %}
+          <p><strong>Precio venta:</strong> {{ linea.precio_unitario|floatformat:2 }} €</p>
+          <p><strong>Ganancia por línea:</strong> {{ linea.ganancia_calc|floatformat:2 }} €</p>
         </div>
       </div>
     {% endfor %}

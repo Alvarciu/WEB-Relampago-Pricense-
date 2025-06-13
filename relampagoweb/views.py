@@ -690,13 +690,31 @@ def cambiar_estado_pedido(request, pedido_id):
             enviar_email_pago_confirmado(pedido)  # ✉️ Enviar solo si ahora está pagado
 
     return redirect('lista_pedidos')
-
-
 @user_passes_test(es_admin)
 def detalle_pedido_admin_view(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
-    return render(request, 'admin/detalle_pedido.html', {'pedido': pedido})
 
+    # 1) Calcular ganancia por línea:
+    lineas = []
+    for linea in pedido.lineas.select_related('producto'):
+        # precio de venta real (ya lo tienes guardado en precio_unitario)
+        precio_venta = linea.precio_unitario
+        # coste real
+        costo = linea.costo_unitario
+        # ganancia
+        linea.ganancia_calc = precio_venta - costo
+        lineas.append(linea)
+
+    total_ganancia = sum((l.ganancia_calc for l in lineas), Decimal('0.00'))
+    pedido.ganancia_calc = total_ganancia
+
+
+    # 2) Pásale al template la lista modificada:
+    return render(request, 'admin/detalle_pedido.html', {
+        'pedido': pedido,
+        'lineas': lineas,
+        'config': get_configuracion(),
+    })
 
 def get_configuracion():
     config, created = Configuracion.objects.get_or_create(id=1)
