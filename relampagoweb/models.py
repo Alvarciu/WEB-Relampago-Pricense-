@@ -114,6 +114,7 @@ class Producto(models.Model):
 
 
 ### --- MODELO DE PEDIDO --- ###
+from django.db.models import Sum, F, ExpressionWrapper, DecimalField
 
 #Este modelo representa un pedido realizado por un usuario. 
 # Es como el "contenedor" donde se guarda toda la información sobre la compra:
@@ -152,7 +153,21 @@ class Pedido(models.Model):
             total += sueltas * PRECIO_CAMISETA_NORMAL
 
         return total
-
+    
+    @property
+    def ganancia(self):
+        """
+        Suma (precio_unitario - costo_unitario) de todas las líneas de este pedido.
+        """
+        agg = self.lineas.aggregate(
+            ganancia=Sum(
+                ExpressionWrapper(
+                    F('precio_unitario') - F('costo_unitario'),
+                    output_field=DecimalField(max_digits=12, decimal_places=2)
+                )
+            )
+        )
+        return agg['ganancia'] or Decimal('0.00')
     def __str__(self):
         return f"Pedido {self.id} de {self.usuario.email}"
 

@@ -73,7 +73,7 @@
     text-decoration: underline;
   }
 
-    /* En móviles: menos padding + fuente un pelín menor */
+  /* En móviles: menos padding + fuente un pelín menor */
   @media (max-width: 576px) {
     #tabla-pedidos th,
     #tabla-pedidos td {
@@ -81,13 +81,11 @@
       font-size: 13px;
     }
 
-    /* El input de búsqueda ocupa todo el ancho */
     #buscador-id {
       width: 100%;
-      max-width: none;   /* anula tu max-width inline si lo pusiste */
+      max-width: none;
     }
   }
-
 </style>
 
 <h2>Pedidos registrados</h2>
@@ -106,50 +104,70 @@
     📦 Exportar pedidos a Excel
   </a>
 </p>
+
+
+
+<p style="font-weight:600; margin-bottom:1em;">
+  Ganancia total (solo pedidos pagados): {{ ganancias_totales|floatformat:2 }} €
+</p>
+
 <div class="table-responsive">
-<table id="tabla-pedidos">
-  <thead>
-    <tr>
-      <th>ID:
-  <input id="buscador-id" type="text" placeholder="Introduce el ID del pedido…" style="max-width: 260px;">
-</th>
-      <th class="sortable">Usuario <span class="filtro-icono">🔽</span></th>
-      <th>Email</th>
-      <th>Telefono</th>
-      <th>Fecha</th>
-      <th>Total</th>
-      <th class="sortable">Estado <span class="filtro-icono">🔽</span></th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for pedido in pedidos %}
-    <tr>
-      <td>{{ pedido.id }}</td>
-      <td>{{ pedido.usuario.name }}</td>
-      <td>{{ pedido.usuario.email }}</td>
-      <td>{{ pedido.usuario.telefono }}</td>
-      <td>{{ pedido.fecha|date:"d/m/Y H:i" }}</td>
-      <td>{{ pedido.total }} €</td>
-      <td>
-        <form method="POST" action="{% url 'cambiar_estado_pedido' pedido.id %}" class="estado-form">
-          {% csrf_token %}
-          {% if pedido.pagado %}
-            <button type="submit" class="estado-btn estado-pagado" title="Marcar como moroso">✔</button>
-          {% else %}
-            <button type="submit" class="estado-btn estado-moroso" title="Marcar como pagado">✖</button>
-          {% endif %}
-        </form>
-      </td>
-      <td><a href="{% url 'detalle_pedido_admin' pedido.id %}" class="detalle-link">🔍 Ver detalles</a></td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+  <table id="tabla-pedidos">
+    <thead>
+      <tr>
+        <th><div style="margin: 15px 0; text-align: right;">
+  <label for="buscador-id" style="margin-right: 8px; font-weight: 600;">ID:</label>
+  <input
+    id="buscador-id"
+    type="text"
+    placeholder="Introduce el ID del pedido…"
+    style="padding: 6px 8px; max-width: 260px;"
+  >
+</div></th>
+        <th class="sortable">Usuario <span class="filtro-icono">🔽</span></th>
+        <th>Email</th>
+        <th>Telefono</th>
+        <th>Fecha</th>
+        <th>Total</th>
+        <th>Ganancia</th>
+        <th class="sortable">Estado <span class="filtro-icono">🔽</span></th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pedido in pedidos %}
+      <tr>
+        <td>{{ pedido.id }}</td>
+        <td>{{ pedido.usuario.name }}</td>
+        <td>{{ pedido.usuario.email }}</td>
+        <td>{{ pedido.usuario.telefono }}</td>
+        <td>{{ pedido.fecha|date:"d/m/Y H:i" }}</td>
+        <td>{{ pedido.total }} €</td>
+        {# Aquí usamos la ganancia que asignamos en la vista en .ganancia_calc #}
+        <td>{{ pedido.ganancia_calc|floatformat:2 }} €</td>
+        <td>
+          <form method="POST" action="{% url 'cambiar_estado_pedido' pedido.id %}" class="estado-form">
+            {% csrf_token %}
+            {% if pedido.pagado %}
+              <button type="submit" class="estado-btn estado-pagado" title="Marcar como moroso">✔</button>
+            {% else %}
+              <button type="submit" class="estado-btn estado-moroso" title="Marcar como pagado">✖</button>
+            {% endif %}
+          </form>
+        </td>
+        <td>
+          <a href="{% url 'detalle_pedido_admin' pedido.id %}" class="detalle-link">🔍 Ver detalles</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
+
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+    const getCellValue = (tr, idx) =>
+      tr.children[idx].innerText || tr.children[idx].textContent;
 
     const comparer = (idx, asc) => (a, b) => {
       const v1 = getCellValue(asc ? a : b, idx).trim();
@@ -159,7 +177,7 @@
         v1.localeCompare(v2);
     };
 
-    // --- Ordenar columnas (código original) ---
+    // Ordenar columnas
     document.querySelectorAll("th.sortable").forEach(th => {
       th.addEventListener("click", () => {
         const table = th.closest("table");
@@ -173,7 +191,7 @@
       });
     });
 
-    // --- Buscador por ID (nuevo) ---
+    // Buscador por ID
     const buscador = document.getElementById('buscador-id');
     buscador.addEventListener('input', function () {
       const filtro = this.value.trim().toLowerCase();
@@ -184,6 +202,5 @@
     });
   });
 </script>
-
 
 {% endblock %}
