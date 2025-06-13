@@ -85,7 +85,7 @@ def registro_view(request):
             return redirect('inicio')
     else:
         form = RegistroForm()
-    return render(request, 'registro.html', {'form': form})
+    return render(request, 'Registro.html', {'form': form})
 
 def login_view(request):
     if request.method == 'POST':
