@@ -6,7 +6,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import reverse
 from django.conf import settings
 from django.conf.urls.static import static
-
+from . import views
 
 urlpatterns = [
     # Inicio y autenticación
@@ -33,6 +33,8 @@ urlpatterns = [
     path('confirmar-pedido/', confirmar_pedido_view, name='confirmar_pedido'),
     path('pago-simulado/', pago_simulado_view, name='pago_simulado'),
     path('pedido/<str:pedido_id>/cambiar_estado/', cambiar_estado_pedido, name='cambiar_estado_pedido'),
+    path('mis-pedidos/', views.mis_pedidos_view, name='mis_pedidos'),
+    path('mis-pedidos/<str:pedido_id>/', views.detalle_mi_pedido_view, name='detalle_mi_pedido'),
 
     # Administración
     path('exportar-pedidos/', exportar_pedidos_excel , name='exportar_pedidos'),
@@ -42,6 +44,7 @@ urlpatterns = [
 
     path("solicitar-reset-password/", solicitar_reset_password, name="solicitar-reset-password"),
     path("reset-password/<str:token>/", resetear_password, name="reset-password"),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

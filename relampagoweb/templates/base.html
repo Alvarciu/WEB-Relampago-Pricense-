@@ -24,6 +24,8 @@
       background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='black' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
     }
   </style>
+  <!-- Swiper CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -52,8 +54,8 @@
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item"><a class="nav-link" href="{% url 'inicio' %}">Inicio</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'tienda' %}">Tienda</a></li>
-
             {% if user.is_authenticated %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'mis_pedidos' %}">Mis pedidos</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'carrito' %}">Carrito</a></li>
               {% if user.is_staff %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'lista_pedidos' %}">📋 Panel de pedidos</a></li>
@@ -121,14 +123,14 @@
           position: 'top-end',
           showConfirmButton: false,
           timer: 3000
-          
         });
       {% endfor %}
     </script>
   {% endif %}
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  {% block extra_js %}{% endblock %}
+  <!-- Swiper JS -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  {% block extra_swiper %}{% endblock %}
 </body>
 </html>
-

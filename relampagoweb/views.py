@@ -771,3 +771,19 @@ def resetear_password(request, token):
         form = CambiarPasswordForm()
 
     return render(request, "Contrasena/password_reset.html", {"form": form})
+
+
+@login_required
+def mis_pedidos_view(request):
+    pedidos = Pedido.objects.filter(usuario=request.user).order_by('-fecha')
+    return render(request, 'mis_pedidos.html', {
+        'pedidos': pedidos
+    })
+
+@login_required
+def detalle_mi_pedido_view(request, pedido_id):
+    # Se asegura de que el pedido exista y pertenezca al user
+    pedido = get_object_or_404(Pedido, id=pedido_id, usuario=request.user)
+    return render(request, 'detalle_mi_pedido.html', {
+        'pedido': pedido
+    })

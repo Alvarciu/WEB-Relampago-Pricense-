@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+  .detalle-card {
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.08);
+    overflow:hidden;
+    margin-top:1.5rem;
+  }
+  .detalle-card .card-body {
+    padding:1.5rem;
+  }
+  .linea-item {
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    margin-bottom:1rem;
+  }
+  .linea-item img {
+    width:64px; height:64px;
+    object-fit:cover;
+    border-radius:8px;
+  }
+  .linea-info {
+    flex:1;
+  }
+  .linea-info strong {
+    display:block;
+    margin-bottom:.25rem;
+  }
+  .linea-importe {
+    font-weight:bold;
+  }
+  .card-footer {
+    background:#f8f9fa;
+    padding:1rem 1.5rem;
+    text-align:right;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+  <h2>Pedido #{{ pedido.id }}</h2>
+  <small class="text-muted">Fecha: {{ pedido.fecha|date:"d/m/Y H:i" }}</small>
+  <p class="mt-2">
+    Estado:
+    {% if pedido.pagado %}
+      <span class="badge bg-success">Pagado</span>
+    {% else %}
+      <span class="badge bg-warning text-dark">Pendiente</span>
+    {% endif %}
+  </p>
+
+  <div class="detalle-card">
+    <div class="card-body">
+      {% for linea in pedido.lineas.all %}
+      <div class="linea-item">
+        <img src="{{ linea.producto.imagen.url }}" alt="">
+        <div class="linea-info">
+          <strong>{{ linea.producto.nombre }}</strong>
+          <small>Talla: {{ linea.talla }}</small> &nbsp;|&nbsp;
+          <small>
+            {% if linea.nombre_dorsal %}
+              {{ linea.nombre_dorsal }} {{ linea.numero_dorsal }}
+            {% else %}
+              Dorsal: —
+            {% endif %}
+          </small>
+        </div>
+        <div class="linea-importe">
+          {{ linea.subtotal|floatformat:2 }} €
+        </div>
+      </div>
+      {% if not forloop.last %}<hr>{% endif %}
+      {% endfor %}
+    </div>
+    <div class="card-footer">
+      <h5>Total: {{ pedido.total|floatformat:2 }} €</h5>
+    </div>
+  </div>
+
+  <a href="{% url 'mis_pedidos' %}" class="btn btn-outline-secondary mt-4">
+    ← Volver a mis pedidos
+  </a>
+</section>
+{% endblock %}
