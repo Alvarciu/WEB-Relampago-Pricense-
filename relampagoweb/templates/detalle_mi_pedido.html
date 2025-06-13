@@ -72,7 +72,7 @@
           </small>
         </div>
         <div class="linea-importe">
-          {{ linea.subtotal|floatformat:2 }} €
+          {{ linea.precio_unitario|floatformat:2 }} €
         </div>
       </div>
       {% if not forloop.last %}<hr>{% endif %}
