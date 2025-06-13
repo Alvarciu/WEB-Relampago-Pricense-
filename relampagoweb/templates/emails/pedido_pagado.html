@@ -3,125 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <title>Pago confirmado</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 30px 20px;
-    }
-    .email-container {
-      max-width: 620px;
-      margin: auto;
-      background-color: #fff;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-    .logo {
-      display: block;
-      margin: 0 auto 20px;
-      width: 60px;
-    }
-    h2 {
-      color: #111;
-      text-align: center;
-      margin-bottom: 5px;
-    }
-    .pedido-id {
-      text-align: center;
-      color: #555;
-      font-size: 0.95rem;
-      margin-bottom: 20px;
-    }
-    .success-box {
-      background-color: #ecfdf5;
-      border: 1px solid #10b981;
-      padding: 15px 20px;
-      border-radius: 8px;
-      color: #065f46;
-      font-weight: 500;
-      margin-bottom: 25px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 25px;
-    }
-    th {
-      background-color: #facc15;
-      color: #111;
-      text-align: left;
-      padding: 10px;
-      font-weight: 600;
-      border-bottom: 2px solid #ccc;
-    }
-    td {
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-      font-size: 0.95rem;
-    }
-    .total {
-      text-align: right;
-      font-weight: bold;
-      margin-top: 10px;
-      font-size: 1.05rem;
-      color: #000;
-    }
-    .footer {
-      text-align: center;
-      font-size: 0.85rem;
-      color: #555;
-      margin-top: 30px;
-    }
-    .footer strong {
-      color: #000;
-    }
-  </style>
 </head>
-<body>
-  <div class="email-container">
-    <img src="cid:logo_escudo" alt="Escudo del club" class="logo">
-    <h2>✅ ¡Pago recibido correctamente, {{ usuario.name }}!</h2>
-    <p class="pedido-id">Pedido confirmado: <strong>#{{ pedido.id }}</strong></p>
+<body style="margin:0;padding:20px;background:#f4f4f4;font-family:Segoe UI,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;padding:20px;box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+    <img src="cid:logo_escudo" alt="Escudo" style="display:block;margin:0 auto 15px;width:50px;">
+    <h2 style="text-align:center;color:#111;margin:0 0 5px;">✅ ¡Pago recibido, {{ usuario.name }}!</h2>
+    <p style="text-align:center;color:#555;font-size:0.9rem;margin:0 0 20px;">
+      Pedido #: <strong>{{ pedido.id }}</strong>
+    </p>
 
-    <div class="success-box">
-      🎉 Hemos recibido tu transferencia bancaria. Tu pedido ha sido marcado como <strong>PAGADO</strong>.<br>
-      Te avisaremos por este mismo medio en cuanto esté listo para entrega o recogida.
+    <div style="background:#ecfdf5;border:1px solid #10b981;border-radius:6px;color:#065f46;padding:12px 15px;margin-bottom:20px;font-size:0.95rem;">
+      🎉 Hemos recibido tu transferencia. Tu pedido está <strong>PAGADO</strong>.
     </div>
 
-    <table>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:15px;font-size:0.95rem;">
       <thead>
         <tr>
-          <th>Producto</th>
-          <th>Talla</th>
-          <th>Dorsal</th>
-          <th>Precio</th>
+          <th style="background:#facc15;color:#111;padding:8px;border-bottom:2px solid #ccc;text-align:left;">Producto</th>
+          <th style="background:#facc15;color:#111;padding:8px;border-bottom:2px solid #ccc;text-align:left;">Talla</th>
+          <th style="background:#facc15;color:#111;padding:8px;border-bottom:2px solid #ccc;text-align:left;">Dorsal</th>
+          <th style="background:#facc15;color:#111;padding:8px;border-bottom:2px solid #ccc;text-align:left;">Precio</th>
         </tr>
       </thead>
       <tbody>
         {% for item in pedido.lineas.all %}
         <tr>
-          <td>{{ item.producto.nombre }}</td>
-          <td>{{ item.talla }}</td>
-          <td>
-            {% if item.nombre_dorsal %}
+          <td style="padding:6px 8px;border-bottom:1px solid #eee;">{{ item.producto.nombre }}</td>
+          <td style="padding:6px 8px;border-bottom:1px solid #eee;">{{ item.talla }}</td>
+          <td style="padding:6px 8px;border-bottom:1px solid #eee;">
+            {% if item.nombre_dorsal and item.numero_dorsal %}
               {{ item.nombre_dorsal }} ({{ item.numero_dorsal }})
+            {% elif item.nombre_dorsal %}
+              {{ item.nombre_dorsal }}
+            {% elif item.numero_dorsal %}
+              {{ item.numero_dorsal }}
             {% else %}
-              -
+              –
             {% endif %}
           </td>
-          <td>{{ item.producto.precio }} €</td>
+          <td style="padding:6px 8px;border-bottom:1px solid #eee;">{{ item.precio_unitario|floatformat:2 }} €</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
 
-    <p class="total">Total pagado: {{ pedido.total }} €</p>
+    <p style="text-align:right;font-weight:bold;margin:0 0 15px;font-size:1rem;">
+      Total pagado: {{ pedido.total|floatformat:2 }} €
+    </p>
 
-    <p class="footer">
-      Te agradecemos tu confianza en <strong>Relámpago Pricense FC ⚡</strong><br>
-      Si tienes alguna duda, puedes responder directamente a este correo.
+    <p style="text-align:center;font-size:0.85rem;color:#555;margin:0;">
+      Gracias por confiar en <strong>Relámpago Pricense FC ⚡</strong><br>
+      Puedes responder a este correo si tienes dudas.
     </p>
   </div>
 </body>

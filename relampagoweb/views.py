@@ -406,6 +406,8 @@ def resumen_pedido_view(request):
 
 
 from decimal import Decimal
+from decimal import Decimal
+from django.shortcuts import render, redirect, get_object_or_404
 
 @login_required
 def confirmar_pedido_view(request):
@@ -415,16 +417,20 @@ def confirmar_pedido_view(request):
     if not carrito:
         return redirect('carrito')
 
-    pedido = Pedido.objects.create(usuario=request.user, pagado=False, usar_descuento=usar_descuento)
+    # 1) Creamos el pedido
+    pedido = Pedido.objects.create(
+        usuario=request.user,
+        pagado=False,
+        usar_descuento=usar_descuento
+    )
 
+    # 2) Creamos cada línea guardando precio_unitario y costo_unitario correctos
     for item in carrito:
         producto = Producto.objects.get(id=item['producto_id'])
-        numero_dorsal_raw = item.get('numero_dorsal')
-        numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
+        numero_dorsal = int(item.get('numero_dorsal')) if item.get('numero_dorsal') else None
 
-                # ─── Ajuste para tener en cuenta el descuento ───
         if item.get('compra_tipo') == 'solo_camiseta':
-            # si ese item estaba marcado como 'con_descuento' en carrito_view:
+            # si la marcaron con descuento, usamos campo precio_camiseta_descuento
             if item.get('con_descuento'):
                 precio_unitario = producto.precio_camiseta_descuento
             else:
@@ -432,9 +438,6 @@ def confirmar_pedido_view(request):
             costo_unitario = producto.coste_provedor_camiseta
         else:
             precio_unitario = producto.precio
-            costo_unitario = producto.coste_provedor
-# ───────────────────────────────────────────────
-
             costo_unitario = producto.coste_provedor
 
         LineaPedido.objects.create(
@@ -448,34 +451,19 @@ def confirmar_pedido_view(request):
             costo_unitario=costo_unitario,
         )
 
-    # Limpiar sesión
+    # 3) Limpiamos sesión
     del request.session['carrito']
     request.session.pop('aplicar_descuento', None)
 
-    # Calcular total con o sin descuento
-    carrito_items = []
-    for linea in pedido.lineas.all():
-        if linea.compra_tipo == 'solo_camiseta':
-            precio_real = producto.precio_camiseta_sola
-        else:
-            precio_real = float(linea.producto.precio)
+    # 4) Recalculamos total con lo que ya existe en las líneas
+    total = sum(linea.precio_unitario for linea in pedido.lineas.all())
 
-        carrito_items.append({
-            'precio': precio_real,
-            'tipo': 'Camiseta' if linea.compra_tipo == 'solo_camiseta' else linea.producto.tipo,
-            'compra_tipo': linea.compra_tipo
-        })
-
-
-    total = calcular_total_carrito(carrito_items)
-
-    print(f"Total del pedido: {total} €")
-
+    # 5) Enviamos mail y renderizamos confirmación
     enviar_confirmacion_pedido(request.user, pedido)
 
     return render(request, 'pedido_confirmado.html', {
         'pedido': pedido,
-        'total': total
+        'total': total,
     })
 
 
