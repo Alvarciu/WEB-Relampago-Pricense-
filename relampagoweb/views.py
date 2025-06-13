@@ -422,10 +422,19 @@ def confirmar_pedido_view(request):
         numero_dorsal_raw = item.get('numero_dorsal')
         numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
 
-        precio_unitario = Decimal(item['precio'])
+                # ─── Ajuste para tener en cuenta el descuento ───
         if item.get('compra_tipo') == 'solo_camiseta':
+            # si ese item estaba marcado como 'con_descuento' en carrito_view:
+            if item.get('con_descuento'):
+                precio_unitario = producto.precio_camiseta_descuento
+            else:
+                precio_unitario = producto.precio_camiseta_sola
             costo_unitario = producto.coste_provedor_camiseta
         else:
+            precio_unitario = producto.precio
+            costo_unitario = producto.coste_provedor
+# ───────────────────────────────────────────────
+
             costo_unitario = producto.coste_provedor
 
         LineaPedido.objects.create(
@@ -484,10 +493,19 @@ def pago_simulado_view(request):
         numero_dorsal = int(numero_dorsal_raw) if numero_dorsal_raw else None
         # ─── NUEVO ────
         precio_unitario = Decimal(item['precio'])
+        # ─── Ajuste para tener en cuenta el descuento ───
         if item.get('compra_tipo') == 'solo_camiseta':
+            # si ese item estaba marcado como 'con_descuento' en carrito_view:
+            if item.get('con_descuento'):
+                precio_unitario = producto.precio_camiseta_descuento
+            else:
+                precio_unitario = producto.precio_camiseta_sola
             costo_unitario = producto.coste_provedor_camiseta
         else:
+            precio_unitario = producto.precio
             costo_unitario = producto.coste_provedor
+# ───────────────────────────────────────────────
+
         # ─────────────
 
         LineaPedido.objects.create(
@@ -631,36 +649,24 @@ def exportar_pedidos_excel(request):
     df.to_excel(response, index=False)
     return response
 
+
 @user_passes_test(es_admin)
 def lista_pedidos_view(request):
-    # 1) Traer todos los pedidos
+    # 1) Traer todos los pedidos (ya con lineas y producto prefetched)
     pedidos = Pedido.objects.prefetch_related('lineas__producto').order_by('-usuario__name')
 
     # 2) Calcular ganancia línea a línea en Python y anexarla como atributo dinámico .ganancia_calc
     for pedido in pedidos:
         ganancia_pedido = Decimal('0.00')
         for linea in pedido.lineas.all():
-            # precio de venta
-            if linea.compra_tipo == 'solo_camiseta':
-                precio_venta = Decimal(linea.producto.precio_camiseta_sola or linea.producto.precio)
-                costo = Decimal(linea.producto.coste_provedor_camiseta)
-            else:
-                precio_venta = Decimal(linea.producto.precio)
-                costo = Decimal(linea.producto.coste_provedor)
-            ganancia_pedido += (precio_venta - costo)
+            ganancia_pedido += (linea.precio_unitario - linea.costo_unitario)
         pedido.ganancia_calc = ganancia_pedido
 
-    # 3) Calcular ganancia total de todas las líneas de pedidos PAGADOS
+    # 3) Calcular ganancia total de todas las líneas de pedidos pagados
     ganancias_totales = Decimal('0.00')
-    lineas_pagadas = LineaPedido.objects.filter(pedido__pagado=True).select_related('producto')
+    lineas_pagadas = LineaPedido.objects.filter(pedido__pagado=True).only('precio_unitario', 'costo_unitario')
     for linea in lineas_pagadas:
-        if linea.compra_tipo == 'solo_camiseta':
-            precio_venta = Decimal(linea.producto.precio_camiseta_sola or linea.producto.precio)
-            costo = Decimal(linea.producto.coste_provedor_camiseta)
-        else:
-            precio_venta = Decimal(linea.producto.precio)
-            costo = Decimal(linea.producto.coste_provedor)
-        ganancias_totales += (precio_venta - costo)
+        ganancias_totales += (linea.precio_unitario - linea.costo_unitario)
 
     # 4) Configuración de pedidos abiertos/cerrados
     config = get_configuracion()
