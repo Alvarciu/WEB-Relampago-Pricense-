@@ -4,9 +4,6 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" integrity="sha384-+0n0xVW2eSR5O3z4z
-">
-
 <style>
   .historia-card, .equipo-card {
     background: #fff;
@@ -17,7 +14,6 @@
     width: 100%;
     max-width: 360px;
   }
-
   .jugador-img {
     width: 100%;
     height: 240px;
@@ -25,73 +21,65 @@
     border-radius: 8px;
     margin-bottom: 1rem;
   }
-
   .equipo-card .card-title,
   .equipo-card .card-text,
   .historia-card h5 {
     font-weight: bold;
   }
-
   .carrusel-mobile { display: none; }
   .carrusel-desktop { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
-
-  @media (min-width: 577px) {
-    .carrusel-desktop > .historia-card,
-    .carrusel-desktop > .equipo-card {
-      flex: 0 0 calc(33.333% - 1rem);
-    }
-  }
-
+  /* --- SOLO MÓVIL --- */
   @media (max-width: 576px) {
     .carrusel-mobile { display: block; }
     .carrusel-desktop { display: none; }
-
-    .swiper-slide {
-      display: flex;
-      justify-content: center;
-    }
-
+    .swiper-slide { display: flex; justify-content: center; }
     .swiper-slide .historia-card,
     .swiper-slide .equipo-card {
       transform: translateY(20px);
       opacity: 0.8;
       transition: transform 0.3s ease, opacity 0.3s ease;
     }
-
     .swiper-slide.is-centered .historia-card,
     .swiper-slide.is-centered .equipo-card {
       transform: translateY(0);
       opacity: 1;
       z-index: 2;
     }
-
     .swiper-pagination {
       margin-top: 20px;
       display: flex;
       justify-content: center;
       gap: 6px;
+      position: relative;
+      z-index: 2;
+    }
+  }
+  /* --- ESCRITORIO --- */
+  @media (min-width: 577px) {
+    .swiper-pagination { display: none !important; }
+    .carrusel-desktop > .historia-card,
+    .carrusel-desktop > .card.equipo-card {
+      flex: 0 0 calc(33.333% - 1rem);
     }
   }
 </style>
-
-
 {% endblock %}
 
 {% block content %}
 <section class="container mb-5">
   <h3 class="titulo-seccion text-center mb-4">Historia del club</h3>
-
-  <!-- Swiper móvil -->
-  <div class="swiper historia-swiper carrusel-mobile">
-    <div class="swiper-wrapper">
-      <div class="swiper-slide"><div class="historia-card"><h5>Fundación</h5><p>Texto...</p></div></div>
-      <div class="swiper-slide"><div class="historia-card"><h5>Equipo Actualmente</h5><p>Texto...</p></div></div>
-      <div class="swiper-slide"><div class="historia-card"><h5>Actividades Importantes</h5><p>Texto...</p></div></div>
+  <!-- Swiper móvil, paginación dentro del swiper -->
+  <div class="carrusel-mobile">
+    <div class="swiper historia-swiper">
+      <div class="swiper-wrapper">
+        <div class="swiper-slide"><div class="historia-card"><h5>Fundación</h5><p>Texto...</p></div></div>
+        <div class="swiper-slide"><div class="historia-card"><h5>Equipo Actualmente</h5><p>Texto...</p></div></div>
+        <div class="swiper-slide"><div class="historia-card"><h5>Actividades Importantes</h5><p>Texto...</p></div></div>
+      </div>
+      <div class="swiper-pagination historia-pagination"></div>
     </div>
   </div>
-  <div class="swiper-pagination historia-pagination"></div>
-
-  <!-- Grid desktop -->
+  <!-- Grid escritorio -->
   <div class="carrusel-desktop">
     <div class="historia-card"><h5>Fundación</h5><p>Texto...</p></div>
     <div class="historia-card"><h5>Equipo Actualmente</h5><p>Texto...</p></div>
@@ -102,26 +90,26 @@
 <section class="container seccion-equipo py-5">
   <h3 class="titulo-seccion text-center mb-4">Nuestro Equipo</h3>
   <p class="text-center mb-4">Conoce a las leyendas detrás del relámpago.</p>
-
-  <!-- Swiper móvil -->
-  <div class="swiper equipo-swiper carrusel-mobile">
-    <div class="swiper-wrapper">
-      {% for jugador in jugadores %}
-      <div class="swiper-slide">
-        <div class="card equipo-card h-100 text-center">
-          <img src="{{ jugador.foto.url }}" class="jugador-img" alt="{{ jugador.nombre }}">
-          <div class="card-body">
-            <h5 class="card-title">{{ jugador.nombre }}</h5>
-            <p class="card-text">{{ jugador.posicion }}</p>
+  <!-- Swiper móvil, paginación dentro del swiper -->
+  <div class="carrusel-mobile">
+    <div class="swiper equipo-swiper">
+      <div class="swiper-wrapper">
+        {% for jugador in jugadores %}
+        <div class="swiper-slide">
+          <div class="card equipo-card h-100 text-center">
+            <img src="{{ jugador.foto.url }}" class="jugador-img" alt="{{ jugador.nombre }}">
+            <div class="card-body">
+              <h5 class="card-title">{{ jugador.nombre }}</h5>
+              <p class="card-text">{{ jugador.posicion }}</p>
+            </div>
           </div>
         </div>
+        {% endfor %}
       </div>
-      {% endfor %}
+      <div class="swiper-pagination equipo-pagination"></div>
     </div>
   </div>
-  <div class="swiper-pagination equipo-pagination"></div>
-
-  <!-- Grid desktop -->
+  <!-- Grid escritorio -->
   <div class="carrusel-desktop">
     {% for jugador in jugadores %}
     <div class="card equipo-card h-100 text-center">
@@ -141,9 +129,8 @@
 <script>
   function initSwiper(selector, paginationSelector) {
     const container = document.querySelector(selector);
-    const pagination = document.querySelector(paginationSelector);
+    const pagination = container ? container.querySelector(paginationSelector) : null;
     if (!container || !pagination) return;
-
     return new Swiper(container, {
       slidesPerView: 1.2,
       spaceBetween: 15,
@@ -165,10 +152,8 @@
       }
     });
   }
-
   let historiaSwiper = null;
   let equipoSwiper = null;
-
   function actualizarSwipers() {
     const esMovil = window.innerWidth <= 576;
     if (esMovil) {
@@ -179,7 +164,6 @@
       equipoSwiper?.destroy(true, true);   equipoSwiper = null;
     }
   }
-
   window.addEventListener('load', actualizarSwipers);
   window.addEventListener('resize', actualizarSwipers);
 </script>
