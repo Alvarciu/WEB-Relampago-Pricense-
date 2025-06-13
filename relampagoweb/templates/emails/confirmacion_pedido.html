@@ -103,45 +103,32 @@
       <p><strong>IBAN:</strong> ES92 0073 0100 5608 2893 3739</p>
       <p><strong>BIC/SWIFT:</strong> OPENESMMXXX</p>
       <p>Por favor, en la descripción de la transferencia indica: <br><em>"Pago pedido #{{ pedido.id }}"</em>.</p>
+      <p><strong>Una vez hecha la transferencia, envía el justificante a uno de estos números:</strong><br>
+      Pablo: 662026269 · Lucas: 653040148 · Isaac: 654764251 · Adrián: 655372488 · Álvaro: 606694632</p>
     </div>
 
     <table>
-  <thead>
-    <tr>
-      <th>Producto</th>
-      <th>Talla</th>
-      <th>Dorsal</th>
-      <th>Número</th>
-      <th>Precio</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for linea in pedido.lineas.all %}
-    <tr>
-      <td>{{ linea.producto.nombre }}</td>
-      <td>{{ linea.talla }}</td>
-      <td>
-        {% if linea.nombre_dorsal %}
-          {{ linea.nombre_dorsal }}
-        {% else %}
-          –
-        {% endif %}
-      </td>
-      <td>
-        {% if linea.numero_dorsal %}
-          {{ linea.numero_dorsal }}
-        {% else %}
-          –
-        {% endif %}
-      </td>
-      <td>
-        {{ linea.precio_unitario|floatformat:2 }} €
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Talla</th>
+          <th>Dorsal</th>
+          <th>Número</th>
+          <th>Precio</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for linea in pedido.lineas.all %}
+        <tr>
+          <td>{{ linea.producto.nombre }}</td>
+          <td>{{ linea.talla }}</td>
+          <td>{% if linea.nombre_dorsal %}{{ linea.nombre_dorsal }}{% else %}–{% endif %}</td>
+          <td>{% if linea.numero_dorsal %}{{ linea.numero_dorsal }}{% else %}–{% endif %}</td>
+          <td>{{ linea.precio_unitario|floatformat:2 }} €</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
     <p class="total">Total: {{ pedido.total }} €</p>
 
